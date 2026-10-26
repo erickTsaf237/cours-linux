@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Permissions Linux : chmod, chown et sudo expliqués | Cours Linux</title>
+  <meta name="description" content="Module 04 du cours Linux : utilisateurs et groupes, root et sudo, permissions rwx, chmod en symbolique et en octal (755, 644), chown, umask, SUID et sticky bit. Vidéos, quiz et exercices corrigés.">
+  <meta name="theme-color" content="#e95420">
+  <link rel="apple-touch-icon" href="../assets/img/icone-180.png">
+  <link rel="icon" href="../assets/img/tux.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <script>try{const t=JSON.parse(localStorage.getItem("theme"));if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<div class="progress-bar"></div>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../index.html"><img src="../assets/img/tux.svg" alt=""><span><span class="dollar">$</span> carnet-linux</span></a>
+    <nav class="nav">
+      <a href="../index.html">Programme</a>
+      <a href="04-utilisateurs-permissions.html" class="active hide-sm">Module 04</a>
+      <button class="theme-toggle" type="button" aria-label="Changer de thème">☀️</button>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <span class="eyebrow">PHASE 1 · MODULE 04</span>
+      <h1>Utilisateurs, groupes &amp; <span class="grad">permissions</span></h1>
+      <p class="lead">Linux est multi-utilisateur depuis sa naissance : chaque fichier appartient à quelqu'un, et neuf petites lettres décident
+        de qui peut le lire, le modifier ou l'exécuter. Comprendre ce mécanisme, c'est comprendre toute la sécurité du système.</p>
+      <div class="hero-meta">
+        <span class="chip">⏱️ Lecture <b>~50 min</b></span>
+        <span class="chip">🧪 Pratique <b>~1 h 30</b></span>
+        <span class="chip">🎚️ Niveau <b>débutant → intermédiaire</b></span>
+      </div>
+    </div>
+    <div class="hero-art"><img class="tux" src="../assets/img/tux.svg" alt="Tux"></div>
+  </div>
+</section>
+
+<div class="layout">
+  <aside class="toc">
+    <div class="toc-title">Sommaire</div>
+    <ol></ol>
+  </aside>
+
+  <article class="content">
+
+    <!-- ================================================== -->
+    <h2 id="objectifs" data-short="Objectifs">🎯 Ce que tu sauras à la fin</h2>
+    <div class="cards four">
+      <div class="card" style="--c:var(--accent)"><div class="icon">👥</div><h4>Comptes</h4><p>Lire <code>/etc/passwd</code>, créer des utilisateurs et des groupes.</p></div>
+      <div class="card" style="--c:var(--red)"><div class="icon">👑</div><h4>root et sudo</h4><p>Utiliser les droits d'administrateur à bon escient.</p></div>
+      <div class="card" style="--c:var(--violet)"><div class="icon">🔐</div><h4>Permissions</h4><p>Décoder <code>rwxr-xr-x</code> et le modifier avec <code>chmod</code>.</p></div>
+      <div class="card" style="--c:var(--green)"><div class="icon">✨</div><h4>Cas spéciaux</h4><p>umask, SUID, sticky bit et ACL.</p></div>
+    </div>
+
+    <!-- ================================================== -->
+    <h2 id="comptes" data-short="Utilisateurs &amp; groupes">Utilisateurs et groupes</h2>
+    <p>Pour le noyau, un utilisateur n'est pas un nom mais un <strong>numéro</strong> : l'<strong>UID</strong> (<em>User ID</em>). De même, chaque groupe a
+      un <strong>GID</strong>. Les noms ne sont qu'une traduction pour les humains, stockée dans des fichiers texte de <code>/etc</code>.</p>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">whoami</span>
+<span class="o">user</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">id</span>
+<span class="o">uid=1000(user) gid=1000(user) groupes=1000(user),4(adm),24(cdrom),27(<span class="hl">sudo</span>),30(dip),46(plugdev),100(users),114(lpadmin)</span></pre></div>
+    <p>Le premier compte créé à l'installation reçoit l'UID <strong>1000</strong> et appartient au groupe <code>sudo</code> : c'est ce qui lui donne le droit d'administrer.</p>
+
+    <div class="table-wrap"><table>
+      <tr><th>UID</th><th>Qui ?</th></tr>
+      <tr><td><code>0</code></td><td><strong>root</strong>, l'administrateur. Tous les droits, sans exception.</td></tr>
+      <tr><td><code>1</code> à <code>999</code></td><td>Comptes <strong>système</strong> : services qui tournent en arrière-plan (<code>www-data</code> pour le serveur web, <code>syslog</code>…). Personne ne s'y connecte.</td></tr>
+      <tr><td><code>1000</code> et plus</td><td>Les <strong>humains</strong> : toi et les autres utilisateurs.</td></tr>
+    </table></div>
+
+    <h3>Le fichier <code>/etc/passwd</code></h3>
+    <p>Malgré son nom, il ne contient plus de mot de passe depuis longtemps : juste la liste des comptes, un par ligne, en 7 champs séparés par <code>:</code>.</p>
+    <div class="anatomy">
+      <div class="seg" style="--c:#ffa657"><code>user</code><span>identifiant</span></div>
+      <div class="seg" style="--c:#8b949e"><code>x</code><span>mot de passe</span><small>dans /etc/shadow</small></div>
+      <div class="seg" style="--c:#d2a8ff"><code>1000</code><span>UID</span></div>
+      <div class="seg" style="--c:#d2a8ff"><code>1000</code><span>GID</span><small>groupe principal</small></div>
+      <div class="seg" style="--c:#8b949e"><code>user,,,</code><span>description</span></div>
+      <div class="seg" style="--c:#79c0ff"><code>/home/user</code><span>dossier perso</span></div>
+      <div class="seg" style="--c:#7ee787"><code>/bin/bash</code><span>shell</span></div>
+    </div>
+    <div class="table-wrap"><table>
+      <tr><th>Fichier</th><th>Contenu</th><th>Lisible par</th></tr>
+      <tr><td><code>/etc/passwd</code></td><td>Les comptes</td><td>Tout le monde</td></tr>
+      <tr><td><code>/etc/shadow</code></td><td>Les mots de passe <strong>hachés</strong> (jamais en clair) et leur date d'expiration</td><td>root uniquement</td></tr>
+      <tr><td><code>/etc/group</code></td><td>Les groupes et leurs membres</td><td>Tout le monde</td></tr>
+    </table></div>
+    <div class="callout info"><span class="callout-title">Un compte système n'a pas de vrai shell</span>
+      <p>Regarde les dernières colonnes de <code>/etc/passwd</code> : beaucoup de comptes ont pour shell <code>/usr/sbin/nologin</code>. Impossible de s'y connecter :
+        ils existent seulement pour qu'un service tourne avec ses propres droits, isolé du reste.</p></div>
+
+    <!-- ================================================== -->
+    <h2 id="sudo" data-short="root &amp; sudo">root, sudo et le moindre privilège</h2>
+    <figure class="video-card">
+      <div class="video-head"><span class="video-badge">▶ Vidéo · 1 min 30</span><strong>root, sudo et le moindre privilège</strong><span>pourquoi on ne travaille jamais en root</span></div>
+      <video controls preload="none" playsinline poster="../assets/video/sudo.jpg"><source src="../assets/video/sudo.mp4" type="video/mp4">Ton navigateur ne lit pas la vidéo : <a href="../assets/video/sudo.mp4">télécharge-la ici</a>.</video>
+      <figcaption>Animation réalisée pour ce cours. Voix off et musique générées par IA (Google Gemini et Lyria).</figcaption>
+    </figure>
+
+    <p><strong>root</strong> peut tout faire, y compris détruire le système en une commande. D'où le <strong>principe du moindre privilège</strong> : on travaille
+      avec un compte normal, et on n'emprunte les droits de root que pour une commande précise, avec <code>sudo</code>.</p>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">cat</span> <span class="s">/etc/shadow</span>
+<span class="o"><span class="err">cat: /etc/shadow: Permission non accordée</span></span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> head <span class="f">-n 2</span> <span class="s">/etc/shadow</span>
+<span class="o">[sudo] Mot de passe de user :</span>
+<span class="o">root:*:19800:0:99999:7:::</span>
+<span class="o">daemon:*:19800:0:99999:7:::</span></pre></div>
+
+    <div class="table-wrap"><table>
+      <tr><th>Commande</th><th>Effet</th></tr>
+      <tr><td><code>sudo commande</code></td><td>Exécute <em>une</em> commande en tant que root. Demande <strong>ton</strong> mot de passe, mémorisé 15 minutes.</td></tr>
+      <tr><td><code>sudo -u alice commande</code></td><td>Exécute une commande en tant qu'un autre utilisateur</td></tr>
+      <tr><td><code>sudo -i</code></td><td>Ouvre un shell root complet (invite <code>#</code>). À utiliser avec parcimonie, et à quitter avec <code>exit</code>.</td></tr>
+      <tr><td><code>sudo -l</code></td><td>Liste ce que tu as le droit de faire avec sudo</td></tr>
+      <tr><td><code>su - alice</code></td><td>Devient alice (demande le mot de passe d'<em>alice</em>)</td></tr>
+    </table></div>
+
+    <div class="callout key"><span class="callout-title">Qui a droit à sudo ?</span>
+      <p>Sur Ubuntu, les membres du groupe <code>sudo</code>. Les règles complètes sont dans <code>/etc/sudoers</code>, qu'on ne modifie <strong>jamais</strong>
+        directement mais avec <code>sudo visudo</code> : il vérifie la syntaxe avant d'enregistrer. Une erreur dans ce fichier peut te priver de sudo.
+        Chaque utilisation de sudo est journalisée dans <code>/var/log/auth.log</code>.</p></div>
+
+    <div class="callout danger"><span class="callout-title">sudo n'est pas une formule magique</span>
+      <p>« Permission denied » est une <strong>protection</strong>, pas un obstacle à contourner. Avant d'ajouter <code>sudo</code>, demande-toi si l'action est normale.
+        Et ne colle jamais une commande trouvée sur Internet qui commence par <code>sudo</code> sans la comprendre.</p></div>
+
+    <!-- ================================================== -->
+    <h2 id="gerer" data-short="Gérer les comptes">Créer et gérer des comptes</h2>
+    <div class="terminal" data-title="user@ubuntu: ~"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> adduser <span class="s">alice</span>               <span class="c"># création interactive (mot de passe, nom complet…)</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> addgroup <span class="s">projet</span>             <span class="c"># créer un groupe</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> usermod <span class="f">-aG</span> <span class="s">projet alice</span>     <span class="c"># ajouter alice au groupe projet</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">groups</span> <span class="s">alice</span>
+<span class="o">alice : alice projet</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">su</span> - <span class="s">alice</span>                      <span class="c"># se connecter en tant qu'alice</span>
+<span class="p">alice@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">exit</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> passwd <span class="s">alice</span>                <span class="c"># changer son mot de passe</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> deluser <span class="f">--remove-home</span> <span class="s">alice</span>   <span class="c"># supprimer le compte et son dossier</span></pre></div>
+
+    <div class="callout danger"><span class="callout-title">Le piège de <code>usermod -G</code></span>
+      <p>Sans le <code>-a</code> (<em>append</em>), <code>usermod -G projet user</code> <strong>remplace</strong> tous les groupes secondaires par <code>projet</code>…
+        y compris <code>sudo</code>. Résultat : plus de droits d'administration. Retiens le duo : <strong><code>-aG</code></strong>, toujours.</p></div>
+    <div class="callout tip"><span class="callout-title">Les groupes s'appliquent à la connexion</span>
+      <p>Après avoir ajouté un utilisateur à un groupe, il doit se <strong>déconnecter et se reconnecter</strong> pour que le changement s'applique à sa session.
+        <code>id</code> affiche les groupes de la session en cours.</p></div>
+    <p><code>adduser</code> et <code>addgroup</code> sont les outils conviviaux de Debian et Ubuntu. Sur d'autres distributions, on utilise les commandes de bas niveau
+      <code>useradd</code> et <code>groupadd</code>, qui demandent plus d'options (<code>useradd -m -s /bin/bash alice</code>).</p>
+
+    <!-- ================================================== -->
+    <h2 id="permissions" data-short="Les permissions">Les permissions : rwx décodé</h2>
+    <figure class="video-card">
+      <div class="video-head"><span class="video-badge">▶ Vidéo · 1 min 30</span><strong>rwx décodé</strong><span>lire les droits, chmod et la notation octale</span></div>
+      <video controls preload="none" playsinline poster="../assets/video/droits.jpg"><source src="../assets/video/droits.mp4" type="video/mp4">Ton navigateur ne lit pas la vidéo : <a href="../assets/video/droits.mp4">télécharge-la ici</a>.</video>
+      <figcaption>Animation réalisée pour ce cours. Voix off et musique générées par IA (Google Gemini et Lyria).</figcaption>
+    </figure>
+
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">ls</span> <span class="f">-l</span> <span class="s">script.sh</span>
+<span class="o">-rwxr-xr-- 1 user projet 220 oct. 23 10:12 script.sh</span></pre></div>
+    <div class="anatomy">
+      <div class="seg" style="--c:#8b949e"><code>-</code><span>type</span><small>- fichier, d dossier</small></div>
+      <div class="seg" style="--c:#ffa657"><code>rwx</code><span>propriétaire (u)</span><small>user</small></div>
+      <div class="seg" style="--c:#d2a8ff"><code>r-x</code><span>groupe (g)</span><small>projet</small></div>
+      <div class="seg" style="--c:#79c0ff"><code>r--</code><span>autres (o)</span><small>tout le monde</small></div>
+    </div>
+    <p>Chaque trio se lit toujours dans le même ordre : <strong>r</strong> (<em>read</em>), <strong>w</strong> (<em>write</em>), <strong>x</strong> (<em>execute</em>).
+      Un tiret signifie que le droit est absent. Linux applique le <strong>premier</strong> trio qui te concerne : si tu es le propriétaire, seuls les droits du propriétaire comptent.</p>
+
+    <div class="table-wrap"><table>
+      <tr><th>Droit</th><th>Sur un fichier</th><th>Sur un dossier</th></tr>
+      <tr><td><code>r</code> — 4</td><td>Lire le contenu</td><td>Lister les noms qu'il contient (<code>ls</code>)</td></tr>
+      <tr><td><code>w</code> — 2</td><td>Modifier le contenu</td><td>Créer, renommer, <strong>supprimer</strong> des fichiers dedans</td></tr>
+      <tr><td><code>x</code> — 1</td><td>L'exécuter comme un programme</td><td>Y entrer (<code>cd</code>) et accéder à ses fichiers</td></tr>
+    </table></div>
+    <div class="callout warn"><span class="callout-title">Supprimer dépend du dossier, pas du fichier</span>
+      <p>Pouvoir supprimer un fichier ne dépend pas de ses propres droits, mais du droit <code>w</code> sur le <strong>dossier</strong> qui le contient. Un fichier en
+        lecture seule dans ton dossier personnel peut donc être supprimé (<code>rm</code> te demande simplement confirmation).</p></div>
+
+    <h3>Modifier avec <code>chmod</code> : la notation symbolique</h3>
+    <p>On combine <strong>qui</strong> (<code>u</code> propriétaire, <code>g</code> groupe, <code>o</code> autres, <code>a</code> tous), une <strong>action</strong>
+      (<code>+</code> ajouter, <code>-</code> retirer, <code>=</code> fixer exactement) et des <strong>droits</strong> :</p>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">chmod</span> <span class="s">u+x</span> script.sh          <span class="c"># rendre exécutable pour soi</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">chmod</span> <span class="s">o-r</span> notes.txt          <span class="c"># retirer la lecture aux autres</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">chmod</span> <span class="s">g+w,o=</span> partage.txt     <span class="c"># groupe peut écrire, autres : plus rien</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">chmod</span> <span class="f">-R</span> <span class="s">a+rX</span> public/          <span class="c"># -R : récursif ; X : x seulement sur les dossiers</span></pre></div>
+
+    <h3>La notation octale : les administrateurs parlent en chiffres</h3>
+    <p>Chaque droit vaut un nombre : <strong>r = 4</strong>, <strong>w = 2</strong>, <strong>x = 1</strong>. On additionne pour chaque trio, et on obtient trois chiffres :</p>
+    <div class="anatomy">
+      <div class="seg" style="--c:#ffa657"><code>rwx</code><span>4+2+1 = 7</span><small>propriétaire</small></div>
+      <div class="seg" style="--c:#d2a8ff"><code>r-x</code><span>4+0+1 = 5</span><small>groupe</small></div>
+      <div class="seg" style="--c:#79c0ff"><code>r-x</code><span>4+0+1 = 5</span><small>autres</small></div>
+      <div class="seg" style="--c:#7ee787"><code>755</code><span>chmod 755</span><small>le résultat</small></div>
+    </div>
+    <div class="table-wrap"><table>
+      <tr><th>Valeur</th><th>Droits</th><th>Usage typique</th></tr>
+      <tr><td><code>755</code></td><td><code>rwxr-xr-x</code></td><td>Scripts, programmes, dossiers partagés en lecture</td></tr>
+      <tr><td><code>644</code></td><td><code>rw-r--r--</code></td><td>Documents, fichiers de configuration</td></tr>
+      <tr><td><code>700</code></td><td><code>rwx------</code></td><td>Dossier privé</td></tr>
+      <tr><td><code>600</code></td><td><code>rw-------</code></td><td>Fichiers secrets : clés SSH, mots de passe</td></tr>
+      <tr><td><code>777</code></td><td><code>rwxrwxrwx</code></td><td class="no">À éviter : tout le monde peut tout faire</td></tr>
+    </table></div>
+    <div class="callout danger"><span class="callout-title">Le réflexe <code>chmod 777</code></span>
+      <p>Face à une erreur de permission, beaucoup de tutoriels conseillent <code>chmod 777</code>. Ça « marche »… en ouvrant le fichier à n'importe qui,
+        y compris à un programme malveillant. Cherche plutôt <em>qui</em> doit accéder au fichier, et donne-lui le droit minimal nécessaire.</p></div>
+
+    <h3>Changer le propriétaire : <code>chown</code> et <code>chgrp</code></h3>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> chown <span class="s">alice</span> rapport.txt           <span class="c"># nouveau propriétaire</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> chown <span class="s">alice:projet</span> rapport.txt    <span class="c"># propriétaire et groupe</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> chgrp <span class="f">-R</span> <span class="s">projet</span> /srv/projet       <span class="c"># groupe, récursivement</span></pre></div>
+    <p>Seul root peut donner un fichier à quelqu'un d'autre : d'où le <code>sudo</code>.</p>
+
+    <!-- ================================================== -->
+    <h2 id="umask" data-short="umask">Les droits par défaut : <code>umask</code></h2>
+    <p>Quand tu crées un fichier, qui décide de ses droits ? Le <strong>umask</strong>, un masque qui <em>retire</em> des droits au maximum possible
+      (<code>666</code> pour un fichier, <code>777</code> pour un dossier).</p>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">umask</span>
+<span class="o">0002</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">touch</span> f.txt; <span class="k">mkdir</span> d; <span class="k">ls</span> <span class="f">-ld</span> f.txt d
+<span class="o">drwxrwxr-x 2 user user 4096 oct. 23 10:30 d</span>        <span class="c"># 777 - 002 = 775</span>
+<span class="o">-rw-rw-r-- 1 user user    0 oct. 23 10:30 f.txt</span>    <span class="c"># 666 - 002 = 664</span></pre></div>
+    <p>Un fichier n'est jamais exécutable à sa création : il faut le décider explicitement avec <code>chmod +x</code>. C'est une sécurité.</p>
+
+    <!-- ================================================== -->
+    <h2 id="speciaux" data-short="Droits spéciaux">Droits spéciaux : SUID, SGID, sticky bit et ACL</h2>
+    <div class="cards">
+      <div class="card" style="--c:var(--red)"><div class="icon">🦸</div><h4>SUID (<code>s</code> chez le propriétaire)</h4>
+        <p>Le programme s'exécute avec les droits de son <strong>propriétaire</strong>. C'est ainsi que <code>passwd</code> peut écrire dans <code>/etc/shadow</code>.</p>
+        <div class="tags"><span class="tag">-rwsr-xr-x /usr/bin/passwd</span></div></div>
+      <div class="card" style="--c:var(--violet)"><div class="icon">👪</div><h4>SGID (<code>s</code> chez le groupe)</h4>
+        <p>Sur un dossier, les fichiers créés dedans héritent de son <strong>groupe</strong>. Idéal pour un dossier d'équipe.</p>
+        <div class="tags"><span class="tag">chmod g+s /srv/projet</span></div></div>
+      <div class="card" style="--c:var(--cyan)"><div class="icon">📌</div><h4>Sticky bit (<code>t</code>)</h4>
+        <p>Dans un dossier ouvert à tous, chacun ne peut supprimer que <strong>ses</strong> fichiers. C'est le cas de <code>/tmp</code>.</p>
+        <div class="tags"><span class="tag">drwxrwxrwt /tmp</span></div></div>
+      <div class="card" style="--c:var(--green)"><div class="icon">🎯</div><h4>ACL</h4>
+        <p>Des droits sur mesure pour un utilisateur précis, au-delà du trio u/g/o. Un <code>+</code> apparaît à la fin des droits dans <code>ls -l</code>.</p>
+        <div class="tags"><span class="tag">setfacl -m u:alice:r fichier</span></div></div>
+    </div>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">ls</span> <span class="f">-l</span> <span class="s">/usr/bin/passwd</span>; <span class="k">ls</span> <span class="f">-ld</span> <span class="s">/tmp</span>
+<span class="o">-rw<span class="hl">s</span>r-xr-x 1 root root 64152 ... /usr/bin/passwd</span>
+<span class="o">drwxrwxrw<span class="hl">t</span> 18 root root 4096 ... /tmp</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">setfacl</span> <span class="f">-m</span> <span class="s">u:alice:r</span> notes.txt      <span class="c"># paquet acl : sudo apt install acl</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">getfacl</span> notes.txt
+<span class="o">user::rw-</span>
+<span class="o">user:alice:r--</span>
+<span class="o">...</span></pre></div>
+    <p>En octal, ces bits forment un quatrième chiffre placé devant : <code>4</code> = SUID, <code>2</code> = SGID, <code>1</code> = sticky. Ainsi <code>chmod 2775 dossier</code> active le SGID.</p>
+
+    <!-- ================================================== -->
+    <h2 id="glossaire" data-short="Glossaire">Glossaire du module</h2>
+    <dl class="glossary">
+      <dt>UID / GID</dt><dd>Numéro d'utilisateur / de groupe. root a l'UID 0.</dd>
+      <dt>root</dt><dd>Le super-utilisateur, aux droits illimités.</dd>
+      <dt>sudo</dt><dd>Exécute une commande avec les droits de root (ou d'un autre utilisateur).</dd>
+      <dt>Moindre privilège</dt><dd>Principe : n'accorder que les droits strictement nécessaires.</dd>
+      <dt>/etc/passwd</dt><dd>La liste des comptes.</dd>
+      <dt>/etc/shadow</dt><dd>Les mots de passe hachés, lisibles par root seulement.</dd>
+      <dt>Groupe principal / secondaire</dt><dd>Le groupe par défaut des fichiers créés / les groupes supplémentaires.</dd>
+      <dt>rwx</dt><dd>Lire, écrire, exécuter (ou entrer, pour un dossier).</dd>
+      <dt>u / g / o / a</dt><dd>Propriétaire, groupe, autres, tous.</dd>
+      <dt>Notation octale</dt><dd>Droits en chiffres : r=4, w=2, x=1 (ex. 755).</dd>
+      <dt>umask</dt><dd>Masque qui fixe les droits par défaut des nouveaux fichiers.</dd>
+      <dt>SUID / SGID / sticky</dt><dd>Droits spéciaux : exécuter en tant que le propriétaire, hériter du groupe, protéger les fichiers d'autrui.</dd>
+      <dt>ACL</dt><dd>Liste de contrôle d'accès : droits fins par utilisateur.</dd>
+    </dl>
+
+    <!-- ================================================== -->
+    <h2 id="quiz" data-short="Quiz">🧠 Quiz : as-tu tout retenu ?</h2>
+    <div class="quiz">
+      <div class="q" data-answer="0">
+        <div class="q-text">1. Quel est l'UID de root ?</div>
+        <div class="q-opts"><button>0</button><button>1</button><button>1000</button></div>
+        <div class="q-explain">root a toujours l'UID 0. Le premier utilisateur humain reçoit 1000.</div>
+      </div>
+      <div class="q" data-answer="2">
+        <div class="q-text">2. Dans <code>-rwxr-x---</code>, que peuvent faire les « autres » ?</div>
+        <div class="q-opts"><button>Lire et exécuter</button><button>Lire seulement</button><button>Rien du tout</button></div>
+        <div class="q-explain">Le dernier trio est <code>---</code> : aucun droit.</div>
+      </div>
+      <div class="q" data-answer="1">
+        <div class="q-text">3. À quoi correspond <code>chmod 644</code> ?</div>
+        <div class="q-opts"><button><code>rwxr--r--</code></button><button><code>rw-r--r--</code></button><button><code>rw-rw-r--</code></button></div>
+        <div class="q-explain">6 = 4+2 (rw-), 4 = r--, 4 = r--.</div>
+      </div>
+      <div class="q" data-answer="2">
+        <div class="q-text">4. Sur un dossier, que permet le droit <code>x</code> ?</div>
+        <div class="q-opts"><button>Exécuter tous ses fichiers</button><button>Le supprimer</button><button>Y entrer et accéder à son contenu</button></div>
+        <div class="q-explain">Sans <code>x</code>, impossible de faire <code>cd</code> dans le dossier ou d'ouvrir ses fichiers.</div>
+      </div>
+      <div class="q" data-answer="0">
+        <div class="q-text">5. Pour ajouter user au groupe docker sans perdre ses autres groupes :</div>
+        <div class="q-opts"><button><code>sudo usermod -aG docker user</code></button><button><code>sudo usermod -G docker user</code></button><button><code>sudo chgrp docker user</code></button></div>
+        <div class="q-explain">Sans <code>-a</code>, <code>-G</code> remplace tous les groupes secondaires, y compris <code>sudo</code>.</div>
+      </div>
+      <div class="q" data-answer="1">
+        <div class="q-text">6. Quel mot de passe <code>sudo</code> demande-t-il ?</div>
+        <div class="q-opts"><button>Celui de root</button><button>Le tien</button><button>Aucun</button></div>
+        <div class="q-explain"><code>sudo</code> vérifie que c'est bien toi, puis consulte ses règles. Sur Ubuntu, root n'a même pas de mot de passe par défaut.</div>
+      </div>
+      <div class="q" data-answer="2">
+        <div class="q-text">7. Pourquoi <code>passwd</code> peut-il modifier <code>/etc/shadow</code>, réservé à root ?</div>
+        <div class="q-opts"><button>Parce qu'il utilise sudo</button><button>Grâce au sticky bit</button><button>Grâce au bit SUID</button></div>
+        <div class="q-explain"><code>-rwsr-xr-x</code> : le <code>s</code> fait tourner le programme avec les droits de son propriétaire, root.</div>
+      </div>
+      <div class="q" data-answer="0">
+        <div class="q-text">8. Avec un umask de <code>0022</code>, quels droits a un nouveau fichier ?</div>
+        <div class="q-opts"><button><code>644</code></button><button><code>755</code></button><button><code>022</code></button></div>
+        <div class="q-explain">666 − 022 = 644. Les fichiers ne reçoivent jamais <code>x</code> par défaut.</div>
+      </div>
+      <div class="quiz-score">Réponds aux questions pour voir ton score.</div>
+    </div>
+
+    <!-- ================================================== -->
+    <h2 id="mission" data-short="Mission pratique">🚀 Mission pratique</h2>
+    <div class="mission">
+      <h4>À faire dans la machine virtuelle</h4>
+      <p class="mission-astuce">Coche chaque étape une fois faite : sa correction s'affiche juste en dessous.</p>
+      <ul class="checklist" data-key="m04">
+        <li><label><input type="checkbox"><span>Afficher son UID, ses groupes, et sa ligne dans <code>/etc/passwd</code>.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> id
+<span class="o">uid=1000(user) gid=1000(user) groupes=1000(user),4(adm),27(sudo),...</span>
+<span class="p">$</span> grep user /etc/passwd
+<span class="o">user:x:1000:1000:user,,,:/home/user:/bin/bash</span></pre><p><code>grep</code> filtre les lignes contenant un mot : on le détaillera au module 05.</p></div></li>
+        <li><label><input type="checkbox"><span>Compter les comptes système (UID &lt; 1000) en lisant <code>/etc/passwd</code>, et repérer leur shell.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> less /etc/passwd
+<span class="p">$</span> wc -l /etc/passwd
+<span class="o">37 /etc/passwd</span></pre><p>Presque toutes les lignes sauf root et user sont des comptes système, avec <code>/usr/sbin/nologin</code> ou <code>/bin/false</code> en dernier champ. Le nombre exact dépend des paquets installés.</p></div></li>
+        <li><label><input type="checkbox"><span>Constater que <code>cat /etc/shadow</code> est refusé, puis le lire avec <code>sudo</code>.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> cat /etc/shadow
+<span class="o">cat: /etc/shadow: Permission non accordée</span>
+<span class="p">$</span> sudo cat /etc/shadow
+<span class="o">root:*:...</span>
+<span class="o">user:$y$j9T$...:20384:0:99999:7:::</span></pre><p>Le long texte après <code>user:</code> est le <strong>hachage</strong> du mot de passe, pas le mot de passe lui-même. Le <code>*</code> de root signifie : pas de mot de passe, connexion directe impossible.</p></div></li>
+        <li><label><input type="checkbox"><span>Créer l'utilisateur <code>alice</code> et le groupe <code>projet</code>, ajouter alice et toi-même au groupe.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> sudo adduser alice
+<span class="p">$</span> sudo addgroup projet
+<span class="p">$</span> sudo usermod -aG projet alice
+<span class="p">$</span> sudo usermod -aG projet $USER
+<span class="p">$</span> groups alice
+<span class="o">alice : alice projet</span></pre><p>Pour que <em>ton</em> appartenance au groupe soit active, déconnecte-toi puis reconnecte-toi (ou ouvre un shell avec <code>su - $USER</code>).</p></div></li>
+        <li><label><input type="checkbox"><span>Se connecter en tant qu'alice avec <code>su</code>, essayer de lire ton dossier personnel, puis revenir.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> su - alice
+<span class="p">alice$</span> whoami
+<span class="o">alice</span>
+<span class="p">alice$</span> ls /home/user
+<span class="o">ls: impossible d'ouvrir le répertoire '/home/user': Permission non accordée</span>
+<span class="p">alice$</span> exit</pre><p>Sur Ubuntu 24.04, les dossiers personnels sont en <code>750</code> (<code>drwxr-x---</code>) : les autres utilisateurs n'y entrent pas.</p></div></li>
+        <li><label><input type="checkbox"><span>Créer un script <code>bonjour.sh</code>, constater qu'il ne s'exécute pas, le rendre exécutable et le lancer.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> echo 'echo "Bonjour $USER"' &gt; bonjour.sh
+<span class="p">$</span> ./bonjour.sh
+<span class="o">bash: ./bonjour.sh: Permission non accordée</span>
+<span class="p">$</span> chmod u+x bonjour.sh
+<span class="p">$</span> ./bonjour.sh
+<span class="o">Bonjour user</span></pre></div></li>
+        <li><label><input type="checkbox"><span>Créer <code>secret.txt</code> et le passer en <code>600</code>, puis vérifier avec <code>ls -l</code> et en tant qu'alice.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> echo "code 1234" &gt; secret.txt
+<span class="p">$</span> chmod 600 secret.txt
+<span class="p">$</span> ls -l secret.txt
+<span class="o">-rw------- 1 user user 10 ... secret.txt</span></pre><p>Alice ne pourrait de toute façon pas atteindre ton dossier (étape 5). Pour tester sur un fichier qu'elle peut atteindre, place-le dans <code>/tmp</code>.</p></div></li>
+        <li><label><input type="checkbox"><span>Créer un dossier d'équipe <code>/srv/projet</code> appartenant au groupe <code>projet</code>, en <code>2775</code>.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> sudo mkdir /srv/projet
+<span class="p">$</span> sudo chown root:projet /srv/projet
+<span class="p">$</span> sudo chmod 2775 /srv/projet
+<span class="p">$</span> ls -ld /srv/projet
+<span class="o">drwxrwsr-x 2 root projet 4096 ... /srv/projet</span>
+<span class="p">$</span> touch /srv/projet/test &amp;&amp; ls -l /srv/projet
+<span class="o">-rw-rw-r-- 1 user projet 0 ... test</span></pre><p>Grâce au SGID (<code>s</code>), le fichier créé hérite du groupe <code>projet</code>. Il faut être dans le groupe (reconnecté) pour y écrire.</p></div></li>
+        <li><label><input type="checkbox"><span>Repérer les droits spéciaux de <code>/usr/bin/passwd</code> et de <code>/tmp</code>, et afficher ton umask.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> ls -l /usr/bin/passwd
+<span class="o">-rwsr-xr-x 1 root root ... /usr/bin/passwd</span>
+<span class="p">$</span> ls -ld /tmp
+<span class="o">drwxrwxrwt ... /tmp</span>
+<span class="p">$</span> umask
+<span class="o">0002</span></pre></div></li>
+        <li><label><input type="checkbox"><span>Bonus : donner à alice le droit de lire <code>/tmp/partage.txt</code> par ACL, puis supprimer alice proprement.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> sudo apt install acl
+<span class="p">$</span> echo "pour alice" &gt; /tmp/partage.txt &amp;&amp; chmod 600 /tmp/partage.txt
+<span class="p">$</span> setfacl -m u:alice:r /tmp/partage.txt
+<span class="p">$</span> getfacl /tmp/partage.txt
+<span class="o">user::rw-</span>
+<span class="o">user:alice:r--</span>
+<span class="p">$</span> sudo deluser --remove-home alice</pre><p><code>ls -l</code> affiche alors <code>-rw-r-----+</code> : le <code>+</code> signale une ACL.</p></div></li>
+      </ul>
+    </div>
+
+    <!-- ================================================== -->
+    <h2 id="questions" data-short="Questions fréquentes">💬 Questions fréquentes</h2>
+    <p>Les questions qui reviennent le plus souvent sur ce module, avec leurs réponses.</p>
+    <div class="qa" id="qa-list">
+      <details>
+        <summary>Quel est le mot de passe de root sur Ubuntu ?</summary>
+        <p>Il n'y en a pas : le compte root est verrouillé (le <code>*</code> dans <code>/etc/shadow</code>). On passe par <code>sudo</code>, avec son propre mot de passe.
+          C'est plus sûr : chaque action d'administration est attribuée à une personne et journalisée. (Exception : l'installation automatique de VirtualBox
+          définit parfois un mot de passe root, voir le module 00.)</p>
+      </details>
+      <details>
+        <summary>J'ai ajouté mon compte à un groupe, mais <code>id</code> ne le montre pas</summary>
+        <p>Les groupes sont lus à l'ouverture de session. Déconnecte-toi et reconnecte-toi. Pour tester sans fermer la session : <code>su - $USER</code>,
+          ou <code>newgrp projet</code> dans le terminal courant.</p>
+      </details>
+      <details>
+        <summary>« sudo: unable to resolve host … »</summary>
+        <p>Le nom de la machine (<code>hostname</code>) ne figure pas dans <code>/etc/hosts</code>, souvent après un changement de nom. Ajoute la ligne
+          <code>127.0.1.1 nom-de-la-machine</code> dans <code>/etc/hosts</code> avec <code>sudo nano /etc/hosts</code>. C'est un avertissement : la commande s'exécute quand même.</p>
+      </details>
+    </div>
+
+    <button class="done-btn" data-module="04" type="button">🏁 Marquer ce module comme terminé</button>
+
+    <nav class="page-nav">
+      <a href="03-lire-editer.html"><small>← Précédent</small>Module 03 — Lire &amp; éditer des fichiers</a>
+      <a class="next" href="05-redirections-pipes.html"><small>Suivant →</small>Module 05 — Redirections, pipes &amp; filtres</a>
+    </nav>
+  </article>
+</div>
+
+<footer class="site-footer">
+  <div>Carnet Linux · Module 04 · 🐧</div>
+</footer>
+
+<script src="../assets/js/main.js"></script>
+</body>
+</html>

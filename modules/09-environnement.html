@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Personnaliser Bash : variables, PATH, alias et .bashrc | Cours Linux</title>
+  <meta name="description" content="Module 09 du cours Linux : variables et variables d'environnement, export et PATH, fichiers .bashrc et .profile, alias et fonctions, invite PS1 personnalisée, historique, Zsh et Oh My Zsh.">
+  <meta name="theme-color" content="#e95420">
+  <link rel="apple-touch-icon" href="../assets/img/icone-180.png">
+  <link rel="icon" href="../assets/img/tux.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <script>try{const t=JSON.parse(localStorage.getItem("theme"));if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<div class="progress-bar"></div>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../index.html"><img src="../assets/img/tux.svg" alt=""><span><span class="dollar">$</span> carnet-linux</span></a>
+    <nav class="nav">
+      <a href="../index.html">Programme</a>
+      <a href="09-environnement.html" class="active hide-sm">Module 09</a>
+      <button class="theme-toggle" type="button" aria-label="Changer de thème">☀️</button>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <span class="eyebrow">PHASE 2 · MODULE 09</span>
+      <h1>Personnaliser son <span class="grad">environnement</span></h1>
+      <p class="lead">Variables, PATH, alias, invite de commande sur mesure : quelques lignes dans un fichier caché suffisent pour transformer
+        le terminal en un outil taillé pour toi. C'est aussi la clé pour comprendre pourquoi une commande est « introuvable ».</p>
+      <div class="hero-meta">
+        <span class="chip">⏱️ Lecture <b>~45 min</b></span>
+        <span class="chip">🧪 Pratique <b>~1 h</b></span>
+        <span class="chip">🎚️ Niveau <b>intermédiaire</b></span>
+      </div>
+    </div>
+    <div class="hero-art"><img class="tux" src="../assets/img/tux.svg" alt="Tux"></div>
+  </div>
+</section>
+
+<div class="layout">
+  <aside class="toc">
+    <div class="toc-title">Sommaire</div>
+    <ol></ol>
+  </aside>
+
+  <article class="content">
+
+    <!-- ================================================== -->
+    <h2 id="objectifs" data-short="Objectifs">🎯 Ce que tu sauras à la fin</h2>
+    <div class="cards four">
+      <div class="card" style="--c:var(--accent)"><div class="icon">💲</div><h4>Variables</h4><p>Créer, lire, exporter, et comprendre l'environnement.</p></div>
+      <div class="card" style="--c:var(--cyan)"><div class="icon">🧭</div><h4>PATH</h4><p>Savoir où le shell cherche les commandes, et l'étendre.</p></div>
+      <div class="card" style="--c:var(--violet)"><div class="icon">📝</div><h4>.bashrc</h4><p>Rendre ses réglages permanents : alias, fonctions, variables.</p></div>
+      <div class="card" style="--c:var(--green)"><div class="icon">🎨</div><h4>Invite</h4><p>Une invite PS1 sur mesure, et un aperçu de Zsh.</p></div>
+    </div>
+
+    <!-- ================================================== -->
+    <h2 id="variables" data-short="Les variables">Les variables du shell</h2>
+    <figure class="video-card">
+      <div class="video-head"><span class="video-badge">▶ Vidéo · 1 min 30</span><strong>Variables et PATH</strong><span>un dollar pour lire, un égal pour écrire</span></div>
+      <video controls preload="none" playsinline poster="../assets/video/variables.jpg"><source src="../assets/video/variables.mp4" type="video/mp4">Ton navigateur ne lit pas la vidéo : <a href="../assets/video/variables.mp4">télécharge-la ici</a>.</video>
+      <figcaption>Animation réalisée pour ce cours. Voix off et musique générées par IA (Google Gemini et Lyria).</figcaption>
+    </figure>
+
+    <div class="terminal" data-title="user@ubuntu: ~"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="v">prenom</span>=<span class="s">Alice</span>                <span class="c"># créer : nom=valeur, SANS espaces</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">echo</span> <span class="s">"Bonjour $prenom"</span>       <span class="c"># lire : $nom</span>
+<span class="o">Bonjour Alice</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">echo</span> <span class="s">"${prenom}_backup"</span>      <span class="c"># accolades pour délimiter le nom</span>
+<span class="o">Alice_backup</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="v">prenom</span> = <span class="s">Bob</span>
+<span class="o"><span class="err">prenom : commande introuvable</span></span>     <span class="c"># avec des espaces, le shell croit à une commande</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">unset</span> <span class="s">prenom</span>                  <span class="c"># supprimer la variable</span></pre></div>
+
+    <h3>Guillemets doubles ou simples ?</h3>
+    <div class="table-wrap"><table>
+      <tr><th>Écriture</th><th>Résultat</th><th>Règle</th></tr>
+      <tr><td><code>echo "Je suis $USER"</code></td><td><code>Je suis user</code></td><td>Les guillemets doubles <strong>remplacent</strong> les variables</td></tr>
+      <tr><td><code>echo 'Je suis $USER'</code></td><td><code>Je suis $USER</code></td><td>Les apostrophes gardent le texte <strong>tel quel</strong></td></tr>
+      <tr><td><code>echo "Prix : \$5"</code></td><td><code>Prix : $5</code></td><td>L'antislash annule le sens spécial d'un caractère</td></tr>
+    </table></div>
+    <div class="callout tip"><span class="callout-title">Toujours des guillemets autour d'une variable</span>
+      <p>Si une variable contient des espaces (un nom de fichier comme <code>Mes Documents</code>), <code>ls $dossier</code> la coupe en deux arguments.
+        <code>ls "$dossier"</code> la garde entière. Prends l'habitude : <code>"$variable"</code>, toujours.</p></div>
+
+    <!-- ================================================== -->
+    <h2 id="environnement" data-short="Variables d'environnement">Les variables d'environnement</h2>
+    <p>Une variable ordinaire n'existe que dans le shell qui l'a créée. Avec <code>export</code>, elle devient une <strong>variable d'environnement</strong> :
+      elle est transmise à tous les programmes que ce shell lance.</p>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="v">couleur</span>=<span class="s">bleu</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">bash</span> <span class="f">-c</span> <span class="s">'echo "enfant : $couleur"'</span>    <span class="c"># un shell enfant ne la voit pas</span>
+<span class="o">enfant : </span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">export</span> <span class="v">couleur</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">bash</span> <span class="f">-c</span> <span class="s">'echo "enfant : $couleur"'</span>
+<span class="o">enfant : bleu</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="v">LANG</span>=<span class="s">C</span> <span class="k">ls</span> <span class="s">/nexistepas</span>               <span class="c"># variable pour UNE seule commande</span>
+<span class="o"><span class="err">ls: cannot access '/nexistepas': No such file or directory</span></span></pre></div>
+    <div class="table-wrap"><table>
+      <tr><th>Variable</th><th>Contenu</th><th>Exemple</th></tr>
+      <tr><td><code>HOME</code></td><td>Ton dossier personnel</td><td><code>/home/user</code></td></tr>
+      <tr><td><code>USER</code></td><td>Ton identifiant</td><td><code>user</code></td></tr>
+      <tr><td><code>SHELL</code></td><td>Ton shell de connexion</td><td><code>/bin/bash</code></td></tr>
+      <tr><td><code>PWD</code></td><td>Le dossier courant</td><td><code>/home/user/labo</code></td></tr>
+      <tr><td><code>LANG</code></td><td>Langue et encodage</td><td><code>fr_FR.UTF-8</code></td></tr>
+      <tr><td><code>EDITOR</code></td><td>L'éditeur préféré des commandes qui en ouvrent un</td><td><code>nano</code></td></tr>
+      <tr><td><code>PATH</code></td><td>Où chercher les commandes</td><td>voir ci-dessous</td></tr>
+    </table></div>
+    <p><code>env</code> (ou <code>printenv</code>) affiche toutes les variables d'environnement ; <code>printenv HOME</code> en affiche une seule.</p>
+
+    <!-- ================================================== -->
+    <h2 id="path" data-short="PATH">PATH : où le shell cherche les commandes</h2>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">echo</span> <span class="v">$PATH</span>
+<span class="o">/home/user/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">echo</span> <span class="v">$PATH</span> | <span class="k">tr</span> <span class="s">':' '\n'</span>          <span class="c"># un dossier par ligne, plus lisible</span></pre></div>
+    <p>Quand tu tapes <code>ls</code>, le shell parcourt ces dossiers <strong>dans l'ordre</strong> et lance le premier <code>ls</code> qu'il trouve.
+      Si aucun dossier ne le contient : « commande introuvable ». C'est pour ça qu'un script dans ton dossier courant se lance avec <code>./script.sh</code> :
+      le dossier courant n'est pas dans le PATH, par sécurité.</p>
+
+    <h3>Ajouter son propre dossier de commandes</h3>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">mkdir</span> <span class="f">-p</span> ~/bin
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">printf</span> <span class="s">'#!/bin/bash\necho "Bonjour depuis mon script"\n'</span> &gt; ~/bin/salut
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">chmod</span> +x ~/bin/salut
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">export</span> <span class="v">PATH</span>=<span class="s">"$HOME/bin:$PATH"</span>       <span class="c"># on AJOUTE devant, sans écraser</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">salut</span>                                 <span class="c"># utilisable de partout</span>
+<span class="o">Bonjour depuis mon script</span></pre></div>
+    <div class="callout danger"><span class="callout-title">Ne jamais écraser le PATH</span>
+      <p><code>PATH=~/bin</code> (sans <code>:$PATH</code>) remplace toute la liste : plus aucune commande ne fonctionne (<code>ls</code>, <code>nano</code>…
+        deviennent « introuvables »). Pas de panique : ce n'est que dans ce terminal. Ferme-le et ouvre-en un autre, ou tape le chemin complet :
+        <code>/usr/bin/nano ~/.bashrc</code> pour corriger le fichier fautif.</p></div>
+    <div class="callout info"><span class="callout-title">Le cadeau d'Ubuntu</span>
+      <p>Le fichier <code>~/.profile</code> d'Ubuntu ajoute automatiquement <code>~/bin</code> et <code>~/.local/bin</code> au PATH, <em>s'ils existent</em>
+        au moment de la connexion. Crée <code>~/bin</code>, déconnecte-toi, reconnecte-toi : il est dans le PATH sans rien écrire.</p></div>
+
+    <!-- ================================================== -->
+    <h2 id="bashrc" data-short=".bashrc &amp; .profile">Rendre ses réglages permanents : <code>.bashrc</code></h2>
+    <figure class="video-card">
+      <div class="video-head"><span class="video-badge">▶ Vidéo · 1 min 30</span><strong>Alias et .bashrc</strong><span>un terminal vraiment à toi</span></div>
+      <video controls preload="none" playsinline poster="../assets/video/bashrc.jpg"><source src="../assets/video/bashrc.mp4" type="video/mp4">Ton navigateur ne lit pas la vidéo : <a href="../assets/video/bashrc.mp4">télécharge-la ici</a>.</video>
+      <figcaption>Animation réalisée pour ce cours. Voix off et musique générées par IA (Google Gemini et Lyria).</figcaption>
+    </figure>
+
+    <p>Tout ce que tu tapes dans un terminal disparaît à sa fermeture. Pour qu'un réglage soit permanent, on l'écrit dans un fichier de démarrage :</p>
+    <div class="table-wrap"><table>
+      <tr><th>Fichier</th><th>Lu quand ?</th><th>On y met</th></tr>
+      <tr><td><code>~/.bashrc</code></td><td>À l'ouverture de <strong>chaque terminal</strong> (shell interactif)</td><td>Alias, fonctions, invite, options de l'historique</td></tr>
+      <tr><td><code>~/.profile</code></td><td>Une fois, à la <strong>connexion</strong> (session graphique, SSH, console)</td><td>Variables d'environnement : PATH, EDITOR…</td></tr>
+      <tr><td><code>/etc/bash.bashrc</code>, <code>/etc/profile</code></td><td>Les mêmes moments, pour <strong>tous les utilisateurs</strong></td><td>Réglages communs (administrateur)</td></tr>
+    </table></div>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">cp</span> ~/.bashrc ~/.bashrc.bak                <span class="c"># toujours une copie avant de modifier</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">nano</span> ~/.bashrc                             <span class="c"># ajouter ses réglages À LA FIN du fichier</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">source</span> ~/.bashrc                           <span class="c"># appliquer sans rouvrir le terminal</span></pre></div>
+
+    <!-- ================================================== -->
+    <h2 id="alias" data-short="Alias &amp; fonctions">Alias et fonctions</h2>
+    <p>Ubuntu définit déjà quelques alias dans le <code>.bashrc</code> par défaut : <code>ll</code> (<code>ls -alF</code>), <code>la</code> (<code>ls -A</code>),
+      <code>l</code> (<code>ls -CF</code>). La commande <code>alias</code> seule les liste tous.</p>
+    <div class="terminal" data-title="~/.bashrc (à la fin)"><pre><span class="c"># ---------- mes alias ----------</span>
+<span class="k">alias</span> <span class="v">maj</span>=<span class="s">'sudo apt update &amp;&amp; sudo apt upgrade -y'</span>   <span class="c"># tout mettre à jour</span>
+<span class="k">alias</span> <span class="v">rm</span>=<span class="s">'rm -i'</span>                                    <span class="c"># confirmation avant suppression</span>
+<span class="k">alias</span> <span class="v">..</span>=<span class="s">'cd ..'</span>
+<span class="k">alias</span> <span class="v">ports</span>=<span class="s">'sudo ss -tulpn'</span>                          <span class="c"># qui écoute sur le réseau (module 12)</span>
+<span class="k">alias</span> <span class="v">h</span>=<span class="s">'history | grep'</span>                             <span class="c"># h apt : retrouver une commande</span>
+
+<span class="c"># ---------- mes fonctions ----------</span>
+<span class="v">mkcd</span>() { <span class="k">mkdir</span> <span class="f">-p</span> <span class="s">"$1"</span> &amp;&amp; <span class="k">cd</span> <span class="s">"$1"</span>; }          <span class="c"># créer un dossier et y entrer</span></pre></div>
+    <p>Un <strong>alias</strong> remplace un mot par un autre. Dès qu'il faut un argument au milieu ou plusieurs étapes, on écrit une <strong>fonction</strong> :
+      <code>$1</code> y désigne le premier argument (on approfondira au module 16). Pour ignorer un alias le temps d'une commande : <code>\rm fichier</code>.</p>
+
+    <!-- ================================================== -->
+    <h2 id="ps1" data-short="L'invite PS1">Une invite sur mesure : PS1</h2>
+    <p>La variable <code>PS1</code> décrit l'invite, avec des codes spéciaux :</p>
+    <div class="table-wrap"><table>
+      <tr><th>Code</th><th>Affiche</th><th>Code</th><th>Affiche</th></tr>
+      <tr><td><code>\u</code></td><td>l'utilisateur</td><td><code>\w</code></td><td>le dossier courant (complet)</td></tr>
+      <tr><td><code>\h</code></td><td>le nom de la machine</td><td><code>\W</code></td><td>le dossier courant (dernier élément)</td></tr>
+      <tr><td><code>\t</code></td><td>l'heure (HH:MM:SS)</td><td><code>\$</code></td><td><code>$</code>, ou <code>#</code> pour root</td></tr>
+    </table></div>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="v">PS1</span>=<span class="s">'\t \u@\h:\W\$ '</span>
+<span class="o">14:32:07 user@ubuntu:~$ </span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="v">PS1</span>=<span class="s">'\[\e[1;33m\]\u\[\e[0m\] 📂 \[\e[1;36m\]\w\[\e[0m\] ❯ '</span>   <span class="c"># en couleurs</span>
+<span class="o"><span style="color:#f5c542">user</span> 📂 <span style="color:#38bdf8">~/labo</span> ❯ </span></pre></div>
+    <p>Les codes <code>\e[…m</code> sont des couleurs ANSI (<code>1;33</code> jaune gras, <code>1;36</code> cyan gras, <code>0</code> retour à la normale), et
+      <code>\[ \]</code> les encadrent pour que Bash calcule correctement la longueur de la ligne. Teste dans le terminal ; quand le résultat te plaît,
+      copie la ligne à la fin de <code>~/.bashrc</code>.</p>
+
+    <!-- ================================================== -->
+    <h2 id="historique" data-short="L'historique">Régler l'historique</h2>
+    <p>Le <code>.bashrc</code> d'Ubuntu règle déjà l'historique. Quelques variables utiles à adapter :</p>
+    <div class="terminal" data-title="~/.bashrc"><pre><span class="v">HISTSIZE</span>=<span class="s">10000</span>                  <span class="c"># commandes gardées en mémoire (1000 par défaut)</span>
+<span class="v">HISTFILESIZE</span>=<span class="s">20000</span>              <span class="c"># commandes gardées dans ~/.bash_history</span>
+<span class="v">HISTCONTROL</span>=<span class="s">ignoreboth</span>          <span class="c"># ignore les doublons et les commandes commençant par un espace</span>
+<span class="v">HISTTIMEFORMAT</span>=<span class="s">'%F %T '</span>         <span class="c"># date et heure de chaque commande dans « history »</span></pre></div>
+    <p>Grâce à <code>ignoreboth</code>, une commande précédée d'un espace n'est pas enregistrée : pratique pour une commande contenant un mot de passe.</p>
+
+    <!-- ================================================== -->
+    <h2 id="zsh" data-short="Zsh &amp; Oh My Zsh">Aller plus loin : Zsh et Oh My Zsh</h2>
+    <p><strong>Zsh</strong> est un shell compatible avec Bash pour l'essentiel, avec une complétion plus riche, des corrections de fautes de frappe et des thèmes.
+      Le framework <strong>Oh My Zsh</strong> ajoute des centaines d'extensions (git, docker…) et de thèmes.</p>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> apt install <span class="s">zsh</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">zsh</span>                                   <span class="c"># l'essayer sans rien changer (exit pour revenir)</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">chsh</span> <span class="f">-s</span> <span class="v">$(which zsh)</span>                  <span class="c"># en faire ton shell par défaut (à la prochaine connexion)</span></pre></div>
+    <div class="callout warn"><span class="callout-title">Lire avant d'exécuter</span>
+      <p>Oh My Zsh s'installe avec un script téléchargé (<code>sh -c "$(curl -fsSL …)"</code>, voir le site officiel ohmyz.sh). Ce genre de commande exécute
+        du code venu d'Internet : télécharge d'abord le script, lis-le, puis lance-le. Une habitude saine pour tous les scripts d'installation.
+        Avec Zsh, la configuration se fait dans <code>~/.zshrc</code> au lieu de <code>~/.bashrc</code>. Ce cours continue en Bash, le shell présent partout.</p></div>
+
+    <!-- ================================================== -->
+    <h2 id="glossaire" data-short="Glossaire">Glossaire du module</h2>
+    <dl class="glossary">
+      <dt>Variable</dt><dd>Un nom associé à une valeur : <code>nom=valeur</code>, lue avec <code>$nom</code>.</dd>
+      <dt>Variable d'environnement</dt><dd>Variable exportée, transmise aux programmes lancés par le shell.</dd>
+      <dt>export</dt><dd>Transforme une variable en variable d'environnement.</dd>
+      <dt>PATH</dt><dd>Liste des dossiers où le shell cherche les commandes, séparés par <code>:</code>.</dd>
+      <dt>.bashrc</dt><dd>Fichier lu à l'ouverture de chaque terminal Bash.</dd>
+      <dt>.profile</dt><dd>Fichier lu une fois à la connexion.</dd>
+      <dt>source</dt><dd>Exécute un fichier dans le shell courant (pour appliquer des réglages).</dd>
+      <dt>Alias</dt><dd>Raccourci qui remplace un mot par une commande.</dd>
+      <dt>Fonction</dt><dd>Petit programme Bash nommé, qui accepte des arguments.</dd>
+      <dt>PS1</dt><dd>Variable qui définit l'invite de commande.</dd>
+      <dt>Zsh</dt><dd>Shell alternatif, très personnalisable (Oh My Zsh).</dd>
+    </dl>
+
+    <!-- ================================================== -->
+    <h2 id="quiz" data-short="Quiz">🧠 Quiz : as-tu tout retenu ?</h2>
+    <div class="quiz">
+      <div class="q" data-answer="2">
+        <div class="q-text">1. Pourquoi <code>nom = Alice</code> provoque une erreur ?</div>
+        <div class="q-opts"><button>Les majuscules sont interdites</button><button>Il faut des guillemets</button><button>Avec des espaces, le shell croit que <code>nom</code> est une commande</button></div>
+        <div class="q-explain">L'affectation s'écrit sans espaces : <code>nom=Alice</code>.</div>
+      </div>
+      <div class="q" data-answer="1">
+        <div class="q-text">2. Qu'affiche <code>echo 'Bonjour $USER'</code> ?</div>
+        <div class="q-opts"><button><code>Bonjour user</code></button><button><code>Bonjour $USER</code></button><button>Une erreur</button></div>
+        <div class="q-explain">Les apostrophes empêchent le remplacement de la variable.</div>
+      </div>
+      <div class="q" data-answer="0">
+        <div class="q-text">3. À quoi sert <code>export</code> ?</div>
+        <div class="q-opts"><button>À transmettre la variable aux programmes lancés par le shell</button><button>À enregistrer la variable sur le disque</button><button>À afficher la variable</button></div>
+        <div class="q-explain">Pour la rendre permanente, il faut en plus l'écrire dans un fichier de démarrage.</div>
+      </div>
+      <div class="q" data-answer="2">
+        <div class="q-text">4. Comment ajouter <code>~/bin</code> au PATH sans rien casser ?</div>
+        <div class="q-opts"><button><code>PATH=~/bin</code></button><button><code>PATH=$PATH~/bin</code></button><button><code>export PATH="$HOME/bin:$PATH"</code></button></div>
+        <div class="q-explain">On garde l'ancien contenu (<code>$PATH</code>) et on sépare par <code>:</code>.</div>
+      </div>
+      <div class="q" data-answer="1">
+        <div class="q-text">5. Pourquoi lance-t-on un script du dossier courant avec <code>./script.sh</code> ?</div>
+        <div class="q-opts"><button>Pour le lancer en root</button><button>Parce que le dossier courant n'est pas dans le PATH</button><button>Pour le rendre exécutable</button></div>
+        <div class="q-explain">C'est voulu : sinon un fichier piégé nommé <code>ls</code> dans un dossier pourrait être lancé à ta place.</div>
+      </div>
+      <div class="q" data-answer="0">
+        <div class="q-text">6. Tu as ajouté un alias dans <code>~/.bashrc</code>. Comment l'utiliser tout de suite ?</div>
+        <div class="q-opts"><button><code>source ~/.bashrc</code></button><button><code>export ~/.bashrc</code></button><button><code>sudo reboot</code></button></div>
+        <div class="q-explain"><code>source</code> relit le fichier dans le shell courant. Ouvrir un nouveau terminal marche aussi.</div>
+      </div>
+      <div class="q" data-answer="2">
+        <div class="q-text">7. Dans PS1, que représente <code>\w</code> ?</div>
+        <div class="q-opts"><button>L'utilisateur</button><button>L'heure</button><button>Le dossier courant</button></div>
+        <div class="q-explain"><code>\u</code> = utilisateur, <code>\t</code> = heure, <code>\w</code> = dossier courant.</div>
+      </div>
+      <div class="q" data-answer="1">
+        <div class="q-text">8. Où mettre une variable comme <code>EDITOR</code> pour qu'elle vaille pour toute la session ?</div>
+        <div class="q-opts"><button>Dans <code>/etc/passwd</code></button><button>Dans <code>~/.profile</code></button><button>Dans <code>~/.bash_history</code></button></div>
+        <div class="q-explain"><code>.profile</code> est lu à la connexion ; <code>.bashrc</code> conviendrait aussi pour les terminaux.</div>
+      </div>
+      <div class="quiz-score">Réponds aux questions pour voir ton score.</div>
+    </div>
+
+    <!-- ================================================== -->
+    <h2 id="mission" data-short="Mission pratique">🚀 Mission pratique</h2>
+    <div class="mission">
+      <h4>À faire dans la machine virtuelle</h4>
+      <p class="mission-astuce">Coche chaque étape une fois faite : sa correction s'affiche juste en dessous.</p>
+      <ul class="checklist" data-key="m09">
+        <li><label><input type="checkbox"><span>Afficher <code>HOME</code>, <code>USER</code>, <code>SHELL</code> et <code>LANG</code>, puis compter les variables d'environnement.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> echo "$HOME $USER $SHELL $LANG"
+<span class="o">/home/user user /bin/bash fr_FR.UTF-8</span>
+<span class="p">$</span> env | wc -l
+<span class="o">56</span></pre><p>Le nombre exact dépend de ta session.</p></div></li>
+        <li><label><input type="checkbox"><span>Créer une variable, vérifier qu'un shell enfant ne la voit pas, puis l'exporter et revérifier.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> fruit=mangue
+<span class="p">$</span> bash -c 'echo "[$fruit]"'
+<span class="o">[]</span>
+<span class="p">$</span> export fruit
+<span class="p">$</span> bash -c 'echo "[$fruit]"'
+<span class="o">[mangue]</span></pre></div></li>
+        <li><label><input type="checkbox"><span>Comparer le résultat de <code>echo "$HOME"</code> et <code>echo '$HOME'</code>.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> echo "$HOME"
+<span class="o">/home/user</span>
+<span class="p">$</span> echo '$HOME'
+<span class="o">$HOME</span></pre></div></li>
+        <li><label><input type="checkbox"><span>Afficher le PATH, un dossier par ligne, et trouver dans lequel se trouve <code>python3</code>.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> echo "$PATH" | tr ':' '\n'
+<span class="o">/home/user/.local/bin</span>
+<span class="o">/usr/local/sbin</span>
+<span class="o">/usr/local/bin</span>
+<span class="o">/usr/sbin</span>
+<span class="o">/usr/bin</span>
+<span class="o">...</span>
+<span class="p">$</span> which python3
+<span class="o">/usr/bin/python3</span></pre></div></li>
+        <li><label><input type="checkbox"><span>Créer la commande <code>salut</code> dans <code>~/bin</code> et la rendre utilisable de partout.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> mkdir -p ~/bin
+<span class="p">$</span> printf '#!/bin/bash\necho "Bonjour $USER"\n' &gt; ~/bin/salut
+<span class="p">$</span> chmod +x ~/bin/salut
+<span class="p">$</span> export PATH="$HOME/bin:$PATH"
+<span class="p">$</span> cd /tmp &amp;&amp; salut
+<span class="o">Bonjour user</span></pre><p>Pour la rendre permanente sans rien écrire : déconnecte-toi et reconnecte-toi, <code>~/.profile</code> ajoutera <code>~/bin</code> automatiquement.</p></div></li>
+        <li><label><input type="checkbox"><span>Casser volontairement le PATH dans un terminal, constater les dégâts, puis réparer.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> PATH=/rien
+<span class="p">$</span> ls
+<span class="o">ls : commande introuvable</span>
+<span class="c"># (Ubuntu indique parfois en plus où se trouve la commande, et que /usr/bin manque dans le PATH)</span>
+<span class="p">$</span> /usr/bin/ls        <span class="c"># le chemin complet marche toujours</span>
+<span class="p">$</span> exit               <span class="c"># fermer ce terminal suffit : rien n'a été écrit sur le disque</span></pre></div></li>
+        <li><label><input type="checkbox"><span>Sauvegarder <code>~/.bashrc</code>, puis y ajouter les alias <code>maj</code> et <code>..</code> et la fonction <code>mkcd</code>, et les charger.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> cp ~/.bashrc ~/.bashrc.bak
+<span class="p">$</span> cat &gt;&gt; ~/.bashrc &lt;&lt; 'FIN'
+
+<span class="o"># ---------- mes réglages ----------</span>
+<span class="o">alias maj='sudo apt update &amp;&amp; sudo apt upgrade -y'</span>
+<span class="o">alias ..='cd ..'</span>
+<span class="o">mkcd() { mkdir -p "$1" &amp;&amp; cd "$1"; }</span>
+<span class="o">FIN</span>
+<span class="p">$</span> source ~/.bashrc
+<span class="p">$</span> mkcd ~/labo/essai &amp;&amp; pwd
+<span class="o">/home/user/labo/essai</span>
+<span class="p">$</span> ..  &amp;&amp; pwd
+<span class="o">/home/user/labo</span></pre><p>Attention au double chevron <code>&gt;&gt;</code> : un seul <code>&gt;</code> écraserait tout le fichier (d'où la sauvegarde).</p></div></li>
+        <li><label><input type="checkbox"><span>Lister tous les alias définis, et lancer une fois <code>ls</code> sans son alias.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> alias
+<span class="o">alias ..='cd ..'</span>
+<span class="o">alias l='ls -CF'</span>
+<span class="o">alias la='ls -A'</span>
+<span class="o">alias ll='ls -alF'</span>
+<span class="o">alias ls='ls --color=auto'</span>
+<span class="o">alias maj='sudo apt update &amp;&amp; sudo apt upgrade -y'</span>
+<span class="o">...</span>
+<span class="p">$</span> \ls          <span class="c"># sans couleurs : l'alias est ignoré</span></pre></div></li>
+        <li><label><input type="checkbox"><span>Créer une invite qui affiche l'heure, puis la rendre permanente.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> PS1='\t \u@\h:\W\$ '
+<span class="o">14:32:07 user@ubuntu:~$</span>
+<span class="p">$</span> echo "PS1='\t \u@\h:\W\\$ '" &gt;&gt; ~/.bashrc</pre><p>Le plus sûr reste d'ouvrir <code>~/.bashrc</code> avec nano et de coller la ligne <code>PS1='\t \u@\h:\W\$ '</code> à la fin. Pour revenir en arrière : <code>cp ~/.bashrc.bak ~/.bashrc</code>.</p></div></li>
+        <li><label><input type="checkbox"><span>Bonus : installer Zsh, l'essayer quelques minutes, puis revenir à Bash.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> sudo apt install zsh
+<span class="p">$</span> zsh
+<span class="c"># au premier lancement, un menu propose de créer ~/.zshrc : choisir (2) pour la configuration recommandée</span>
+<span class="p">%</span> exit</pre><p>Tant que tu n'as pas utilisé <code>chsh</code>, Bash reste ton shell par défaut.</p></div></li>
+      </ul>
+    </div>
+
+    <!-- ================================================== -->
+    <h2 id="questions" data-short="Questions fréquentes">💬 Questions fréquentes</h2>
+    <p>Les questions qui reviennent le plus souvent sur ce module, avec leurs réponses.</p>
+    <div class="qa" id="qa-list">
+      <details>
+        <summary>J'ai cassé mon <code>.bashrc</code> : le terminal se ferme ou affiche des erreurs</summary>
+        <p>Restaure la sauvegarde : <code>cp ~/.bashrc.bak ~/.bashrc</code>. Si aucun terminal ne s'ouvre, lance <code>bash --norc</code> (Bash sans lire le fichier),
+          ou passe en console avec <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>F3</kbd>. Sans sauvegarde, la version d'origine d'Ubuntu est dans <code>/etc/skel/.bashrc</code>.</p>
+      </details>
+      <details>
+        <summary>Mon alias fonctionne dans le terminal mais pas dans mes scripts</summary>
+        <p>C'est normal : les scripts ne lisent pas <code>.bashrc</code> et n'utilisent pas les alias. Dans un script, écris la commande complète, ou définis une fonction dans le script lui-même.</p>
+      </details>
+      <details>
+        <summary>J'ai modifié <code>~/.profile</code> mais rien ne change</summary>
+        <p><code>.profile</code> n'est lu qu'à la connexion : déconnecte-toi de la session graphique et reconnecte-toi (fermer le terminal ne suffit pas).
+          Pour tester immédiatement dans un terminal : <code>source ~/.profile</code>.</p>
+      </details>
+    </div>
+
+    <button class="done-btn" data-module="09" type="button">🏁 Marquer ce module comme terminé</button>
+
+    <nav class="page-nav">
+      <a href="08-logiciels.html"><small>← Précédent</small>Module 08 — Gestion des logiciels</a>
+      <a class="next disabled" href="#"><small>Suivant →</small>Module 10 — Démarrage &amp; systemd</a>
+    </nav>
+  </article>
+</div>
+
+<footer class="site-footer">
+  <div>Carnet Linux · Module 09 · 🐧</div>
+</footer>
+
+<script src="../assets/js/main.js"></script>
+</body>
+</html>

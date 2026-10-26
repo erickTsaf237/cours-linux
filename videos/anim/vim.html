@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Survivre à Vim — vidéo</title>
+<link rel="stylesheet" href="commun.css">
+<style>
+#ecran { left: 260px; top: 120px; width: 1400px; height: 640px; background: #0d1117; border: 2px solid #2a3342; border-radius: 22px;
+  font-family: var(--mono); font-size: 38px; color: #d6deeb; padding: 26px 34px; overflow: hidden; box-shadow: 0 40px 100px rgba(0,0,0,.6); }
+#ecran .tilde { color: #3b5bdb; }
+#txt div { white-space: pre; height: 56px; }
+#statut { position: absolute; left: 34px; bottom: 18px; font-weight: 700; }
+#cmdl { position: absolute; left: 34px; bottom: 18px; color: #fff; }
+#nom { position: absolute; right: 34px; bottom: 18px; color: #8b949e; }
+.flotte { position: absolute; font-family: var(--mono); font-size: 70px; color: var(--rouge); }
+.bulle-q { position: absolute; padding: 14px 26px; border-radius: 20px; background: #fff; color: #1b1f2a; font-family: var(--display); font-weight: 800; font-size: 44px; }
+#pasSeul { top: 820px; font-size: 54px; color: var(--jaune); }
+
+#mode { top: 120px; font-family: var(--mono); font-size: 96px; }
+.touches { top: 360px; }
+.k-carte { top: 360px; width: 330px; height: 300px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.k-carte .touche { height: 140px; min-width: 140px; font-size: 72px; }
+.k-carte .lab { font-family: var(--display); font-weight: 800; font-size: 40px; margin-top: 26px; }
+#k1 { left: 150px; } #k2 { left: 580px; } #k3 { left: 1010px; } #k4 { left: 1440px; }
+
+#ki { left: 1600px; top: 160px; }
+#echap { left: 760px; top: 300px; }
+#echap.touche { height: 220px; min-width: 400px; font-size: 100px; }
+#doute { top: 620px; font-size: 60px; color: var(--jaune); }
+
+.q-lig { left: 360px; width: 1200px; font-family: var(--mono); font-size: 64px; display: flex; gap: 40px; align-items: center; }
+.q-lig b { color: var(--orange-2); width: 220px; font-weight: 500; }
+.q-lig span { font-family: var(--display); font-weight: 700; font-size: 46px; color: var(--gris); }
+#q1 { top: 180px; } #q2 { top: 320px; } #q3 { top: 460px; } #q4 { top: 620px; }
+#q4 b { color: var(--rouge); }
+
+#pq-titre { top: 110px; font-size: 90px; }
+#atouts { top: 300px; }
+.atout { top: 300px; width: 520px; height: 210px; display: flex; flex-direction: column; justify-content: center; padding: 0 36px; }
+.atout .c { font-family: var(--mono); font-size: 54px; color: var(--orange-2); }
+.atout .t { font-family: var(--display); font-weight: 700; font-size: 34px; color: var(--gris); }
+#a1 { left: 120px; } #a2 { left: 700px; } #a3 { left: 1280px; }
+#clavier { top: 590px; font-size: 52px; font-family: var(--display); font-weight: 700; }
+#serveurs { top: 700px; font-size: 52px; font-family: var(--display); font-weight: 700; color: var(--cyan); }
+
+#nano { left: 360px; top: 160px; width: 1200px; height: 520px; background: #0d1117; border: 2px solid #2a3342; border-radius: 22px;
+  font-family: var(--mono); font-size: 36px; color: #d6deeb; padding: 26px 34px; position: absolute; box-shadow: 0 40px 100px rgba(0,0,0,.6); }
+#nano .tete { text-align: center; background: #d6deeb; color: #0d1117; margin: -26px -34px 20px; padding: 6px; }
+#nano .bas { position: absolute; left: 34px; right: 34px; bottom: 20px; color: #0d1117; font-size: 28px; }
+#nano .bas span { background: #d6deeb; padding: 2px 8px; margin-right: 6px; }
+#nano-lab { top: 740px; font-size: 54px; color: var(--vert); font-family: var(--display); font-weight: 700; }
+
+#formule-titre { top: 160px; font-size: 110px; }
+#formule { top: 420px; }
+#formule .touche { margin: 0 16px; height: 170px; min-width: 170px; font-size: 80px; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="bg" class="layer"><div id="blob1" class="blob"></div><div id="blob2" class="blob"></div><div id="blob3" class="blob"></div></div>
+  <div id="grille" class="layer"></div>
+  <div id="cam-punch"><div id="cam-drift">
+
+    <!-- L'écran de Vim sert dans plusieurs scènes -->
+    <div class="scene" id="s-vim">
+      <div class="abs terminal" id="t-ouvre" style="left:360px;top:300px;width:1200px"><div class="barre-t"><i></i><i></i><i></i><span>user@ubuntu: ~</span></div>
+        <div class="corps"><div class="l" id="o1"><span class="p">user@ubuntu:~$</span> <span class="tape">vim notes.txt</span></div></div></div>
+      <div class="abs" id="ecran">
+        <div id="txt"><div id="l1">Ma liste de courses</div><div id="l2">- pain</div><div id="l3">- café</div><div id="l4" class="tilde">~</div><div class="tilde">~</div><div class="tilde">~</div><div class="tilde">~</div><div class="tilde">~</div></div>
+        <div id="statut"></div><div id="cmdl"></div><div id="nom">notes.txt</div>
+      </div>
+      <div class="flotte" id="fl1" style="left:400px;top:820px">hjkl?</div><div class="flotte" id="fl2" style="left:1250px;top:840px">qqq</div>
+      <div class="bulle-q" id="bq1" style="left:200px;top:80px">Ctrl+C ?</div>
+      <div class="bulle-q" id="bq2" style="left:1450px;top:120px">exit ?!</div>
+      <div class="bulle-q" id="bq3" style="left:1500px;top:700px">Échap ?</div>
+      <div class="ligne" id="pasSeul">🙋 des millions de développeurs sont passés par là</div>
+    </div>
+
+    <div class="scene" id="s-modes">
+      <div class="ligne" id="mode"><span style="color:var(--cyan)">-- NORMAL --</span></div>
+      <div class="abs verre k-carte" id="k1"><span class="touche">d</span><div class="lab">supprimer</div></div>
+      <div class="abs verre k-carte" id="k2"><span class="touche">y</span><div class="lab">copier</div></div>
+      <div class="abs verre k-carte" id="k3"><span class="touche">p</span><div class="lab">coller</div></div>
+      <div class="abs verre k-carte" id="k4"><span class="touche">u</span><div class="lab">annuler</div></div>
+    </div>
+
+    <div class="scene" id="s-insert">
+      <div class="abs" id="ecran2" style="left:260px;top:120px;width:1400px;height:640px;background:#0d1117;border:2px solid #2a3342;border-radius:22px;font-family:var(--mono);font-size:38px;color:#d6deeb;padding:26px 34px;box-shadow:0 40px 100px rgba(0,0,0,.6)">
+        <div style="white-space:pre;height:56px">Ma liste de courses</div><div style="white-space:pre;height:56px">- pain</div><div style="white-space:pre;height:56px">- café</div>
+        <div style="white-space:pre;height:56px" id="nouv"><span class="tape">- chocolat noir</span><span class="curseur" id="cur-v" style="background:#d6deeb"></span></div>
+        <div style="position:absolute;left:34px;bottom:18px;font-weight:700;color:var(--vert)" id="st-ins">-- INSERTION --</div>
+      </div>
+      <div class="abs touche" id="ki">i</div>
+      <div class="abs touche" id="echap">Échap</div>
+      <div class="ligne display" id="doute">en cas de doute : Échap !</div>
+    </div>
+
+    <div class="scene" id="s-quitter">
+      <div class="abs q-lig" id="q1"><b>:w</b><span>enregistrer</span></div>
+      <div class="abs q-lig" id="q2"><b>:q</b><span>quitter</span></div>
+      <div class="abs q-lig" id="q3"><b>:wq</b><span>enregistrer et quitter</span></div>
+      <div class="abs q-lig" id="q4"><b>:q!</b><span>quitter sans enregistrer 🚨</span></div>
+    </div>
+
+    <div class="scene" id="s-pq">
+      <div class="ligne display mots" id="pq-titre">Pourquoi tant de complications ?</div>
+      <div class="abs verre atout" id="a1"><div class="c">dd</div><div class="t">supprime une ligne</div></div>
+      <div class="abs verre atout" id="a2"><div class="c">yy</div><div class="t">copie une ligne</div></div>
+      <div class="abs verre atout" id="a3"><div class="c">/mot</div><div class="t">cherche</div></div>
+      <div class="ligne" id="clavier">⚡ sans jamais lâcher le clavier</div>
+      <div class="ligne" id="serveurs">🌍 installé sur presque tous les serveurs</div>
+    </div>
+
+    <div class="scene" id="s-nano">
+      <div id="nano"><div class="tete">GNU nano 7.2 — notes.txt</div><div>Ma liste de courses</div><div>- pain</div><div>- café</div>
+        <div class="bas"><span>^O</span><b style="color:#d6deeb">Écrire</b> &nbsp; <span>^X</span><b style="color:#d6deeb">Quitter</b> &nbsp; <span>^K</span><b style="color:#d6deeb">Couper</b> &nbsp; <span>^U</span><b style="color:#d6deeb">Coller</b></div></div>
+      <div class="ligne" id="nano-lab">Débutant ? nano affiche ses raccourcis en bas</div>
+    </div>
+
+    <div class="scene" id="s-formule">
+      <div class="ligne display grad" id="formule-titre">La formule magique</div>
+      <div class="ligne" id="formule"><span class="touche" id="fo1">Échap</span><span class="touche" id="fo2">:</span><span class="touche" id="fo3">q</span><span class="touche" id="fo4">!</span><span class="touche" id="fo5">⏎</span></div>
+    </div>
+
+  </div></div>
+  <div id="vignette" class="layer"></div>
+  <div class="abs" id="badge"><img src="img/tux.svg" alt=""><div><div class="nom"><b>$</b> carnet-linux</div><div class="sous">Module 03 · Survivre à Vim</div></div></div>
+  <canvas id="particules" width="1920" height="1080"></canvas>
+  <div class="abs" id="rideau"></div>
+  <div class="abs" id="st"></div>
+  <div class="abs" id="barre"></div>
+  <div id="flash" class="layer"></div>
+</div>
+<script src="lib/gsap.min.js"></script>
+<script src="commun.js"></script>
+<script>
+Film.demarrer({
+  film: 'vim',
+  fin: { titre: 'Survivre à Vim', sous: 'Carnet Linux · Module 03 — Lire &amp; éditer des fichiers', prompt: 'vimtutor' },
+  construire(C) {
+    // 1. coincé dans Vim
+    gsap.set('#s-vim', { autoAlpha: 1 });
+    gsap.set(['#ecran', '.flotte', '.bulle-q', '#pasSeul'], { opacity: 0 });
+    tl.fromTo('#t-ouvre', { y: 60, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5 }, 0.3);
+    ligne('#o1', C.ouvres - 0.2, 0.6);
+    tl.to('#t-ouvre', { opacity: 0, duration: 0.2 }, C.vim + 0.3);
+    tl.fromTo('#ecran', { scale: 0.9, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.3, immediateRender: false }, C.vim + 0.3);
+    pop('.flotte', C.tapes + 0.3, { stagger: 0.3, rot: -20 });
+    tl.to('.flotte', { opacity: 0, y: 40, duration: 0.3 }, C.quitter);
+    pop('#bq1', C.quitter + 0.3); pop('#bq2', C.quitter + 0.7); pop('#bq3', C.quitter + 1.1);
+    secousse(C.quitter + 1.3, 14);
+    tl.to('.bulle-q', { opacity: 0, duration: 0.3 }, C.millions);
+    tl.fromTo('#pasSeul', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.millions + 0.3);
+
+    // 2. le mode normal
+    rideau(C.modes, '#s-vim', '#s-modes');
+    gsap.set(['#mode', '.k-carte'], { opacity: 0 });
+    tl.fromTo('#mode', { scale: 2, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: 'power4.in', immediateRender: false }, C.normal);
+    pop('#k1', C.d, { depuis: 0.3 }); pop('#k2', C.y, { depuis: 0.3 }); pop('#k3', C.p, { depuis: 0.3 }); pop('#k4', C.u, { depuis: 0.3 });
+
+    // 3. le mode insertion
+    plonge(C.ecrire, '#s-modes', '#s-insert');
+    gsap.set(['#ki', '#st-ins', '#nouv', '#echap', '#doute'], { opacity: 0 });
+    pop('#ki', C.i, { depuis: 0.3 });
+    tl.to('#ki', { y: 10, borderBottomWidth: 4, duration: 0.08, yoyo: true, repeat: 1 }, C.i + 0.5);
+    tl.fromTo('#st-ins', { opacity: 0 }, { opacity: 1, duration: 0.2, immediateRender: false }, C.insertion);
+    tl.set('#nouv', { opacity: 1 }, C.taper);
+    taper('#nouv .tape', C.taper + 0.3, C.taper + 1.6);
+    CURSEURS.push({ el: document.getElementById('cur-v'), t0: C.taper });
+    tl.to('#ecran2', { opacity: 0.25, duration: 0.3 }, C.revenir + 0.8);
+    tl.fromTo('#echap', { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: 'back.out(2.5)', immediateRender: false }, C.echap);
+    tl.to('#echap', { scale: 1.1, duration: 0.15, yoyo: true, repeat: 5 }, C.echap + 0.5);
+    tl.fromTo('#doute', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.doute);
+
+    // 4. quitter
+    rideau(C.quitte2, '#s-insert', '#s-quitter');
+    gsap.set('.q-lig', { opacity: 0 });
+    tl.fromTo('#q1', { x: -80, opacity: 0 }, { x: 0, opacity: 1, immediateRender: false }, C.w);
+    tl.fromTo('#q2', { x: -80, opacity: 0 }, { x: 0, opacity: 1, immediateRender: false }, C.q);
+    tl.fromTo('#q3', { x: -80, opacity: 0 }, { x: 0, opacity: 1, immediateRender: false }, C.wq);
+    tl.fromTo('#q4', { x: -80, opacity: 0 }, { x: 0, opacity: 1, immediateRender: false }, C.qbang);
+    tl.to('#q4', { scale: 1.08, duration: 0.2, yoyo: true, repeat: 3 }, C.panique);
+    flash(C.panique, 0.25, 0.3);
+
+    // 5. pourquoi
+    plonge(C.pourquoi, '#s-quitter', '#s-pq');
+    gsap.set(['.atout', '#clavier', '#serveurs'], { opacity: 0 });
+    motsEntrent('#pq-titre .mot', C.pourquoi);
+    pop('#a1', C.dd, { depuis: 0.3 }); pop('#a2', C.yy, { depuis: 0.3 }); pop('#a3', C.cherche, { depuis: 0.3 });
+    tl.fromTo('#clavier', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.clavier);
+    tl.fromTo('#serveurs', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.serveurs + 0.4);
+
+    // 6. nano
+    rideau(C.nano, '#s-pq', '#s-nano');
+    gsap.set('#nano-lab', { opacity: 0 });
+    tl.fromTo('#nano', { y: 60, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.nano);
+    tl.fromTo('#nano-lab', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.nano + 0.8);
+
+    // 7. la formule
+    plonge(C.formule, '#s-nano', '#s-formule');
+    gsap.set('#formule .touche', { opacity: 0 });
+    tl.fromTo('#formule-titre', { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(2)', immediateRender: false }, C.formule);
+    pop('#formule .touche', C.formule + 1.3, { stagger: 0.55, depuis: 0.3 });
+    salve(C.final, 960, 520, 60, ['#3fb950', '#ffffff', '#e95420'], 'confetti', 1);
+  },
+});
+</script>
+</body>
+</html>

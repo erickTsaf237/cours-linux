@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Chemins absolus et relatifs — vidéo</title>
+<link rel="stylesheet" href="commun.css">
+<style>
+#titre { top: 380px; font-size: 110px; }
+#sous-titre { top: 520px; font-size: 54px; color: var(--gris); font-family: var(--display); font-weight: 700; }
+
+/* l'arbre, à gauche, présent dans tout le film */
+#arbre { position: absolute; left: 0; top: 0; width: 820px; height: 1080px; }
+#arbre svg { position: absolute; inset: 0; width: 820px; height: 1080px; }
+#arbre svg path { fill: none; stroke: rgba(255,255,255,.22); stroke-width: 3; }
+#arbre .noeud { position: absolute; font-size: 32px; padding: 10px 20px; }
+#a-racine { left: 330px; top: 120px; } #a-home { left: 150px; top: 260px; } #a-var { left: 600px; top: 260px; }
+#a-user { left: 150px; top: 400px; } #a-log { left: 600px; top: 400px; } #a-doc { left: 150px; top: 540px; } #a-rap { left: 150px; top: 680px; }
+#ici { left: 0; top: 0; padding: 8px 18px; border-radius: 999px; background: var(--jaune); color: #1b1f2a; font-family: var(--display); font-weight: 800;
+  font-size: 28px; box-shadow: 0 10px 30px rgba(245,197,66,.5); white-space: nowrap; }
+
+/* panneau de droite */
+.droite { left: 860px; width: 980px; }
+#p-titre { top: 140px; }
+#p-titre .eyebrow { display: block; }
+#p-titre .display { font-size: 84px; margin-top: 10px; }
+#chemin { top: 400px; font-family: var(--mono); font-size: 52px; white-space: nowrap; }
+#chemin span { display: inline-block; }
+#ch-rel { top: 400px; font-family: var(--mono); font-size: 60px; white-space: nowrap; color: #d2a8ff; }
+#postale { top: 560px; font-family: var(--display); font-weight: 700; font-size: 44px; color: var(--gris); }
+#postale .emoji { font-size: 70px; vertical-align: middle; margin-right: 16px; }
+#t-cd { top: 300px; }
+#t-cd .corps { font-size: 38px; min-height: 380px; }
+.sym { top: 330px; width: 300px; height: 300px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+.sym .s { font-family: var(--mono); font-size: 130px; color: var(--orange-2); line-height: 1.1; }
+.sym .t { font-family: var(--display); font-weight: 700; font-size: 34px; color: var(--gris); }
+#sy1 { left: 880px; } #sy2 { left: 1210px; } #sy3 { left: 1540px; }
+#retour-nav { top: 680px; font-size: 44px; font-family: var(--display); font-weight: 700; color: var(--cyan); }
+.col { top: 330px; width: 470px; height: 380px; padding: 36px; }
+.col h3 { font-family: var(--display); font-weight: 800; font-size: 56px; }
+.col p { font-size: 34px; color: var(--gris); margin-top: 16px; line-height: 1.35; }
+#co1 { left: 870px; } #co1 h3 { color: var(--orange-2); }
+#co2 { left: 1370px; } #co2 h3 { color: #d2a8ff; }
+.recap { top: 300px; width: 230px; height: 300px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.recap .s { font-family: var(--mono); font-size: 110px; color: var(--orange-2); }
+.recap .t { font-family: var(--display); font-weight: 700; font-size: 30px; color: var(--gris); }
+#rc1 { left: 880px; } #rc2 { left: 1130px; } #rc3 { left: 1380px; } #rc4 { left: 1630px; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="bg" class="layer"><div id="blob1" class="blob"></div><div id="blob2" class="blob"></div><div id="blob3" class="blob"></div></div>
+  <div id="grille" class="layer"></div>
+  <div id="cam-punch"><div id="cam-drift">
+
+    <div class="scene" id="s-titre">
+      <div class="ligne display grad" id="titre">Chemins absolus et relatifs</div>
+      <div class="ligne" id="sous-titre">deux façons de désigner un fichier</div>
+    </div>
+
+    <!-- L'arbre reste affiché pendant tout le film (sauf titre et fin). -->
+    <div class="scene" id="s-arbre">
+      <div id="arbre">
+        <svg><path id="e1" d="M375 175 L375 220 L215 220 L215 260"/><path id="e2" d="M375 175 L375 220 L655 220 L655 260"/>
+          <path id="e3" d="M215 315 L215 400"/><path id="e4" d="M655 315 L655 400"/><path id="e5" d="M215 455 L215 540"/><path id="e6" d="M215 595 L215 680"/></svg>
+        <div class="noeud" id="a-racine">/</div>
+        <div class="noeud" id="a-home"><span class="ico">📁</span>home</div>
+        <div class="noeud" id="a-var"><span class="ico">📁</span>var</div>
+        <div class="noeud" id="a-user"><span class="ico">🏠</span>user</div>
+        <div class="noeud" id="a-log"><span class="ico">📁</span>log</div>
+        <div class="noeud" id="a-doc"><span class="ico">📁</span>Documents</div>
+        <div class="noeud fichier" id="a-rap"><span class="ico">📄</span>rapport.txt</div>
+        <div class="abs" id="ici">📍 tu es ici</div>
+      </div>
+
+      <!-- panneau : absolu -->
+      <div class="abs droite" id="p-titre"><span class="eyebrow" id="pt-abs">Chemin absolu</span><span class="eyebrow" id="pt-rel" style="color:#d2a8ff">Chemin relatif</span>
+        <div class="display" id="pt-abs2">part de la racine</div><div class="display" id="pt-rel2">part d'ici</div></div>
+      <div class="abs droite" id="chemin"><span id="c1" style="color:var(--orange-2)">/</span><span id="c2">home/</span><span id="c3">user/</span><span id="c4">Documents/</span><span id="c5" style="color:#fff">rapport.txt</span></div>
+      <div class="abs droite" id="postale"><span class="emoji">📮</span>une adresse complète : marche de partout</div>
+      <div class="abs droite" id="ch-rel">Documents/rapport.txt</div>
+      <div class="abs droite" id="porte" style="top:560px;font-family:var(--display);font-weight:700;font-size:44px;color:var(--gris)"><span class="emoji" style="font-size:70px;vertical-align:middle;margin-right:16px">👉</span>« deuxième porte à gauche »</div>
+
+      <!-- panneau : terminal -->
+      <div class="abs droite terminal" id="t-cd"><div class="barre-t"><i></i><i></i><i></i><span>Terminal</span></div>
+        <div class="corps">
+          <div class="l" id="k1"><span class="p">user@ubuntu:~$</span> <span class="tape">pwd</span></div>
+          <div class="l o" id="k2">/home/user</div>
+          <div class="l" id="k3"><span class="p">user@ubuntu:~$</span> <span class="tape">cd Documents</span></div>
+          <div class="l" id="k4"><span class="p">user@ubuntu:</span><span style="color:#79c0ff">~/Documents</span><span class="p">$</span> <span class="curseur" id="cur-k"></span></div>
+          <div class="l" id="k5"><span class="p">user@ubuntu:</span><span style="color:#79c0ff">~/Documents</span><span class="p">$</span> <span class="tape">cd</span></div>
+          <div class="l" id="k6"><span class="p">user@ubuntu:~$</span> <span class="tape">cd -</span></div>
+          <div class="l o" id="k7">/home/user/Documents</div>
+          <div class="l" id="k8"><span class="p">user@ubuntu:~$</span> <span class="tape">cd Doc⇥</span><span class="tape" style="color:var(--vert)">uments/</span></div>
+          <div class="l" id="k9"><span class="p">user@ubuntu:~$</span> <span class="tape">cd Docz⇥</span> <span class="err" id="rien">✗ introuvable</span></div>
+        </div></div>
+
+      <!-- panneau : symboles -->
+      <div class="abs verre sym" id="sy1"><div class="s">.</div><div class="t">ici</div></div>
+      <div class="abs verre sym" id="sy2"><div class="s">..</div><div class="t">le parent</div></div>
+      <div class="abs verre sym" id="sy3"><div class="s">~</div><div class="t">ta maison</div></div>
+      <div class="abs droite" id="retour-nav">⬅ comme le bouton « retour » d'un navigateur</div>
+
+      <!-- panneau : choix -->
+      <div class="abs verre col" id="co1"><h3>Absolu</h3><p>scripts, configuration, tâches planifiées : jamais d'erreur</p></div>
+      <div class="abs verre col" id="co2"><h3>Relatif</h3><p>au quotidien, dans le terminal : plus rapide</p></div>
+
+      <!-- panneau : récap -->
+      <div class="abs verre recap" id="rc1"><div class="s">/</div><div class="t">la racine</div></div>
+      <div class="abs verre recap" id="rc2"><div class="s">.</div><div class="t">ici</div></div>
+      <div class="abs verre recap" id="rc3"><div class="s">..</div><div class="t">remonter</div></div>
+      <div class="abs verre recap" id="rc4"><div class="s">~</div><div class="t">la maison</div></div>
+    </div>
+
+  </div></div>
+
+  <div id="vignette" class="layer"></div>
+  <div class="abs" id="badge"><img src="img/tux.svg" alt=""><div><div class="nom"><b>$</b> carnet-linux</div><div class="sous">Module 02 · Chemins absolus et relatifs</div></div></div>
+  <canvas id="particules" width="1920" height="1080"></canvas>
+  <div class="abs" id="rideau"></div>
+  <div class="abs" id="st"></div>
+  <div class="abs" id="barre"></div>
+  <div id="flash" class="layer"></div>
+</div>
+
+<script src="lib/gsap.min.js"></script>
+<script src="commun.js"></script>
+<script>
+Film.demarrer({
+  film: 'chemins',
+  fin: { titre: 'Chemins absolus et relatifs', sous: 'Carnet Linux · Module 02 — Le système de fichiers', prompt: 'cd ~' },
+  construire(C) {
+    const N = (id) => document.getElementById(id);
+    // Position du repère « tu es ici » à droite d'un nœud.
+    const ici = (id) => { const n = N(id); return { x: n.offsetLeft + n.offsetWidth + 18, y: n.offsetTop + 8 }; };
+    const allume = (ids, t, coul) => tl.to(ids, { borderColor: coul, boxShadow: `0 0 40px ${coul}`, duration: 0.25, stagger: 0.25 }, t);
+    const eteint = (t) => tl.to('#arbre .noeud', { borderColor: 'rgba(255,255,255,.18)', boxShadow: '0 16px 40px rgba(0,0,0,.4)', duration: 0.3 }, t);
+    const panneaux = ['#p-titre', '#pt-abs', '#pt-rel', '#pt-abs2', '#pt-rel2', '#chemin span', '#postale', '#ch-rel', '#porte', '#t-cd', '.sym', '#retour-nav', '.col', '.recap', '#ici'];
+
+    // ---------------------------------------------- titre
+    gsap.set('#s-titre', { autoAlpha: 1 });
+    gsap.set('#sous-titre', { opacity: 0 });
+    tl.fromTo('#titre', { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: 'back.out(2)' }, 0.3);
+    tl.fromTo('#sous-titre', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.deux);
+
+    // ---------------------------------------------- absolu
+    plonge(C.absolu, '#s-titre', '#s-arbre');
+    gsap.set(panneaux, { opacity: 0 });
+    gsap.set(['#pt-rel', '#pt-rel2'], { display: 'none' });
+    pop('#arbre .noeud', C.absolu, { stagger: 0.06, depuis: 0.3 });
+    tl.fromTo('#arbre svg path', { opacity: 0 }, { opacity: 1, duration: 0.3, stagger: 0.05, immediateRender: false }, C.absolu + 0.3);
+    tl.set(['#p-titre', '#pt-abs', '#pt-abs2'], { opacity: 1 }, C.absolu + 0.2);
+    tl.fromTo('#p-titre', { x: 60 }, { x: 0, duration: 0.5, immediateRender: false }, C.absolu + 0.2);
+    tl.fromTo('#c1', { scale: 3, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.35, ease: 'power4.in', immediateRender: false }, C.racine + 0.3);
+    allume('#a-racine', C.racine + 0.3, 'rgba(233,84,32,.9)');
+    tl.fromTo(['#c2', '#c3', '#c4', '#c5'], { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, stagger: 0.55, immediateRender: false }, C.exabs + 0.4);
+    allume(['#a-home', '#a-user', '#a-doc', '#a-rap'], C.exabs + 0.4, 'rgba(233,84,32,.9)');
+    tl.to(['#e1', '#e3', '#e5', '#e6'], { stroke: '#e95420', strokeWidth: 6, duration: 0.25, stagger: 0.55 }, C.exabs + 0.4);
+    tl.fromTo('#postale', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.postale);
+
+    // ---------------------------------------------- relatif
+    tl.to(['#chemin span', '#postale', '#p-titre'], { opacity: 0, duration: 0.3 }, C.relatif - 0.3);
+    eteint(C.relatif - 0.3);
+    tl.to(['#e1', '#e3', '#e5', '#e6'], { stroke: 'rgba(255,255,255,.22)', strokeWidth: 3, duration: 0.3 }, C.relatif - 0.3);
+    tl.set(['#pt-abs', '#pt-abs2'], { display: 'none' }, C.relatif);
+    tl.set(['#pt-rel', '#pt-rel2'], { display: 'block', opacity: 1 }, C.relatif);
+    tl.to('#p-titre', { opacity: 1, duration: 0.3 }, C.relatif);
+    const pUser = ici('a-user'), pDoc = ici('a-doc');
+    gsap.set('#ici', { x: pUser.x, y: pUser.y });
+    tl.fromTo('#ici', { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: 'back.out(3)', immediateRender: false }, C.ici + 0.4);
+    allume('#a-user', C.ici + 0.4, 'rgba(245,197,66,.9)');
+    tl.fromTo('#ch-rel', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.exrel);
+    allume(['#a-doc', '#a-rap'], C.exrel + 0.3, 'rgba(179,107,214,.95)');
+    tl.fromTo('#porte', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.porte);
+
+    // ---------------------------------------------- pwd et cd
+    tl.to(['#ch-rel', '#porte', '#p-titre'], { opacity: 0, duration: 0.3 }, C.pwd - 0.3);
+    eteint(C.pwd - 0.3);
+    tl.fromTo('#t-cd', { x: 80, opacity: 0 }, { x: 0, opacity: 1, duration: 0.4, immediateRender: false }, C.pwd);
+    gsap.set(['#k1', '#k2', '#k3', '#k4', '#k5', '#k6', '#k7', '#k8', '#k9'], { opacity: 0 });
+    ligne('#k1', C.pwd + 0.6, 0.3);
+    sortie('#k2', C.print);
+    allume('#a-user', C.print, 'rgba(245,197,66,.9)');
+    ligne('#k3', C.cddoc - 0.3, 0.6);
+    sortie('#k4', C.cddoc + 0.5);
+    CURSEURS.push({ el: N('cur-k'), t0: C.cddoc + 0.5 });
+    tl.to('#ici', { x: pDoc.x, y: pDoc.y, duration: 0.6, ease: 'back.out(1.6)' }, C.cddoc + 0.5);
+    eteint(C.cddoc + 0.5);
+    allume('#a-doc', C.cddoc + 0.6, 'rgba(245,197,66,.9)');
+
+    // ---------------------------------------------- . .. ~
+    tl.to('#t-cd', { opacity: 0, duration: 0.3 }, C.raccourcis);
+    pop('#sy1', C.point, { depuis: 0.3 });
+    pop('#sy2', C.pointpoint, { depuis: 0.3 });
+    tl.to('#ici', { x: pUser.x, y: pUser.y, duration: 0.6, ease: 'back.out(1.6)' }, C.cdpp + 0.4);
+    eteint(C.cdpp + 0.4);
+    allume('#a-user', C.cdpp + 0.5, 'rgba(245,197,66,.9)');
+    pop('#sy3', C.tilde, { depuis: 0.3 });
+
+    // ---------------------------------------------- cd seul, cd -
+    tl.to('.sym', { opacity: 0, duration: 0.3 }, C.astuces);
+    tl.set('#k1, #k2, #k3, #k4', { display: 'none' }, C.astuces);
+    tl.to('#t-cd', { opacity: 1, duration: 0.3 }, C.astuces + 0.2);
+    // on part de Documents : cd tout seul ramène à la maison
+    tl.to('#ici', { x: pDoc.x, y: pDoc.y, duration: 0.01 }, C.astuces + 0.2);
+    ligne('#k5', C.cdseul, 0.25);
+    tl.to('#ici', { x: pUser.x, y: pUser.y, duration: 0.6, ease: 'back.out(1.6)' }, C.cdseul + 0.8);
+    ligne('#k6', C.cdtiret + 0.3, 0.3);
+    sortie('#k7', C.cdtiret + 0.8);
+    tl.to('#ici', { x: pDoc.x, y: pDoc.y, duration: 0.6, ease: 'back.out(1.6)' }, C.cdtiret + 0.8);
+    tl.fromTo('#retour-nav', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.navigateur);
+
+    // ---------------------------------------------- absolu ou relatif ?
+    tl.to(['#t-cd', '#retour-nav'], { opacity: 0, duration: 0.3 }, C.choix);
+    pop('#co1', C.scripts, { depuis: 0.4 });
+    pop('#co2', C.quotidien, { depuis: 0.4 });
+
+    // ---------------------------------------------- Tab
+    tl.to('.col', { opacity: 0, duration: 0.3 }, C.tab);
+    tl.set('#k5, #k6, #k7', { display: 'none' }, C.tab);
+    tl.to('#t-cd', { opacity: 1, duration: 0.3 }, C.tab + 0.2);
+    ligne('#k8', C.tab + 0.6, 1.4);
+    gsap.set('#rien', { opacity: 0 });
+    ligne('#k9', C.existe + 0.2, 0.6);
+    tl.to('#rien', { opacity: 1, duration: 0.3 }, C.existe + 1.0);
+    secousse(C.existe + 1.0, 10);
+
+    // ---------------------------------------------- récap
+    tl.to(['#t-cd', '#ici'], { opacity: 0, duration: 0.3 }, C.recap - 0.2);
+    pop('#rc1', C.recap, { depuis: 0.3 }); pop('#rc2', C.recap + 1.2, { depuis: 0.3 });
+    pop('#rc3', C.recap + 2.2, { depuis: 0.3 }); pop('#rc4', C.recap + 3.4, { depuis: 0.3 });
+    salve(C.final + 0.5, 1360, 450, 60, ['#e95420', '#b36bd6', '#f5c542', '#ffffff'], 'confetti', 1);
+  },
+});
+</script>
+</body>
+</html>

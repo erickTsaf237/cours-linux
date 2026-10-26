@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Alias et .bashrc — vidéo</title>
+<link rel="stylesheet" href="commun.css">
+<style>
+#fichier { left: 710px; top: 200px; width: 500px; height: 340px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+#fichier .ico { font-family: var(--emoji); font-size: 150px; }
+#fichier .n { font-family: var(--mono); font-size: 56px; color: var(--orange-2); }
+#fichier .s { font-family: var(--texte); font-size: 30px; color: var(--gris); }
+#lit { top: 620px; font-size: 50px; font-family: var(--display); font-weight: 800; }
+#perm { top: 720px; font-size: 50px; font-family: var(--display); font-weight: 800; color: var(--vert); }
+
+#editeur { left: 160px; top: 110px; width: 1600px; height: 640px; background: #0d1117; border: 2px solid #2a3342; border-radius: 22px; overflow: hidden;
+  font-family: var(--mono); font-size: 38px; color: #d6deeb; box-shadow: 0 40px 100px rgba(0,0,0,.6); }
+#editeur .tete { background: #d6deeb; color: #0d1117; text-align: center; font-size: 28px; padding: 6px; }
+#editeur .corps-e { padding: 26px 40px; }
+#editeur .ln { white-space: pre; height: 60px; }
+#editeur .c { color: #6e7781; } #editeur .k { color: #ffa657; } #editeur .v { color: #79c0ff; } #editeur .s { color: #a5d6ff; }
+#raccourci { left: 900px; top: 790px; font-family: var(--mono); font-size: 46px; color: var(--jaune); }
+
+#ps1-titre { top: 130px; font-family: var(--mono); font-size: 100px; color: var(--orange-2); }
+.invite { top: 400px; font-family: var(--mono); font-size: 80px; }
+#ps-codes { top: 620px; font-family: var(--mono); font-size: 40px; color: var(--gris); }
+
+#t-src { left: 360px; top: 300px; width: 1200px; }
+#t-src .corps { font-size: 52px; min-height: 200px; }
+#src-ok { top: 640px; font-size: 50px; font-family: var(--display); font-weight: 800; color: var(--vert); }
+
+#zsh { top: 170px; font-family: var(--mono); font-size: 130px; color: var(--violet); }
+#ohmy { top: 380px; font-family: var(--display); font-weight: 800; font-size: 80px; }
+#zchips { top: 560px; }
+#zchips span { display: inline-block; font-family: var(--display); font-weight: 700; font-size: 44px; padding: 14px 30px; margin: 10px; border-radius: 18px;
+  background: rgba(179,107,214,.12); border: 2px solid rgba(179,107,214,.5); }
+
+#conseil-titre { top: 150px; font-size: 90px; }
+#bak { top: 360px; font-family: var(--mono); font-size: 60px; }
+#com { top: 540px; font-family: var(--mono); font-size: 50px; color: #6e7781; }
+#com2 { top: 620px; font-family: var(--mono); font-size: 50px; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="bg" class="layer"><div id="blob1" class="blob"></div><div id="blob2" class="blob"></div><div id="blob3" class="blob"></div></div>
+  <div id="grille" class="layer"></div>
+  <div id="cam-punch"><div id="cam-drift">
+
+    <div class="scene" id="s-fichier">
+      <div class="abs verre" id="fichier"><div class="ico">📄</div><div class="n">~/.bashrc</div><div class="s">un fichier caché</div></div>
+      <div class="ligne" id="lit">🖥️ lu à chaque ouverture d'un terminal</div>
+      <div class="ligne" id="perm">✅ tes réglages deviennent permanents</div>
+    </div>
+
+    <div class="scene" id="s-editeur">
+      <div class="abs" id="editeur"><div class="tete">GNU nano 7.2 — /home/user/.bashrc</div>
+        <div class="corps-e">
+          <div class="ln c" id="e1"># ---------- mes alias ----------</div>
+          <div class="ln" id="e2"><span class="k">alias</span> <span class="v">ll</span>=<span class="s">'ls -la'</span></div>
+          <div class="ln" id="e3"><span class="k">alias</span> <span class="v">maj</span>=<span class="s">'sudo apt update &amp;&amp; sudo apt upgrade'</span></div>
+          <div class="ln" id="e4"> </div>
+          <div class="ln c" id="e5"># ---------- mes variables ----------</div>
+          <div class="ln" id="e6"><span class="k">export</span> <span class="v">PATH</span>=<span class="s">"$HOME/bin:$PATH"</span></div>
+          <div class="ln" id="e7"> </div>
+          <div class="ln c" id="e8"># ---------- mon invite ----------</div>
+          <div class="ln" id="e9"><span class="v">PS1</span>=<span class="s">'\t \u@\h:\W\$ '</span></div>
+        </div></div>
+      <div class="abs" id="raccourci">maj ⏎ → tout se met à jour</div>
+    </div>
+
+    <div class="scene" id="s-ps1">
+      <div class="ligne" id="ps1-titre">PS1</div>
+      <div class="ligne invite" id="iv1"><span style="color:var(--vert)">user@ubuntu</span>:<span style="color:#79c0ff">~</span>$</div>
+      <div class="ligne invite" id="iv2"><span style="color:var(--gris)">14:32:07</span> <span style="color:var(--vert)">user@ubuntu</span>:<span style="color:#79c0ff">~</span>$</div>
+      <div class="ligne invite" id="iv3"><span style="color:#f5c542">user</span> 📂 <span style="color:#38bdf8">~/labo</span> <span style="color:var(--orange-2)">❯</span></div>
+      <div class="ligne" id="ps-codes">\u utilisateur · \h machine · \w dossier · \t heure</div>
+    </div>
+
+    <div class="scene" id="s-source">
+      <div class="abs terminal" id="t-src"><div class="barre-t"><i></i><i></i><i></i><span>user@ubuntu: ~</span></div>
+        <div class="corps"><div class="l" id="sr1"><span class="p">user@ubuntu:~$</span> <span class="tape">source ~/.bashrc</span></div></div></div>
+      <div class="ligne" id="src-ok">✅ appliqué, sans fermer le terminal</div>
+    </div>
+
+    <div class="scene" id="s-zsh">
+      <div class="ligne" id="zsh">zsh</div>
+      <div class="ligne grad" id="ohmy">Oh My Zsh</div>
+      <div class="ligne" id="zchips"><span>🎨 thèmes</span><span>💡 suggestions</span><span>🧩 extensions</span></div>
+    </div>
+
+    <div class="scene" id="s-conseil">
+      <div class="ligne display mots" id="conseil-titre">Un conseil</div>
+      <div class="ligne" id="bak">💾 cp ~/.bashrc ~/.bashrc.bak</div>
+      <div class="ligne" id="com"># mise à jour complète en un mot</div>
+      <div class="ligne" id="com2"><span style="color:#ffa657">alias</span> <span style="color:#79c0ff">maj</span>=<span style="color:#a5d6ff">'…'</span></div>
+    </div>
+
+  </div></div>
+  <div id="vignette" class="layer"></div>
+  <div class="abs" id="badge"><img src="img/tux.svg" alt=""><div><div class="nom"><b>$</b> carnet-linux</div><div class="sous">Module 09 · Alias et .bashrc</div></div></div>
+  <canvas id="particules" width="1920" height="1080"></canvas>
+  <div class="abs" id="rideau"></div>
+  <div class="abs" id="st"></div>
+  <div class="abs" id="barre"></div>
+  <div id="flash" class="layer"></div>
+</div>
+<script src="lib/gsap.min.js"></script>
+<script src="commun.js"></script>
+<script>
+Film.demarrer({
+  film: 'bashrc',
+  fin: { titre: 'Alias et .bashrc', sous: 'Carnet Linux · Module 09 — Personnaliser son environnement', prompt: 'nano ~/.bashrc' },
+  construire(C) {
+    // 1. le fichier
+    gsap.set('#s-fichier', { autoAlpha: 1 });
+    gsap.set(['#lit', '#perm'], { opacity: 0 });
+    pop('#fichier', C.fichier, { depuis: 0.4 });
+    tl.fromTo('#lit', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.lit);
+    tl.fromTo('#perm', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.permanents);
+
+    // 2. l'éditeur : alias, puis variables
+    plonge(C.alias, '#s-fichier', '#s-editeur');
+    gsap.set(['#editeur .ln', '#raccourci'], { opacity: 0 });
+    tl.fromTo('#editeur', { y: 40, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.alias);
+    sortie('#e1', C.alias + 1.0);
+    sortie('#e2', C.ll);
+    sortie('#e3', C.maj);
+    tl.fromTo('#raccourci', { x: 40, opacity: 0 }, { x: 0, opacity: 1, immediateRender: false }, C.tapes);
+    tl.to('#raccourci', { opacity: 0, duration: 0.3 }, C.variables);
+    sortie(['#e4', '#e5'], C.variables, 0.2);
+    sortie('#e6', C.variables + 1.2);
+    tl.to('#e6', { backgroundColor: 'rgba(245,197,66,.15)', duration: 0.3, yoyo: true, repeat: 1 }, C.variables + 2.0);
+
+    // 3. l'invite PS1
+    rideau(C.invite, '#s-editeur', '#s-ps1');
+    gsap.set(['#iv1', '#iv2', '#iv3', '#ps-codes'], { opacity: 0 });
+    tl.fromTo('#ps1-titre', { scale: 2, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.35, ease: 'power4.in', immediateRender: false }, C.ps1);
+    tl.set('#iv1', { opacity: 1 }, C.ps1 + 1.0);
+    tl.set('#iv1', { opacity: 0 }, C.ps1 + 2.6);
+    tl.set('#iv2', { opacity: 1 }, C.ps1 + 2.6);
+    tl.set('#iv2', { opacity: 0 }, C.perso);
+    tl.set('#iv3', { opacity: 1 }, C.perso);
+    tl.fromTo('#iv3', { scale: 1.3 }, { scale: 1, duration: 0.4, ease: 'back.out(2.5)', immediateRender: false }, C.perso);
+    tl.fromTo('#ps-codes', { y: 20, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.ps1 + 1.5);
+
+    // 4. source
+    plonge(C.source, '#s-ps1', '#s-source');
+    gsap.set('#src-ok', { opacity: 0 });
+    ligne('#sr1', C.srccmd - 0.3, 0.8);
+    tl.fromTo('#src-ok', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.srccmd + 0.8);
+    flash(C.srccmd + 0.8, 0.25, 0.3);
+
+    // 5. Zsh
+    rideau(C.zsh, '#s-source', '#s-zsh');
+    gsap.set(['#ohmy', '#zchips span'], { opacity: 0 });
+    tl.fromTo('#zsh', { scale: 2, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.35, ease: 'power4.in', immediateRender: false }, C.zsh + 1.5);
+    tl.fromTo('#ohmy', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.ohmy + 0.6);
+    pop('#zchips span', C.ohmy + 1.6, { stagger: 0.4, depuis: 0.3 });
+
+    // 6. le conseil
+    plonge(C.conseil, '#s-zsh', '#s-conseil');
+    gsap.set(['#bak', '#com', '#com2'], { opacity: 0 });
+    motsEntrent('#conseil-titre .mot', C.conseil);
+    tl.fromTo('#bak', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.conseil + 0.8);
+    tl.fromTo(['#com', '#com2'], { y: 30, opacity: 0 }, { y: 0, opacity: 1, stagger: 0.3, immediateRender: false }, C.commentaire);
+    salve(C.final + 0.5, 960, 450, 50, ['#e95420', '#b36bd6', '#f5c542'], 'confetti', 0.9);
+  },
+});
+</script>
+</body>
+</html>

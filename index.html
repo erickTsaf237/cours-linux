@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cours Linux gratuit en français, de zéro à admin | Carnet Linux</title>
+  <meta name="description" content="Cours Linux complet et gratuit, en français : installation d'Ubuntu, terminal, commandes, permissions, scripts Bash, réseau, serveurs. Vidéos de 90 secondes, quiz et exercices corrigés.">
+  <meta name="theme-color" content="#e95420">
+  <link rel="apple-touch-icon" href="assets/img/icone-180.png">
+  <link rel="icon" href="assets/img/tux.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script>try{const t=JSON.parse(localStorage.getItem("theme"));if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<div class="progress-bar"></div>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="index.html"><img src="assets/img/tux.svg" alt=""><span><span class="dollar">$</span> carnet-linux</span></a>
+    <nav class="nav">
+      <a href="index.html" class="active">Programme</a>
+      <a href="modules/08-logiciels.html" class="hide-sm">Module en cours</a>
+      <button class="theme-toggle" type="butt   on" aria-label="Changer de thème">☀️</button>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <span class="eyebrow">~/apprentissage/linux $ ./start.sh</span>
+      <h1>Maîtriser <span class="grad">Linux</span>,<br>de zéro à admin.</h1>
+      <p class="lead">Un cours complet en 6 phases et 26 modules : de l'installation d'Ubuntu dans une machine
+        virtuelle jusqu'à l'administration de serveurs, le scripting et les conteneurs. Théorie, schémas, vidéos,
+        commandes à tester et quiz à chaque étape.</p>
+      <div class="hero-meta">
+        <span class="chip">🖥️ <b>VirtualBox</b> sur Windows, macOS ou Linux</span>
+        <span class="chip">🐧 <b>Ubuntu 24.04 LTS</b> « Noble Numbat »</span>
+        <span class="chip">🎚️ Niveau <b>débutant → avancé</b></span>
+      </div>
+    </div>
+    <div class="hero-art"><img class="tux" src="assets/img/tux.svg" alt="Tux, la mascotte de Linux"></div>
+  </div>
+</section>
+
+<main class="container">
+
+  <section class="section">
+    <h2>Comment utiliser ce cours</h2>
+    <p class="section-intro">Chaque module se lit comme un chapitre de livre, mais on y fait des choses : on tape les
+      commandes dans sa machine virtuelle, on répond au quiz, on coche sa mission pratique.</p>
+    <div class="howto">
+      <div class="card" style="--c: var(--accent)"><div class="icon">📖</div><h4>Lis</h4>
+        <p>Théorie, histoire, schémas. Les blocs « terminal » ont un bouton <b>copier</b> qui ne prend que les commandes.</p></div>
+      <div class="card" style="--c: var(--violet)"><div class="icon">⌨️</div><h4>Pratique</h4>
+        <p>Chaque module se termine par une <b>mission</b> à faire dans la VM. Les cases cochées restent mémorisées.</p></div>
+      <div class="card" style="--c: var(--cyan)"><div class="icon">❓</div><h4>Consulte la FAQ</h4>
+        <p>Les questions qui reviennent souvent sont rassemblées en fin de module, avec leurs réponses : <b>Questions fréquentes</b>.</p></div>
+      <div class="card" style="--c: var(--green)"><div class="icon">🧠</div><h4>Vérifie</h4>
+        <p>Un <b>quiz</b> en fin de module pour vérifier que les notions clés sont acquises.</p></div>
+    </div>
+    <div class="overall"><strong>Ta progression</strong><div class="meter"><span></span></div><span class="label">0 / 26 modules terminés</span></div>
+  </section>
+
+  <section class="section" id="programme">
+    <h2>Le programme complet</h2>
+    <p class="section-intro">Le parcours suit l'ordre des certifications reconnues (LPIC-1, LFCS, RHCSA) tout en restant
+      concret. Les modules « à venir » sont publiés progressivement.</p>
+
+    <!-- PHASE 1 -->
+    <div class="phase reveal">
+      <div class="phase-head">
+        <span class="phase-badge" style="--c:#e95420">PHASE 1</span><h3>Fondations</h3>
+        <p>Comprendre ce qu'est Linux, l'installer, et apprendre à se déplacer dans le système.</p>
+      </div>
+      <div class="modules">
+        <a class="module" data-module="00" href="modules/00-introduction-installation.html">
+          <div class="m-top"><span class="m-num">MODULE 00</span><span class="status open">disponible</span></div>
+          <h4>Linux &amp; son installation</h4>
+          <ul><li>Histoire : Unix, GNU, Linux</li><li>Distributions et Ubuntu</li><li>Virtualisation et VirtualBox</li><li>Partitions, installation, premiers pas</li></ul>
+        </a>
+        <a class="module" data-module="01" href="modules/01-bureau-terminal.html">
+          <div class="m-top"><span class="m-num">MODULE 01</span><span class="status open">disponible</span></div>
+          <h4>Découvrir le bureau &amp; le terminal</h4>
+          <ul><li>GNOME, raccourcis clavier</li><li>Terminal, shell, Bash</li><li>Anatomie d'une commande</li><li>Trouver de l'aide : man, --help, tldr</li></ul>
+        </a>
+        <a class="module" data-module="02" href="modules/02-systeme-de-fichiers.html">
+          <div class="m-top"><span class="m-num">MODULE 02</span><span class="status open">disponible</span></div>
+          <h4>Le système de fichiers</h4>
+          <ul><li>Arborescence FHS (/etc, /var, /home…)</li><li>Chemins absolus et relatifs</li><li>ls, cd, cp, mv, rm, mkdir</li><li>Jokers, liens physiques et symboliques</li></ul>
+        </a>
+        <a class="module" data-module="03" href="modules/03-lire-editer.html">
+          <div class="m-top"><span class="m-num">MODULE 03</span><span class="status open">disponible</span></div>
+          <h4>Lire &amp; éditer des fichiers</h4>
+          <ul><li>cat, less, head, tail -f</li><li>L'éditeur nano</li><li>Survivre puis briller avec Vim</li><li>Encodages et fins de ligne</li></ul>
+        </a>
+        <a class="module" data-module="04" href="modules/04-utilisateurs-permissions.html">
+          <div class="m-top"><span class="m-num">MODULE 04</span><span class="status open">disponible</span></div>
+          <h4>Utilisateurs, groupes &amp; permissions</h4>
+          <ul><li>root, sudo et le principe du moindre privilège</li><li>useradd, groups, /etc/passwd</li><li>chmod, chown, umask</li><li>SUID, SGID, sticky bit, ACL</li></ul>
+        </a>
+      </div>
+    </div>
+
+    <!-- PHASE 2 -->
+    <div class="phase reveal">
+      <div class="phase-head">
+        <span class="phase-badge" style="--c:#b36bd6">PHASE 2</span><h3>Maîtrise du shell</h3>
+        <p>Combiner les commandes comme des briques de Lego et travailler vite.</p>
+      </div>
+      <div class="modules">
+        <a class="module" data-module="05" href="modules/05-redirections-pipes.html">
+          <div class="m-top"><span class="m-num">MODULE 05</span><span class="status open">disponible</span></div>
+          <h4>Redirections, pipes &amp; filtres</h4>
+          <ul><li>stdin, stdout, stderr, &gt;, &gt;&gt;, 2&gt;&amp;1</li><li>Le pipe |</li><li>grep, sort, uniq, wc, cut, tr</li><li>Introduction à sed et awk</li></ul>
+        </a>
+        <a class="module" data-module="06" href="modules/06-rechercher-regex.html">
+          <div class="m-top"><span class="m-num">MODULE 06</span><span class="status open">disponible</span></div>
+          <h4>Rechercher &amp; expressions régulières</h4>
+          <ul><li>find et ses actions</li><li>locate, which, whereis</li><li>Expressions régulières</li><li>xargs</li></ul>
+        </a>
+        <a class="module" data-module="07" href="modules/07-processus.html">
+          <div class="m-top"><span class="m-num">MODULE 07</span><span class="status open">disponible</span></div>
+          <h4>Processus &amp; tâches</h4>
+          <ul><li>ps, top, htop</li><li>Signaux : kill, SIGTERM, SIGKILL</li><li>Avant-plan, arrière-plan : jobs, fg, bg</li><li>nice, nohup, tmux</li></ul>
+        </a>
+        <a class="module" data-module="08" href="modules/08-logiciels.html">
+          <div class="m-top"><span class="m-num">MODULE 08</span><span class="status open">disponible</span></div>
+          <h4>Gestion des logiciels</h4>
+          <ul><li>apt, dpkg et les dépôts</li><li>PPA et sources tierces</li><li>Snap et Flatpak</li><li>Compiler depuis les sources</li></ul>
+        </a>
+        <a class="module" data-module="09" href="modules/09-environnement.html">
+          <div class="m-top"><span class="m-num">MODULE 09</span><span class="status open">disponible</span></div>
+          <h4>Personnaliser son environnement</h4>
+          <ul><li>Variables et PATH</li><li>.bashrc, .profile, alias</li><li>Personnaliser l'invite (PS1)</li><li>Zsh et Oh My Zsh</li></ul>
+        </a>
+      </div>
+    </div>
+
+    <!-- PHASE 3 -->
+    <div class="phase reveal">
+      <div class="phase-head">
+        <span class="phase-badge" style="--c:#0b7fb3">PHASE 3</span><h3>Administration système</h3>
+        <p>Ce qui fait tourner une machine : démarrage, services, disques, réseau.</p>
+      </div>
+      <div class="modules">
+        <div class="module locked" data-module="10">
+          <div class="m-top"><span class="m-num">MODULE 10</span><span class="status soon">à venir</span></div>
+          <h4>Démarrage &amp; systemd</h4>
+          <ul><li>UEFI, GRUB, noyau, initramfs</li><li>systemctl : services et cibles</li><li>journalctl et les logs</li><li>Écrire sa propre unité</li></ul>
+        </div>
+        <div class="module locked" data-module="11">
+          <div class="m-top"><span class="m-num">MODULE 11</span><span class="status soon">à venir</span></div>
+          <h4>Disques &amp; systèmes de fichiers</h4>
+          <ul><li>lsblk, fdisk, parted</li><li>mkfs, mount, /etc/fstab</li><li>LVM : volumes logiques</li><li>Swap, df, du</li></ul>
+        </div>
+        <div class="module locked" data-module="12">
+          <div class="m-top"><span class="m-num">MODULE 12</span><span class="status soon">à venir</span></div>
+          <h4>Réseau</h4>
+          <ul><li>Modèle TCP/IP en pratique</li><li>ip, ss, ping, traceroute, dig</li><li>Netplan et NetworkManager</li><li>Pare-feu avec ufw</li></ul>
+        </div>
+        <div class="module locked" data-module="13">
+          <div class="m-top"><span class="m-num">MODULE 13</span><span class="status soon">à venir</span></div>
+          <h4>SSH &amp; accès à distance</h4>
+          <ul><li>Se connecter à sa VM depuis Windows</li><li>Clés SSH, ~/.ssh/config</li><li>scp et rsync</li><li>Sécuriser sshd</li></ul>
+        </div>
+        <div class="module locked" data-module="14">
+          <div class="m-top"><span class="m-num">MODULE 14</span><span class="status soon">à venir</span></div>
+          <h4>Planification &amp; journaux</h4>
+          <ul><li>cron et crontab</li><li>Timers systemd</li><li>rsyslog, logrotate</li><li>Lire les logs efficacement</li></ul>
+        </div>
+        <div class="module locked" data-module="15">
+          <div class="m-top"><span class="m-num">MODULE 15</span><span class="status soon">à venir</span></div>
+          <h4>Archives &amp; sauvegardes</h4>
+          <ul><li>tar, gzip, xz, zip</li><li>rsync incrémental</li><li>Stratégie 3-2-1</li><li>Restaurer (le vrai test)</li></ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 4 -->
+    <div class="phase reveal">
+      <div class="phase-head">
+        <span class="phase-badge" style="--c:#1f8a35">PHASE 4</span><h3>Scripting &amp; automatisation</h3>
+        <p>Ne plus jamais faire deux fois la même chose à la main.</p>
+      </div>
+      <div class="modules">
+        <div class="module locked" data-module="16">
+          <div class="m-top"><span class="m-num">MODULE 16</span><span class="status soon">à venir</span></div>
+          <h4>Scripts Bash : les bases</h4>
+          <ul><li>Shebang, variables, guillemets</li><li>Conditions et tests</li><li>Boucles for, while</li><li>Lire une entrée utilisateur</li></ul>
+        </div>
+        <div class="module locked" data-module="17">
+          <div class="m-top"><span class="m-num">MODULE 17</span><span class="status soon">à venir</span></div>
+          <h4>Scripts Bash : niveau pro</h4>
+          <ul><li>Fonctions et arguments</li><li>Codes de retour, set -euo pipefail</li><li>Tableaux, getopts</li><li>ShellCheck et bonnes pratiques</li></ul>
+        </div>
+        <div class="module locked" data-module="18">
+          <div class="m-top"><span class="m-num">MODULE 18</span><span class="status soon">à venir</span></div>
+          <h4>Git sous Linux</h4>
+          <ul><li>Versionner ses scripts et sa config</li><li>Branches et fusion</li><li>GitHub et clés SSH</li><li>Publier un site avec GitHub Pages</li></ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 5 -->
+    <div class="phase reveal">
+      <div class="phase-head">
+        <span class="phase-badge" style="--c:#a87700">PHASE 5</span><h3>Services &amp; sécurité</h3>
+        <p>Héberger, protéger et surveiller : le quotidien d'un administrateur.</p>
+      </div>
+      <div class="modules">
+        <div class="module locked" data-module="19">
+          <div class="m-top"><span class="m-num">MODULE 19</span><span class="status soon">à venir</span></div>
+          <h4>Sécuriser un système</h4>
+          <ul><li>Mises à jour automatiques</li><li>ufw, fail2ban</li><li>AppArmor</li><li>Audit et durcissement</li></ul>
+        </div>
+        <div class="module locked" data-module="20">
+          <div class="m-top"><span class="m-num">MODULE 20</span><span class="status soon">à venir</span></div>
+          <h4>Serveur web</h4>
+          <ul><li>Nginx et Apache</li><li>Pile LEMP : PHP, MariaDB</li><li>HTTPS avec Let's Encrypt</li><li>Hôtes virtuels</li></ul>
+        </div>
+        <div class="module locked" data-module="21">
+          <div class="m-top"><span class="m-num">MODULE 21</span><span class="status soon">à venir</span></div>
+          <h4>Conteneurs</h4>
+          <ul><li>Conteneur ou VM ?</li><li>Docker : images, conteneurs, volumes</li><li>Dockerfile et Docker Compose</li><li>Podman</li></ul>
+        </div>
+        <div class="module locked" data-module="22">
+          <div class="m-top"><span class="m-num">MODULE 22</span><span class="status soon">à venir</span></div>
+          <h4>Performance &amp; dépannage</h4>
+          <ul><li>CPU, mémoire, disque, réseau</li><li>vmstat, iostat, free, lsof</li><li>Méthodologie de diagnostic</li><li>Réparer un système qui ne démarre plus</li></ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 6 -->
+    <div class="phase reveal">
+      <div class="phase-head">
+        <span class="phase-badge" style="--c:#c53030">PHASE 6</span><h3>Aller plus loin</h3>
+        <p>Les sujets qui font la différence, puis un projet final.</p>
+      </div>
+      <div class="modules">
+        <div class="module locked" data-module="23">
+          <div class="m-top"><span class="m-num">MODULE 23</span><span class="status soon">à venir</span></div>
+          <h4>Le noyau Linux</h4>
+          <ul><li>Modules du noyau : lsmod, modprobe</li><li>/proc et /sys</li><li>sysctl</li><li>Compiler son noyau</li></ul>
+        </div>
+        <div class="module locked" data-module="24">
+          <div class="m-top"><span class="m-num">MODULE 24</span><span class="status soon">à venir</span></div>
+          <h4>Automatiser l'infrastructure</h4>
+          <ul><li>Ansible : inventaire, playbooks</li><li>Gérer plusieurs VM</li><li>cloud-init</li><li>Infrastructure as Code</li></ul>
+        </div>
+        <div class="module locked" data-module="25">
+          <div class="m-top"><span class="m-num">MODULE 25</span><span class="status soon">à venir</span></div>
+          <h4>Projet final &amp; certifications</h4>
+          <ul><li>Monter un serveur complet de A à Z</li><li>LPIC-1, LFCS, RHCSA : lequel choisir</li><li>Préparation et examens blancs</li><li>Suite du parcours</li></ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Journal de bord</h2>
+    <p class="section-intro">L'historique du cours : ce qui a été ajouté et quand.</p>
+    <ul class="changelog">
+      <li><time datetime="2026-10-26">26/10/2026</time><span>Publication des modules <a href="modules/08-logiciels.html">08 — Gestion des logiciels</a> et <a href="modules/09-environnement.html">09 — Personnaliser son environnement</a>, avec deux vidéos chacun. La phase 2 est complète.</span></li>
+      <li><time datetime="2026-10-24">24/10/2026</time><span>Publication des modules <a href="modules/06-rechercher-regex.html">06 — Rechercher &amp; expressions régulières</a> et <a href="modules/07-processus.html">07 — Processus &amp; tâches</a>, avec deux vidéos chacun.</span></li>
+      <li><time datetime="2026-10-23">23/10/2026</time><span>Publication des modules <a href="modules/04-utilisateurs-permissions.html">04 — Utilisateurs, groupes &amp; permissions</a> et <a href="modules/05-redirections-pipes.html">05 — Redirections, pipes &amp; filtres</a>, avec deux vidéos chacun. Les vidéos du module 03 sont en ligne. Nouveau : chaque étape des missions pratiques affiche sa correction une fois cochée.</span></li>
+      <li><time datetime="2026-10-22">22/10/2026</time><span>Publication des modules <a href="modules/02-systeme-de-fichiers.html">02 — Le système de fichiers</a> et <a href="modules/03-lire-editer.html">03 — Lire &amp; éditer des fichiers</a>, et de six nouvelles vidéos (deux par module, de 01 à 03).</span></li>
+      <li><time datetime="2026-10-22">22/10/2026</time><span>Publication du <a href="modules/01-bureau-terminal.html">Module 01 — Le bureau &amp; le terminal</a> : GNOME, terminal et shell, anatomie d'une commande, raccourcis, man / --help / tldr, lecture des erreurs.</span></li>
+      <li><time datetime="2026-10-22">22/10/2026</time><span>Module 00 : précisions sur le « CD » virtuel des Additions invité et question fréquente associée.</span></li>
+      <li><time datetime="2026-10-22">22/10/2026</time><span>Module 00 : nouvelle question fréquente « <code>E: Unable to locate package</code> ».</span></li>
+      <li><time datetime="2026-10-22">22/10/2026</time><span>Module 00 : vérification fiable des Additions invité (<code>VBoxClient --version</code>) et nouvelle question fréquente sur <code>lsmod | grep vbox</code>.</span></li>
+      <li><time datetime="2026-10-22">22/10/2026</time><span>Module 00 : <code>hostnamectl</code> expliqué ligne par ligne et nouvelle section « Questions fréquentes » (dont « <code>ifconfig</code> introuvable »).</span></li>
+      <li><time datetime="2026-10-22">22/10/2026</time><span>Deux vidéos animées de 1 min 30 ajoutées au <a href="modules/00-introduction-installation.html">Module 00</a> : « De Unix à Linux » et « La VM expliquée ».</span></li>
+      <li><time datetime="2026-10-22">22/10/2026</time><span>Création du cours : programme complet en 26 modules et rédaction du <a href="modules/00-introduction-installation.html">Module 00 — Linux &amp; son installation</a>.</span></li>
+    </ul>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div>Carnet Linux · cours construit avec HTML, CSS et un peu de JavaScript · 🐧</div>
+  <div class="credits">Tux par Larry Ewing (lewing@isc.tamu.edu) avec The GIMP. Images issues de
+    <a href="https://commons.wikimedia.org" target="_blank" rel="noopener">Wikimedia Commons</a> sous leurs licences respectives (voir crédits dans chaque module).</div>
+</footer>
+
+<script src="assets/js/main.js"></script>
+</body>
+</html>

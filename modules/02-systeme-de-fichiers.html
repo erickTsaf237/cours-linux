@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Arborescence Linux et commandes ls, cd, cp, mv, rm | Cours Linux</title>
+  <meta name="description" content="Module 02 du cours Linux : l'arborescence (/etc, /home, /var…), chemins absolus et relatifs, commandes ls, cd, cp, mv, rm, mkdir, jokers et liens symboliques. Vidéos, quiz et exercices corrigés.">
+  <meta name="theme-color" content="#e95420">
+  <link rel="apple-touch-icon" href="../assets/img/icone-180.png">
+  <link rel="icon" href="../assets/img/tux.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <script>try{const t=JSON.parse(localStorage.getItem("theme"));if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<div class="progress-bar"></div>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../index.html"><img src="../assets/img/tux.svg" alt=""><span><span class="dollar">$</span> carnet-linux</span></a>
+    <nav class="nav">
+      <a href="../index.html">Programme</a>
+      <a href="02-systeme-de-fichiers.html" class="active hide-sm">Module 02</a>
+      <button class="theme-toggle" type="button" aria-label="Changer de thème">☀️</button>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <span class="eyebrow">PHASE 1 · MODULE 02</span>
+      <h1>Le système de <span class="grad">fichiers</span></h1>
+      <p class="lead">Une seule arborescence qui part de <code>/</code>, des dossiers au rôle bien défini, des chemins pour s'y repérer
+        et une poignée de commandes pour tout créer, copier, déplacer et supprimer. Le cœur du quotidien sous Linux.</p>
+      <div class="hero-meta">
+        <span class="chip">⏱️ Lecture <b>~50 min</b></span>
+        <span class="chip">🧪 Pratique <b>~1 h 30</b></span>
+        <span class="chip">🎚️ Niveau <b>débutant</b></span>
+      </div>
+    </div>
+    <div class="hero-art"><img class="tux" src="../assets/img/tux.svg" alt="Tux"></div>
+  </div>
+</section>
+
+<div class="layout">
+  <aside class="toc">
+    <div class="toc-title">Sommaire</div>
+    <ol></ol>
+  </aside>
+
+  <article class="content">
+
+    <!-- ================================================== -->
+    <h2 id="objectifs" data-short="Objectifs">🎯 Ce que tu sauras à la fin</h2>
+    <div class="cards four">
+      <div class="card" style="--c:var(--accent)"><div class="icon">🌳</div><h4>L'arborescence</h4><p>Savoir à quoi sert chaque grand dossier du système.</p></div>
+      <div class="card" style="--c:var(--violet)"><div class="icon">🧭</div><h4>Les chemins</h4><p>Se déplacer avec des chemins absolus et relatifs.</p></div>
+      <div class="card" style="--c:var(--cyan)"><div class="icon">🛠️</div><h4>Les manipulations</h4><p>Créer, copier, déplacer, renommer, supprimer.</p></div>
+      <div class="card" style="--c:var(--green)"><div class="icon">🔗</div><h4>Jokers et liens</h4><p>Agir sur plusieurs fichiers d'un coup, créer des raccourcis.</p></div>
+    </div>
+
+    <!-- ================================================== -->
+    <h2 id="arborescence" data-short="L'arborescence">Une seule arborescence : tout part de <code>/</code></h2>
+    <figure class="video-card">
+      <div class="video-head"><span class="video-badge">▶ Vidéo · 1 min 30</span><strong>Tout part de /</strong><span>la visite guidée de l'arborescence</span></div>
+      <video controls preload="none" playsinline poster="../assets/video/arbo.jpg"><source src="../assets/video/arbo.mp4" type="video/mp4">Ton navigateur ne lit pas la vidéo : <a href="../assets/video/arbo.mp4">télécharge-la ici</a>.</video>
+      <figcaption>Animation réalisée pour ce cours. Voix off et musique générées par IA (Google Gemini et Lyria).</figcaption>
+    </figure>
+
+    <p>Sous Windows, chaque disque a sa lettre : <code>C:</code>, <code>D:</code>… Sous Linux, il n'y a <strong>qu'un seul arbre</strong>.
+      Il commence à la <strong>racine</strong>, notée <code>/</code>, et tout le reste en descend : tes fichiers, les programmes,
+      la configuration, et même les disques et les clés USB, qui sont « montés » quelque part dans l'arbre.</p>
+    <p>L'organisation de cet arbre suit une norme commune à presque toutes les distributions, la <strong>FHS</strong>
+      (<em>Filesystem Hierarchy Standard</em>). Ce que tu apprends ici est donc valable sur Debian, Fedora ou un serveur dans le cloud.</p>
+
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">ls</span> <span class="s">/</span>
+<span class="o"><span class="hl">bin</span>   cdrom  <span class="hl">etc</span>   lib    lost+found  mnt  proc  run   snap  swap.img  tmp  <span class="hl">var</span></span>
+<span class="o">boot  dev    <span class="hl">home</span>  lib64  media       opt  root  sbin  srv   sys       <span class="hl">usr</span></span></pre></div>
+
+    <ul class="tree">
+      <li><span class="d">/</span><em>la racine : le sommet de l'arbre</em>
+        <ul>
+          <li><span class="d">home/</span><em>les dossiers personnels des utilisateurs</em>
+            <ul><li><span class="d">user/</span><em>ton dossier personnel, alias <code>~</code></em></li></ul></li>
+          <li><span class="d">root/</span><em>le dossier personnel de l'administrateur root</em></li>
+          <li><span class="d">etc/</span><em>la configuration du système (fichiers texte)</em></li>
+          <li><span class="d">usr/</span><em>les programmes et leurs fichiers</em>
+            <ul><li><span class="d">bin/</span><em>les commandes : <code>ls</code>, <code>cp</code>, <code>date</code>…</em></li>
+                <li><span class="d">share/</span><em>documentation, icônes, données partagées</em></li></ul></li>
+          <li><span class="d">var/</span><em>les données qui varient</em>
+            <ul><li><span class="d">log/</span><em>les journaux du système</em></li></ul></li>
+          <li><span class="d">tmp/</span><em>fichiers temporaires, vidés au redémarrage</em></li>
+          <li><span class="d">boot/</span><em>le noyau et le chargeur GRUB</em></li>
+          <li><span class="d">dev/</span><em>les périphériques, sous forme de fichiers</em></li>
+          <li><span class="d">proc/</span> <span class="d">sys/</span><em>des fenêtres virtuelles sur le noyau</em></li>
+          <li><span class="d">media/</span> <span class="d">mnt/</span><em>les clés USB et disques montés</em></li>
+          <li><span class="d">opt/</span><em>les logiciels installés hors des paquets de la distribution</em></li>
+        </ul>
+      </li>
+    </ul>
+
+    <h3>Les dossiers à connaître par cœur</h3>
+    <div class="table-wrap"><table>
+      <tr><th>Dossier</th><th>Rôle</th><th>Exemple à aller voir</th></tr>
+      <tr><td><code>/home</code></td><td>Un sous-dossier par utilisateur. C'est le seul endroit où un utilisateur normal peut écrire librement.</td><td><code>ls /home</code></td></tr>
+      <tr><td><code>/etc</code></td><td>Toute la configuration, en texte lisible. Le « panneau de contrôle » de Linux.</td><td><code>cat /etc/hostname</code></td></tr>
+      <tr><td><code>/var/log</code></td><td>Les journaux : ce qui s'est passé, les erreurs.</td><td><code>ls /var/log</code></td></tr>
+      <tr><td><code>/usr/bin</code></td><td>Les programmes de tous les jours.</td><td><code>ls /usr/bin | wc -l</code> (combien ?)</td></tr>
+      <tr><td><code>/tmp</code></td><td>Un brouillon partagé, nettoyé au démarrage.</td><td><code>ls /tmp</code></td></tr>
+      <tr><td><code>/dev</code></td><td>Les périphériques : disques (<code>sda</code>), terminaux (<code>tty1</code>), et le célèbre <code>/dev/null</code>, le « trou noir ».</td><td><code>ls /dev</code></td></tr>
+      <tr><td><code>/proc</code></td><td>N'existe pas sur le disque : le noyau y décrit le système en temps réel.</td><td><code>cat /proc/cpuinfo</code></td></tr>
+    </table></div>
+
+    <div class="callout info"><span class="callout-title">Pourquoi <code>/bin</code> et <code>/usr/bin</code> ?</span>
+      <p>Héritage des années 70 : le premier disque de l'Unix des Bell Labs était trop petit, alors les programmes ont débordé sur un
+        second disque, monté sur <code>/usr</code>. Sur les distributions récentes, ce découpage a été simplifié : <code>/bin</code> n'est plus
+        qu'un <strong>lien</strong> vers <code>/usr/bin</code> (tu le verras avec <code>ls -l /bin</code>). Les deux chemins mènent au même endroit.</p></div>
+
+    <!-- ================================================== -->
+    <h2 id="fichier" data-short="Tout est fichier">Tout est fichier… mais pas le même genre de fichier</h2>
+    <p>Sous Linux, un dossier est un fichier spécial qui contient une liste de noms, un disque est un fichier spécial qui donne accès au matériel…
+      La commande <code>ls -l</code> indique le <strong>type</strong> par le tout premier caractère de chaque ligne :</p>
+    <div class="table-wrap"><table>
+      <tr><th>Caractère</th><th>Type</th><th>Exemple</th></tr>
+      <tr><td><code>-</code></td><td>Fichier ordinaire (texte, image, programme…)</td><td><code>/etc/hostname</code></td></tr>
+      <tr><td><code>d</code></td><td>Dossier (<em>directory</em>)</td><td><code>/home</code></td></tr>
+      <tr><td><code>l</code></td><td>Lien symbolique (raccourci)</td><td><code>/bin</code></td></tr>
+      <tr><td><code>b</code> / <code>c</code></td><td>Périphérique en mode bloc (disque) / caractère (terminal, souris)</td><td><code>/dev/sda</code>, <code>/dev/tty1</code></td></tr>
+      <tr><td><code>s</code> / <code>p</code></td><td>Socket / tube nommé : des canaux de communication entre programmes</td><td><code>/run/…</code></td></tr>
+    </table></div>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">ls</span> <span class="f">-ld</span> <span class="s">/home /bin /dev/sda</span>
+<span class="o"><span class="hl">d</span>rwxr-xr-x  3 root root 4096 oct.  22 09:12 /home</span>
+<span class="o"><span class="hl">l</span>rwxrwxrwx  1 root root    7 avril 22  2024 /bin -> usr/bin</span>
+<span class="o"><span class="hl">b</span>rw-rw----  1 root disk 8, 0 oct.  22 09:12 /dev/sda</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">file</span> <span class="s">/etc/hostname /usr/bin/ls</span>    <span class="c"># file devine le contenu</span>
+<span class="o">/etc/hostname: ASCII text</span>
+<span class="o">/usr/bin/ls:   ELF 64-bit LSB pie executable, x86-64, ...</span></pre></div>
+
+    <div class="callout key"><span class="callout-title">Pas d'extension obligatoire</span>
+      <p>Sous Windows, c'est l'extension (<code>.exe</code>, <code>.txt</code>) qui dit ce qu'est un fichier. Sous Linux, elle n'est qu'une convention
+        pour les humains : <code>ls</code> n'a pas d'extension et c'est pourtant un programme. Pour connaître la vraie nature d'un fichier : <code>file</code>.</p></div>
+
+    <!-- ================================================== -->
+    <h2 id="chemins" data-short="Chemins &amp; navigation">Chemins absolus, chemins relatifs</h2>
+    <figure class="video-card">
+      <div class="video-head"><span class="video-badge">▶ Vidéo · 1 min 30</span><strong>Chemins absolus et relatifs</strong><span><code>/</code>, <code>.</code>, <code>..</code> et <code>~</code></span></div>
+      <video controls preload="none" playsinline poster="../assets/video/chemins.jpg"><source src="../assets/video/chemins.mp4" type="video/mp4">Ton navigateur ne lit pas la vidéo : <a href="../assets/video/chemins.mp4">télécharge-la ici</a>.</video>
+      <figcaption>Animation réalisée pour ce cours. Voix off et musique générées par IA (Google Gemini et Lyria).</figcaption>
+    </figure>
+
+    <p>Un <strong>chemin</strong> est l'adresse d'un fichier dans l'arbre. On l'écrit de deux façons :</p>
+    <div class="cards">
+      <div class="card" style="--c:var(--accent)"><div class="icon">📮</div><h4>Absolu</h4>
+        <p>Commence par <code>/</code> : part de la racine. Fonctionne depuis n'importe où, comme une adresse postale complète.</p>
+        <div class="tags"><span class="tag">/home/user/Documents/rapport.txt</span></div></div>
+      <div class="card" style="--c:var(--violet)"><div class="icon">👉</div><h4>Relatif</h4>
+        <p>Ne commence pas par <code>/</code> : part du dossier courant. Plus court, mais dépend de l'endroit où l'on se trouve.</p>
+        <div class="tags"><span class="tag">Documents/rapport.txt</span></div></div>
+    </div>
+
+    <h3>Les quatre symboles magiques</h3>
+    <div class="table-wrap"><table>
+      <tr><th>Symbole</th><th>Signifie</th><th>Exemple</th></tr>
+      <tr><td><code>/</code></td><td>La racine (au début d'un chemin) ou le séparateur de dossiers</td><td><code>cd /etc</code></td></tr>
+      <tr><td><code>.</code></td><td>Le dossier courant</td><td><code>cp /etc/hostname .</code> (copier <em>ici</em>)</td></tr>
+      <tr><td><code>..</code></td><td>Le dossier parent (un niveau au-dessus)</td><td><code>cd ..</code></td></tr>
+      <tr><td><code>~</code></td><td>Ton dossier personnel</td><td><code>cd ~/Documents</code></td></tr>
+    </table></div>
+
+    <h3>Se déplacer : <code>pwd</code> et <code>cd</code></h3>
+    <div class="terminal" data-title="user@ubuntu"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">pwd</span>
+<span class="o">/home/user</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">cd</span> <span class="s">Documents</span>              <span class="c"># relatif : depuis /home/user</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~/Documents</span><span class="p">$</span> <span class="k">cd</span> <span class="s">/var/log</span>     <span class="c"># absolu : depuis la racine</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">/var/log</span><span class="p">$</span> <span class="k">cd</span> <span class="s">..</span>              <span class="c"># remonter d'un niveau</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">/var</span><span class="p">$</span> <span class="k">cd</span> <span class="f">-</span>                  <span class="c"># revenir au dossier précédent</span>
+<span class="o">/var/log</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">/var/log</span><span class="p">$</span> <span class="k">cd</span>                <span class="c"># sans argument : retour à la maison</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span></pre></div>
+    <p>Regarde l'invite : la partie bleue affiche le dossier courant. Elle te dit toujours où tu es.</p>
+
+    <div class="callout tip"><span class="callout-title">Absolu ou relatif ?</span>
+      <p>Au quotidien, le relatif va plus vite. Dans les scripts, les tâches planifiées et les fichiers de configuration, utilise
+        <strong>toujours</strong> des chemins absolus : le dossier courant y est imprévisible.</p></div>
+
+    <!-- ================================================== -->
+    <h2 id="lister" data-short="Lister avec ls">Lister avec <code>ls</code></h2>
+    <div class="table-wrap"><table>
+      <tr><th>Commande</th><th>Effet</th></tr>
+      <tr><td><code>ls</code></td><td>Liste le dossier courant</td></tr>
+      <tr><td><code>ls -l</code></td><td>Format long : droits, propriétaire, taille, date</td></tr>
+      <tr><td><code>ls -a</code></td><td>Inclut les fichiers cachés (ceux dont le nom commence par un point)</td></tr>
+      <tr><td><code>ls -lh</code></td><td>Tailles lisibles : 4,0K, 12M, 1,5G</td></tr>
+      <tr><td><code>ls -lt</code> / <code>ls -ltr</code></td><td>Trié par date, du plus récent / du plus ancien</td></tr>
+      <tr><td><code>ls -lS</code></td><td>Trié par taille</td></tr>
+      <tr><td><code>ls -R</code></td><td>Récursif : descend dans tous les sous-dossiers</td></tr>
+      <tr><td><code>ls -ld dossier</code></td><td>Infos sur le dossier lui-même, pas sur son contenu</td></tr>
+    </table></div>
+
+    <h3>Lire une ligne de <code>ls -l</code></h3>
+    <div class="anatomy">
+      <div class="seg" style="--c:#ffa657"><code>-rw-r--r--</code><span>type + droits</span><small>module 04</small></div>
+      <div class="seg" style="--c:#8b949e"><code>1</code><span>liens</span><small>nb de noms</small></div>
+      <div class="seg" style="--c:#d2a8ff"><code>user user</code><span>propriétaire, groupe</span><small>à qui ?</small></div>
+      <div class="seg" style="--c:#79c0ff"><code>2,1K</code><span>taille</span><small>avec -h</small></div>
+      <div class="seg" style="--c:#7ee787"><code>oct. 22 10:41</code><span>date</span><small>dernière modif.</small></div>
+      <div class="seg" style="--c:#a5d6ff"><code>notes.txt</code><span>nom</span><small></small></div>
+    </div>
+
+    <h3>Les fichiers cachés</h3>
+    <p>Tout fichier dont le nom commence par un <strong>point</strong> est caché : <code>.bashrc</code>, <code>.config/</code>… Ce n'est pas une
+      protection, juste une façon de ranger la configuration personnelle pour qu'elle n'encombre pas l'affichage. <code>ls -a</code> les révèle,
+      tout comme <kbd>Ctrl</kbd> + <kbd>H</kbd> dans le gestionnaire de fichiers.</p>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">ls</span> <span class="f">-a</span>
+<span class="o">.  ..  .bash_history  .bash_logout  .bashrc  .cache  .config  .local  .profile  Bureau  Documents  ...</span></pre></div>
+    <p>Tu remarques <code>.</code> et <code>..</code> en tête de liste : ce sont de vraies entrées, présentes dans chaque dossier.</p>
+
+    <div class="callout tip"><span class="callout-title">Voir l'arbre</span>
+      <p>La commande <code>tree</code> dessine l'arborescence d'un dossier. Installe-la avec <code>sudo apt install tree</code>,
+        puis essaie <code>tree -L 2 ~</code> (deux niveaux de profondeur).</p></div>
+
+    <!-- ================================================== -->
+    <h2 id="manipuler" data-short="Créer, copier, déplacer">Créer, copier, déplacer, supprimer</h2>
+    <div class="table-wrap"><table>
+      <tr><th>Commande</th><th>Action</th><th>Options utiles</th></tr>
+      <tr><td><code>touch fichier</code></td><td>Crée un fichier vide (ou met à jour sa date)</td><td></td></tr>
+      <tr><td><code>mkdir dossier</code></td><td>Crée un dossier</td><td><code>-p</code> : crée aussi les parents manquants</td></tr>
+      <tr><td><code>cp source destination</code></td><td>Copie</td><td><code>-r</code> : dossiers entiers · <code>-i</code> : demande avant d'écraser · <code>-v</code> : affiche ce qui est fait</td></tr>
+      <tr><td><code>mv source destination</code></td><td>Déplace <strong>ou renomme</strong></td><td><code>-i</code> : demande avant d'écraser</td></tr>
+      <tr><td><code>rm fichier</code></td><td>Supprime un fichier</td><td><code>-r</code> : dossiers · <code>-i</code> : confirmation · <code>-f</code> : force, sans question</td></tr>
+      <tr><td><code>rmdir dossier</code></td><td>Supprime un dossier <strong>vide</strong></td><td></td></tr>
+    </table></div>
+
+    <div class="terminal" data-title="user@ubuntu: ~"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">mkdir</span> <span class="f">-p</span> <span class="s">labo/notes/2026</span>         <span class="c"># crée les 3 niveaux d'un coup</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">cd</span> <span class="s">labo</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~/labo</span><span class="p">$</span> <span class="k">touch</span> <span class="s">idees.txt</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~/labo</span><span class="p">$</span> <span class="k">cp</span> <span class="s">idees.txt notes/</span>              <span class="c"># copier dans un dossier</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~/labo</span><span class="p">$</span> <span class="k">mv</span> <span class="s">idees.txt brouillon.txt</span>       <span class="c"># renommer</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~/labo</span><span class="p">$</span> <span class="k">mv</span> <span class="s">brouillon.txt notes/2026/</span>     <span class="c"># déplacer</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~/labo</span><span class="p">$</span> <span class="k">cp</span> <span class="f">-r</span> <span class="s">notes sauvegarde</span>            <span class="c"># copier tout un dossier</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~/labo</span><span class="p">$</span> <span class="k">rm</span> <span class="f">-ri</span> <span class="s">sauvegarde</span>                 <span class="c"># supprimer, en confirmant chaque élément</span>
+<span class="o">rm : descendre dans le répertoire 'sauvegarde' ? o</span>
+<span class="o">...</span></pre></div>
+
+    <div class="callout key"><span class="callout-title">Renommer, c'est déplacer</span>
+      <p>Il n'y a pas de commande « renommer » : <code>mv ancien nouveau</code> fait le travail. Si la destination est un dossier existant,
+        le fichier y est déplacé ; sinon, il prend ce nouveau nom.</p></div>
+
+    <div class="callout danger"><span class="callout-title"><code>rm</code> ne pardonne pas</span>
+      <p>Pas de corbeille dans le terminal : un fichier supprimé avec <code>rm</code> est perdu. <code>rm -rf</code> supprime tout un dossier, sans
+        poser la moindre question, et avec <code>sudo</code> il peut détruire le système entier. Trois réflexes :</p>
+      <ul>
+        <li>relire la commande avant <kbd>Entrée</kbd>, surtout s'il y a un <code>*</code> ou un <code>/</code> ;</li>
+        <li>vérifier avec <code>ls</code> ce que tu vas supprimer : <code>ls dossier/*.log</code> avant <code>rm dossier/*.log</code> ;</li>
+        <li>dans la VM, prendre un instantané avant toute manipulation risquée.</li>
+      </ul></div>
+
+    <!-- ================================================== -->
+    <h2 id="jokers" data-short="Les jokers">Les jokers : agir sur plusieurs fichiers d'un coup</h2>
+    <p>Le shell remplace certains caractères spéciaux par la liste des fichiers qui correspondent, <strong>avant</strong> de lancer la commande :</p>
+    <div class="table-wrap"><table>
+      <tr><th>Joker</th><th>Correspond à</th><th>Exemple</th></tr>
+      <tr><td><code>*</code></td><td>N'importe quelle suite de caractères (même vide)</td><td><code>ls *.txt</code> : tous les fichiers .txt</td></tr>
+      <tr><td><code>?</code></td><td>Exactement un caractère</td><td><code>ls photo?.jpg</code> : photo1.jpg, photoA.jpg…</td></tr>
+      <tr><td><code>[abc]</code>, <code>[0-9]</code></td><td>Un caractère parmi une liste ou un intervalle</td><td><code>ls rapport[1-3].pdf</code></td></tr>
+      <tr><td><code>{a,b,c}</code></td><td>Génère chaque variante (expansion d'accolades)</td><td><code>mkdir -p projet/{src,doc,tests}</code></td></tr>
+    </table></div>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~/labo</span><span class="p">$</span> <span class="k">touch</span> <span class="s">jour{1..5}.log</span>        <span class="c"># crée jour1.log … jour5.log</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~/labo</span><span class="p">$</span> <span class="k">echo</span> <span class="s">jour[2-4].log</span>         <span class="c"># astuce : echo montre ce que le joker donnera</span>
+<span class="o">jour2.log jour3.log jour4.log</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~/labo</span><span class="p">$</span> <span class="k">rm</span> <span class="s">jour*.log</span></pre></div>
+
+    <div class="callout tip"><span class="callout-title">Prévisualiser avec <code>echo</code></span>
+      <p>Avant un <code>rm</code> ou un <code>mv</code> avec un joker, remplace la commande par <code>echo</code> : tu vois exactement la liste
+        de fichiers que le shell va lui passer. Zéro risque.</p></div>
+
+    <!-- ================================================== -->
+    <h2 id="liens" data-short="Les liens">Les liens : un fichier, plusieurs noms</h2>
+    <p>Pour comprendre les liens, il faut savoir qu'un nom de fichier n'est qu'une <strong>étiquette</strong>. Le contenu réel est décrit par un
+      <strong>inode</strong>, une fiche numérotée qui indique où sont les données sur le disque. Un dossier, c'est une liste de couples « nom → numéro d'inode ».</p>
+
+    <figure>
+      <div class="diagram">
+        <svg viewBox="0 0 720 250" role="img" aria-label="Lien physique et lien symbolique">
+          <text x="170" y="24" text-anchor="middle" class="svg-text" font-size="15" font-weight="700">Lien physique (ln)</text>
+          <rect x="30" y="50" width="120" height="40" rx="8" class="svg-box"/><text x="90" y="75" text-anchor="middle" class="svg-mono" font-size="13">notes.txt</text>
+          <rect x="30" y="120" width="120" height="40" rx="8" class="svg-box"/><text x="90" y="145" text-anchor="middle" class="svg-mono" font-size="13">copie-dure</text>
+          <rect x="220" y="80" width="110" height="60" rx="10" fill="#e95420"/><text x="275" y="107" text-anchor="middle" fill="#fff" font-size="13" font-family="Inter" font-weight="700">inode 1342</text><text x="275" y="126" text-anchor="middle" fill="#fff" font-size="11" font-family="Inter">les données</text>
+          <line x1="150" y1="70" x2="218" y2="100" class="svg-line" stroke-width="2"/><line x1="150" y1="140" x2="218" y2="120" class="svg-line" stroke-width="2"/>
+          <text x="170" y="200" text-anchor="middle" class="svg-sub" font-size="12">deux noms, le même contenu :</text>
+          <text x="170" y="218" text-anchor="middle" class="svg-sub" font-size="12">supprimer l'un ne touche pas l'autre</text>
+
+          <line x1="360" y1="20" x2="360" y2="230" class="svg-line" stroke-dasharray="4 6" opacity=".5"/>
+
+          <text x="545" y="24" text-anchor="middle" class="svg-text" font-size="15" font-weight="700">Lien symbolique (ln -s)</text>
+          <rect x="390" y="50" width="120" height="40" rx="8" class="svg-box"/><text x="450" y="75" text-anchor="middle" class="svg-mono" font-size="13">raccourci</text>
+          <rect x="390" y="120" width="120" height="40" rx="8" class="svg-box"/><text x="450" y="145" text-anchor="middle" class="svg-mono" font-size="13">notes.txt</text>
+          <rect x="590" y="110" width="110" height="60" rx="10" fill="#b36bd6"/><text x="645" y="137" text-anchor="middle" fill="#fff" font-size="13" font-family="Inter" font-weight="700">inode 1342</text><text x="645" y="156" text-anchor="middle" fill="#fff" font-size="11" font-family="Inter">les données</text>
+          <path d="M450 90 L450 118" class="svg-line" stroke-width="2" stroke-dasharray="5 4"/><text x="458" y="108" class="svg-sub" font-size="11">pointe vers le nom</text>
+          <line x1="510" y1="140" x2="588" y2="140" class="svg-line" stroke-width="2"/>
+          <text x="545" y="200" text-anchor="middle" class="svg-sub" font-size="12">un raccourci vers un chemin :</text>
+          <text x="545" y="218" text-anchor="middle" class="svg-sub" font-size="12">si la cible disparaît, le lien est « cassé »</text>
+        </svg>
+      </div>
+      <figcaption>Un lien physique est un second nom pour le même inode. Un lien symbolique est un petit fichier qui contient un chemin.</figcaption>
+    </figure>
+
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~/labo</span><span class="p">$</span> <span class="k">echo</span> <span class="s">"Linux"</span> > notes.txt
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~/labo</span><span class="p">$</span> <span class="k">ln</span> <span class="s">notes.txt copie-dure</span>          <span class="c"># lien physique</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~/labo</span><span class="p">$</span> <span class="k">ln</span> <span class="f">-s</span> <span class="s">notes.txt raccourci</span>        <span class="c"># lien symbolique</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~/labo</span><span class="p">$</span> <span class="k">ls</span> <span class="f">-li</span>                            <span class="c"># -i affiche le numéro d'inode</span>
+<span class="o"><span class="hl">1342</span> -rw-rw-r-- <span class="hl">2</span> user user 6 oct. 22 11:02 copie-dure</span>
+<span class="o"><span class="hl">1342</span> -rw-rw-r-- <span class="hl">2</span> user user 6 oct. 22 11:02 notes.txt</span>
+<span class="o">1377 lrwxrwxrwx 1 user user 9 oct. 22 11:02 raccourci -> notes.txt</span></pre></div>
+    <p>Les deux premiers partagent le même inode, et le compteur de liens vaut <code>2</code>. Le lien symbolique a son propre inode et affiche sa cible avec <code>-></code>.</p>
+    <div class="table-wrap"><table>
+      <tr><th></th><th>Lien physique</th><th>Lien symbolique</th></tr>
+      <tr><td>Commande</td><td><code>ln cible nom</code></td><td><code>ln -s cible nom</code></td></tr>
+      <tr><td>Vers un dossier</td><td class="no">non</td><td class="yes">oui</td></tr>
+      <tr><td>Vers un autre disque</td><td class="no">non</td><td class="yes">oui</td></tr>
+      <tr><td>Si on supprime l'original</td><td class="yes">le contenu reste accessible</td><td class="no">le lien est cassé</td></tr>
+      <tr><td>Usage courant</td><td>Rare, sauvegardes</td><td><strong>Partout</strong> : <code>/bin</code>, configurations, versions de logiciels</td></tr>
+    </table></div>
+
+    <!-- ================================================== -->
+    <h2 id="glossaire" data-short="Glossaire">Glossaire du module</h2>
+    <dl class="glossary">
+      <dt>Racine</dt><dd>Le dossier <code>/</code>, sommet de l'arborescence.</dd>
+      <dt>FHS</dt><dd>La norme qui fixe le rôle de chaque dossier du système.</dd>
+      <dt>Dossier courant</dt><dd>Le dossier où l'on se trouve (<code>pwd</code>), noté <code>.</code>.</dd>
+      <dt>Dossier parent</dt><dd>Le dossier au-dessus, noté <code>..</code>.</dd>
+      <dt>Dossier personnel</dt><dd><code>/home/utilisateur</code>, noté <code>~</code>.</dd>
+      <dt>Chemin absolu</dt><dd>Chemin qui part de la racine : commence par <code>/</code>.</dd>
+      <dt>Chemin relatif</dt><dd>Chemin qui part du dossier courant.</dd>
+      <dt>Fichier caché</dt><dd>Fichier dont le nom commence par un point.</dd>
+      <dt>Joker (glob)</dt><dd>Caractère spécial (<code>*</code>, <code>?</code>, <code>[ ]</code>) remplacé par le shell par les noms correspondants.</dd>
+      <dt>Inode</dt><dd>La fiche qui décrit un fichier et localise ses données sur le disque.</dd>
+      <dt>Lien physique</dt><dd>Un nom supplémentaire pour le même inode.</dd>
+      <dt>Lien symbolique</dt><dd>Un raccourci qui contient le chemin de sa cible.</dd>
+    </dl>
+
+    <!-- ================================================== -->
+    <h2 id="quiz" data-short="Quiz">🧠 Quiz : as-tu tout retenu ?</h2>
+    <div class="quiz">
+      <div class="q" data-answer="1">
+        <div class="q-text">1. Où se trouve la configuration du système ?</div>
+        <div class="q-opts"><button><code>/usr</code></button><button><code>/etc</code></button><button><code>/var</code></button></div>
+        <div class="q-explain"><code>/etc</code> contient la configuration, en fichiers texte. <code>/var</code> contient les données variables comme les journaux.</div>
+      </div>
+      <div class="q" data-answer="2">
+        <div class="q-text">2. Lequel de ces chemins est absolu ?</div>
+        <div class="q-opts"><button><code>Documents/cv.pdf</code></button><button><code>../cv.pdf</code></button><button><code>/home/user/cv.pdf</code></button></div>
+        <div class="q-explain">Un chemin absolu commence par <code>/</code>.</div>
+      </div>
+      <div class="q" data-answer="0">
+        <div class="q-text">3. Tu es dans <code>/var/log</code>. Où t'emmène <code>cd ../..</code> ?</div>
+        <div class="q-opts"><button><code>/</code></button><button><code>/var</code></button><button><code>/home/user</code></button></div>
+        <div class="q-explain">Un <code>..</code> remonte à <code>/var</code>, le second à la racine <code>/</code>.</div>
+      </div>
+      <div class="q" data-answer="1">
+        <div class="q-text">4. Comment renommer <code>a.txt</code> en <code>b.txt</code> ?</div>
+        <div class="q-opts"><button><code>rename a.txt b.txt</code></button><button><code>mv a.txt b.txt</code></button><button><code>cp a.txt b.txt</code></button></div>
+        <div class="q-explain"><code>mv</code> déplace et renomme. <code>cp</code> créerait une copie et laisserait l'original.</div>
+      </div>
+      <div class="q" data-answer="2">
+        <div class="q-text">5. <code>mkdir labo/a/b</code> échoue car <code>labo/a</code> n'existe pas. Quelle option corrige ça ?</div>
+        <div class="q-opts"><button><code>-r</code></button><button><code>-f</code></button><button><code>-p</code></button></div>
+        <div class="q-explain"><code>mkdir -p</code> crée tous les dossiers parents manquants.</div>
+      </div>
+      <div class="q" data-answer="0">
+        <div class="q-text">6. Que liste <code>ls *.jpg</code> ?</div>
+        <div class="q-opts"><button>Tous les fichiers dont le nom se termine par .jpg</button><button>Un fichier nommé « *.jpg »</button><button>Toutes les images de l'ordinateur</button></div>
+        <div class="q-explain">Le shell remplace <code>*.jpg</code> par les noms correspondants du dossier courant.</div>
+      </div>
+      <div class="q" data-answer="1">
+        <div class="q-text">7. Comment afficher les fichiers cachés ?</div>
+        <div class="q-opts"><button><code>ls -h</code></button><button><code>ls -a</code></button><button><code>ls --hidden-only</code></button></div>
+        <div class="q-explain"><code>-a</code> (all). Attention : <code>-h</code> signifie <em>human-readable</em> (tailles lisibles).</div>
+      </div>
+      <div class="q" data-answer="2">
+        <div class="q-text">8. On supprime le fichier cible d'un lien symbolique. Le lien…</div>
+        <div class="q-opts"><button>affiche toujours le contenu</button><button>est supprimé automatiquement</button><button>devient un lien cassé</button></div>
+        <div class="q-explain">Le lien symbolique contient un chemin ; si plus rien n'existe à ce chemin, il pointe dans le vide.</div>
+      </div>
+      <div class="quiz-score">Réponds aux questions pour voir ton score.</div>
+    </div>
+
+    <!-- ================================================== -->
+    <h2 id="mission" data-short="Mission pratique">🚀 Mission pratique</h2>
+    <div class="mission">
+      <h4>À faire dans la machine virtuelle</h4>
+      <p class="mission-astuce">Coche chaque étape une fois faite : sa correction s'affiche juste en dessous.</p>
+      <ul class="checklist" data-key="m02">
+        <li><label><input type="checkbox"><span>Visiter <code>/</code>, <code>/etc</code>, <code>/var/log</code> et <code>/dev</code> avec <code>cd</code> et <code>ls</code>, en vérifiant sa position avec <code>pwd</code>.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> cd /
+<span class="p">$</span> ls
+<span class="p">$</span> cd /etc
+<span class="p">$</span> pwd
+<span class="o">/etc</span>
+<span class="p">$</span> cd /var/log &amp;&amp; ls
+<span class="p">$</span> cd /dev &amp;&amp; ls</pre></div></li>
+        <li><label><input type="checkbox"><span>Lire <code>/etc/os-release</code> avec <code>cat</code>, sans changer de dossier (chemin absolu).</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> cat /etc/os-release
+<span class="o">PRETTY_NAME=&quot;Ubuntu 24.04.x LTS&quot;</span>
+<span class="o">...</span></pre><p>Le chemin commence par <code>/</code> : il fonctionne quel que soit le dossier courant.</p></div></li>
+        <li><label><input type="checkbox"><span>Depuis <code>/var/log</code>, revenir dans son dossier personnel de trois façons différentes.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> cd
+<span class="p">$</span> cd ~
+<span class="p">$</span> cd /home/user
+<span class="c"># ou en relatif depuis /var/log :</span>
+<span class="p">$</span> cd ../../home/user</pre></div></li>
+        <li><label><input type="checkbox"><span>Afficher les fichiers cachés de son dossier personnel.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> ls -a ~
+<span class="o">.  ..  .bash_history  .bashrc  .cache  .config  .profile  Bureau  Documents  ...</span></pre></div></li>
+        <li><label><input type="checkbox"><span>Créer en une seule commande l'arborescence <code>~/labo/projet/{src,doc,tests}</code>.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> mkdir -p ~/labo/projet/{src,doc,tests}
+<span class="p">$</span> ls ~/labo/projet
+<span class="o">doc  src  tests</span></pre></div></li>
+        <li><label><input type="checkbox"><span>Y créer des fichiers avec <code>touch</code>, les copier, les renommer et les déplacer.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> cd ~/labo/projet
+<span class="p">$</span> touch src/main.sh doc/notes.txt
+<span class="p">$</span> cp doc/notes.txt doc/notes.bak
+<span class="p">$</span> mv doc/notes.bak doc/ancien.txt
+<span class="p">$</span> mv doc/ancien.txt tests/
+<span class="p">$</span> ls *
+<span class="o">doc:</span>
+<span class="o">notes.txt</span>
+<span class="o">src:</span>
+<span class="o">main.sh</span>
+<span class="o">tests:</span>
+<span class="o">ancien.txt</span></pre></div></li>
+        <li><label><input type="checkbox"><span>Créer <code>jour1.log</code> à <code>jour9.log</code>, puis supprimer seulement 3 à 6 avec un joker (prévisualisé avec <code>echo</code>).</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> cd ~/labo &amp;&amp; touch jour{1..9}.log
+<span class="p">$</span> echo jour[3-6].log
+<span class="o">jour3.log jour4.log jour5.log jour6.log</span>
+<span class="p">$</span> rm jour[3-6].log
+<span class="p">$</span> ls
+<span class="o">jour1.log  jour2.log  jour7.log  jour8.log  jour9.log  projet</span></pre></div></li>
+        <li><label><input type="checkbox"><span>Créer un lien physique et un lien symbolique, comparer leurs inodes avec <code>ls -li</code>, puis casser le lien symbolique.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> echo &quot;test&quot; &gt; cible.txt
+<span class="p">$</span> ln cible.txt dur.txt
+<span class="p">$</span> ln -s cible.txt sym.txt
+<span class="p">$</span> ls -li
+<span class="o">1351 -rw-rw-r-- 2 user user 5 ... cible.txt</span>
+<span class="o">1351 -rw-rw-r-- 2 user user 5 ... dur.txt</span>
+<span class="o">1352 lrwxrwxrwx 1 user user 9 ... sym.txt -&gt; cible.txt</span>
+<span class="p">$</span> rm cible.txt
+<span class="p">$</span> cat dur.txt
+<span class="o">test</span>
+<span class="p">$</span> cat sym.txt
+<span class="o">cat: sym.txt: Aucun fichier ou dossier de ce nom</span></pre><p>Même inode pour <code>cible.txt</code> et <code>dur.txt</code> : le contenu survit. Le lien symbolique, lui, est cassé (affiché en rouge par <code>ls</code>).</p></div></li>
+        <li><label><input type="checkbox"><span>Vérifier avec <code>ls -l /bin</code> que <code>/bin</code> est un lien.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> ls -l /bin
+<span class="o">lrwxrwxrwx 1 root root 7 avril 22  2024 /bin -&gt; usr/bin</span></pre></div></li>
+        <li><label><input type="checkbox"><span>Bonus : installer <code>tree</code> et afficher <code>~/labo</code>, puis tout supprimer proprement avec <code>rm -ri</code>.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> sudo apt install tree
+<span class="p">$</span> tree ~/labo
+<span class="p">$</span> rm -ri ~/labo
+<span class="o">rm : descendre dans le répertoire &#x27;/home/user/labo&#x27; ? o</span>
+<span class="o">...</span></pre><p>Réponds <code>o</code> (oui) à chaque question. Pour ne pas confirmer chaque fichier, <code>rm -rI</code> ne pose qu'une seule question.</p></div></li>
+      </ul>
+    </div>
+
+    <!-- ================================================== -->
+    <h2 id="questions" data-short="Questions fréquentes">💬 Questions fréquentes</h2>
+    <p>Les questions qui reviennent le plus souvent sur ce module, avec leurs réponses.</p>
+    <div class="qa" id="qa-list">
+      <details>
+        <summary>Où sont passés « Bureau », « Documents »… dans le terminal ?</summary>
+        <p>Ce sont des dossiers ordinaires de ton dossier personnel : <code>~/Bureau</code>, <code>~/Documents</code>, <code>~/Téléchargements</code>.
+          Leur nom suit la langue choisie à l'installation : sur un système en anglais, ce serait <code>~/Desktop</code>, <code>~/Downloads</code>…
+          Astuce : les accents se tapent mal ? Commence le nom et utilise <kbd>Tab</kbd>.</p>
+      </details>
+      <details>
+        <summary>« Permission denied » quand je crée un fichier dans <code>/etc</code> ou à la racine</summary>
+        <p>C'est normal et c'est une protection : en dehors de ton dossier personnel (et de <code>/tmp</code>), seul root peut écrire.
+          On verra au module 04 comment fonctionnent ces droits, et quand utiliser <code>sudo</code> à bon escient.</p>
+      </details>
+      <details>
+        <summary>Comment récupérer un fichier supprimé avec <code>rm</code> ?</summary>
+        <p>En pratique, on ne peut pas : <code>rm</code> ne passe pas par la corbeille. D'où l'importance des sauvegardes (module 15)
+          et, dans une VM, des instantanés. Si tu veux une corbeille en ligne de commande, le paquet <code>trash-cli</code> fournit
+          la commande <code>trash</code>.</p>
+      </details>
+    </div>
+
+    <button class="done-btn" data-module="02" type="button">🏁 Marquer ce module comme terminé</button>
+
+    <nav class="page-nav">
+      <a href="01-bureau-terminal.html"><small>← Précédent</small>Module 01 — Le bureau &amp; le terminal</a>
+      <a class="next" href="03-lire-editer.html"><small>Suivant →</small>Module 03 — Lire &amp; éditer des fichiers</a>
+    </nav>
+  </article>
+</div>
+
+<footer class="site-footer">
+  <div>Carnet Linux · Module 02 · 🐧</div>
+</footer>
+
+<script src="../assets/js/main.js"></script>
+</body>
+</html>

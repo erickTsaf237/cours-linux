@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>La VM expliquée — vidéo</title>
+<link rel="stylesheet" href="commun.css">
+<style>
+/* ---------- mini bureaux */
+.bureau-win { background: radial-gradient(70% 90% at 60% 40%, #3aa0ff 0%, #0b5fd1 45%, #062f7a 100%); overflow: hidden; }
+.bureau-win .tache { position: absolute; left: 0; right: 0; bottom: 0; height: 9%; background: rgba(10,20,40,.85); }
+.bureau-win .logo-w { position: absolute; left: 50%; top: 42%; width: 22%; aspect-ratio: 1; transform: translate(-50%, -50%) perspective(400px) rotateY(-18deg);
+  display: grid; grid-template-columns: 1fr 1fr; gap: 6%; }
+.bureau-win .logo-w i { background: rgba(255,255,255,.9); display: block; }
+.bureau-ubu { background: radial-gradient(90% 90% at 70% 30%, #e95420 0%, #a1325f 50%, #2c0f2e 100%); overflow: hidden; }
+.bureau-ubu .haut { position: absolute; left: 0; right: 0; top: 0; height: 6%; background: rgba(0,0,0,.65); }
+.bureau-ubu .dock { position: absolute; left: 0; top: 6%; bottom: 0; width: 8%; background: rgba(0,0,0,.45); }
+#polaroid-vm .bureau-ubu img { height: auto; object-fit: contain; filter: none; }
+.bureau-ubu img { position: absolute; left: 54%; top: 52%; width: 26%; transform: translate(-50%, -50%); opacity: .9; }
+
+/* ---------- 1. intro */
+#win { left: 410px; top: 150px; width: 1100px; height: 620px; border-radius: 24px; box-shadow: 0 40px 100px rgba(0,0,0,.6); }
+#win-lab { position: absolute; left: 40px; top: 30px; font-family: var(--display); font-weight: 800; font-size: 54px; }
+#bouclier { left: 1370px; top: 90px; width: 220px; height: 220px; border-radius: 50%; background: var(--vert); display: grid; place-items: center;
+  box-shadow: 0 20px 60px rgba(63,185,80,.5); font-size: 110px; }
+#vm-geant { top: 200px; font-size: 440px; }
+#vm-sous { top: 690px; font-size: 76px; }
+
+/* ---------- 2. l'ordinateur dans l'ordinateur */
+#ecran { left: 360px; top: 110px; width: 1200px; height: 640px; border-radius: 28px; background: #10141c; border: 18px solid #232a36; box-shadow: 0 50px 120px rgba(0,0,0,.6); }
+#ecran .bureau-win { position: absolute; inset: 0; border-radius: 10px; }
+#pied { left: 880px; top: 750px; width: 160px; height: 70px; background: linear-gradient(#232a36, #161b24); clip-path: polygon(25% 0, 75% 0, 100% 100%, 0 100%); }
+#fenetre-vm { left: 610px; top: 230px; width: 700px; height: 420px; border-radius: 14px; overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,.7); border: 3px solid rgba(255,255,255,.25); }
+#fenetre-vm .titre-f { position: absolute; left: 0; right: 0; top: 0; height: 40px; background: #e8eaed; color: #222; font-size: 22px; padding: 6px 16px; z-index: 2; }
+#fenetre-vm .bureau-ubu { position: absolute; inset: 40px 0 0 0; }
+.etiq { padding: 18px 30px; border-radius: 20px; }
+.etiq .k { font-family: var(--mono); font-size: 30px; letter-spacing: .18em; }
+.etiq .v { font-family: var(--display); font-weight: 800; font-size: 50px; }
+#etiq-hote { left: 70px; top: 760px; background: rgba(11,95,209,.25); border: 2px solid #3aa0ff; }
+#etiq-hote .k { color: #7cc0ff; }
+#etiq-invite { left: 1330px; top: 770px; background: rgba(233,84,32,.22); border: 2px solid var(--orange); }
+#etiq-invite .k { color: var(--orange-2); }
+
+/* ---------- 3. la pile */
+.couche { left: 460px; width: 1000px; height: 130px; border-radius: 26px; display: flex; align-items: center; padding: 0 44px; gap: 26px;
+  font-family: var(--display); font-weight: 800; font-size: 54px; box-shadow: 0 20px 50px rgba(0,0,0,.4); }
+.couche small { font-family: var(--texte); font-weight: 400; font-size: 30px; opacity: .85; margin-left: auto; }
+#c-mat { top: 700px; background: #3a4256; }
+#c-win { top: 555px; background: #0b5fd1; }
+#c-vbox { top: 410px; background: linear-gradient(90deg, #2563eb, #183a8c); border: 4px solid var(--jaune); }
+#c-ubu { top: 265px; background: linear-gradient(90deg, var(--orange), #a1325f); }
+#c-vbox img { width: 92px; height: 92px; }
+#chef { left: 1490px; top: 395px; font-family: var(--display); font-weight: 800; font-size: 46px; color: var(--jaune); }
+#chef .emoji { font-size: 80px; display: block; }
+.autre { font-family: var(--display); font-weight: 700; font-size: 34px; }
+#a1 { left: 120px; top: 300px; } #a2 { left: 120px; top: 430px; } #a3 { left: 120px; top: 560px; }
+#pile-titre { top: 90px; font-size: 90px; }
+
+/* ---------- 4. les ressources */
+.panneau { top: 200px; width: 740px; height: 600px; padding: 34px 40px; }
+#pc { left: 120px; } #vmp { left: 1060px; }
+.panneau h3 { font-family: var(--display); font-weight: 800; font-size: 56px; margin-bottom: 26px; }
+.rangee { display: flex; align-items: center; gap: 14px; margin-bottom: 34px; height: 100px; }
+.rangee .lab { width: 200px; font-family: var(--mono); font-size: 30px; color: var(--gris); }
+.coeur { width: 56px; height: 56px; border-radius: 12px; background: #2b3a55; border: 2px solid rgba(255,255,255,.2); }
+.ramc { width: 40px; height: 76px; border-radius: 8px; background: #2b3a55; border: 2px solid rgba(255,255,255,.2); }
+.disq { font-size: 86px; }
+.vol { position: absolute; }
+.vol.coeur, .vol.ramc { background: var(--orange); border-color: #ffb08a; box-shadow: 0 0 24px rgba(233,84,32,.7); }
+#fleche { left: 870px; top: 420px; font-size: 150px; color: var(--jaune); font-family: var(--display); font-weight: 800; }
+#vdi { left: 1290px; top: 568px; width: 480px; height: 150px; display: flex; align-items: center; gap: 26px; padding: 0 30px; }
+#vdi .emoji { font-size: 90px; }
+#vdi .n { font-family: var(--mono); font-size: 34px; }
+#vdi .t { font-size: 24px; color: var(--gris); line-height: 1.25; }
+
+/* ---------- 5. dupe, VT-x, BIOS */
+#tux-dupe { left: 560px; top: 260px; width: 380px; }
+#bulle { left: 960px; top: 210px; width: 660px; padding: 40px 46px; border-radius: 40px; background: #fff; color: #1b1f2a;
+  font-family: var(--display); font-weight: 800; font-size: 62px; line-height: 1.05; }
+#bulle::before { content: ""; position: absolute; left: -46px; top: 150px; border: 30px solid transparent; border-right: 40px solid #fff; }
+#puce { left: 760px; top: 220px; width: 400px; height: 400px; border-radius: 40px; background: linear-gradient(145deg, #2a3242, #12161f);
+  border: 4px solid #4a5568; display: grid; place-items: center; font-family: var(--mono); font-size: 90px; color: #cbd5e1;
+  box-shadow: 0 0 0 18px #0d1117, 0 0 0 22px #4a5568, 0 40px 100px rgba(0,0,0,.6); }
+.broche { position: absolute; background: #a3acb9; }
+#vtx, #amdv { top: 360px; width: 420px; padding: 30px; text-align: center; border-radius: 26px; font-family: var(--display); font-weight: 800; font-size: 64px; }
+#vtx { left: 200px; background: #0071c5; } #amdv { left: 1300px; background: #c4161c; }
+#vtx small, #amdv small { display: block; font-family: var(--texte); font-size: 30px; font-weight: 600; opacity: .9; }
+#bios { left: 260px; top: 150px; width: 1400px; height: 640px; background: #0000a8; border: 6px solid #a8a8a8; font-family: var(--mono); color: #fff;
+  font-size: 38px; padding: 36px 50px; line-height: 1.8; box-shadow: 0 40px 100px rgba(0,0,0,.6); }
+#bios .t { background: #a8a8a8; color: #0000a8; text-align: center; margin: -36px -50px 30px; padding: 6px; }
+#bios .ligne-b { display: flex; justify-content: space-between; }
+#bios .sel { background: #fff; color: #0000a8; padding: 0 12px; }
+#bios .gris { color: #a8a8ff; }
+#etat-on { color: #00ff66; }
+
+/* ---------- 6. règle d'or */
+#regle-titre { top: 110px; font-size: 120px; }
+#medaille { left: 1440px; top: 70px; font-size: 170px; }
+#moitie { top: 280px; font-size: 96px; color: #ffd2bd; }
+#ram8 { left: 260px; top: 470px; width: 1400px; height: 200px; display: flex; gap: 18px; }
+.bloc { flex: 1; border-radius: 18px; background: #2b3a55; border: 3px solid rgba(255,255,255,.18); display: grid; place-items: center;
+  font-family: var(--display); font-weight: 800; font-size: 46px; color: rgba(255,255,255,.75); }
+#limite { left: 956px; top: 430px; width: 0; height: 290px; border-left: 8px dashed var(--rouge); }
+#limite-lab { left: 880px; top: 380px; width: 160px; text-align: center; font-family: var(--mono); font-size: 34px; color: var(--rouge); }
+#leg-win { left: 1000px; top: 700px; font-size: 40px; font-family: var(--display); font-weight: 700; color: #7cc0ff; }
+#leg-vm { left: 260px; top: 700px; font-size: 40px; font-family: var(--display); font-weight: 700; color: var(--orange-2); }
+#escargot { left: 1520px; top: 680px; font-size: 130px; }
+
+/* ---------- 7. instantané */
+#super-titre { top: 120px; font-size: 120px; }
+#appareil { left: 820px; top: 330px; font-size: 280px; }
+#polaroid-vm { left: 560px; top: 120px; width: 800px; height: 620px; transform: rotate(-3deg); }
+#polaroid-vm .bureau-ubu { position: absolute; left: 22px; right: 22px; top: 22px; bottom: 100px; }
+#polaroid-vm .leg { font-size: 42px; bottom: 28px; }
+#casse { left: 22px; right: 22px; top: 22px; bottom: 100px; background: repeating-linear-gradient(0deg, rgba(248,113,113,.35) 0 6px, rgba(0,0,0,.6) 6px 14px), #300;
+  display: grid; place-items: center; }
+#casse span { font-family: var(--mono); font-size: 110px; color: #ff6b6b; text-shadow: 6px 0 #00e5ff, -6px 0 #ff00aa; }
+#bouton { left: 1420px; top: 600px; padding: 26px 40px; border-radius: 18px; background: var(--vert); font-family: var(--display); font-weight: 800; font-size: 44px;
+  box-shadow: 0 20px 50px rgba(63,185,80,.5); }
+#souris { left: 1700px; top: 900px; width: 70px; }
+#rembobine { top: 380px; font-size: 200px; }
+#checkpoint { left: 360px; top: 300px; width: 1200px; padding: 40px; text-align: center; border-radius: 0; background: #111;
+  border: 10px solid var(--jaune); box-shadow: 14px 14px 0 #000; font-family: var(--mono); }
+#checkpoint .gros { font-size: 120px; color: var(--jaune); letter-spacing: .08em; }
+#checkpoint .petit { font-size: 46px; color: #fff; margin-top: 10px; }
+
+/* ---------- 8. conclusion */
+.final { font-size: 160px; }
+#f1 { top: 170px; } #f2 { top: 350px; color: var(--rouge); } #f3 { top: 530px; }
+#apprend { top: 770px; font-size: 54px; color: var(--gris); font-family: var(--display); font-weight: 700; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="bg" class="layer"><div id="blob1" class="blob"></div><div id="blob2" class="blob"></div><div id="blob3" class="blob"></div></div>
+  <div id="grille" class="layer"></div>
+
+  <div id="cam-punch"><div id="cam-drift">
+
+    <!-- 1. Windows intact, puis « VM » -->
+    <div class="scene" id="s-intro">
+      <div class="abs bureau-win" id="win"><div class="logo-w"><i></i><i></i><i></i><i></i></div><div class="tache"></div><div id="win-lab">Windows 10</div></div>
+      <div class="abs emoji" id="bouclier">🛡️</div>
+    </div>
+    <div class="scene" id="s-vm">
+      <div class="ligne display grad" id="vm-geant">VM</div>
+      <div class="ligne display mots" id="vm-sous">une machine virtuelle</div>
+    </div>
+
+    <!-- 2. Un ordinateur dans ton ordinateur -->
+    <div class="scene" id="s-inception">
+      <div class="abs" id="ecran"><div class="bureau-win"><div class="logo-w"><i></i><i></i><i></i><i></i></div><div class="tache"></div></div></div>
+      <div class="abs" id="pied"></div>
+      <div class="abs" id="fenetre-vm"><div class="titre-f">ubuntu-lab [En fonction] — Oracle VirtualBox</div><div class="bureau-ubu"><div class="haut"></div><div class="dock"></div><img src="img/ubuntu-logo.svg" alt=""></div></div>
+      <div class="abs etiq" id="etiq-hote"><div class="k">HÔTE</div><div class="v">ton vrai PC · Windows</div></div>
+      <div class="abs etiq" id="etiq-invite"><div class="k">INVITÉ</div><div class="v">Ubuntu 24.04</div></div>
+    </div>
+
+    <!-- 3. La pile hôte / hyperviseur / invité -->
+    <div class="scene" id="s-pile">
+      <div class="ligne display mots" id="pile-titre">Qui fait quoi ?</div>
+      <div class="abs couche" id="c-ubu">Ubuntu <small>l'invité</small></div>
+      <div class="abs couche" id="c-vbox"><img src="img/virtualbox.png" alt="">VirtualBox <small>l'hyperviseur</small></div>
+      <div class="abs couche" id="c-win">Windows 10 <small>l'hôte</small></div>
+      <div class="abs couche" id="c-mat">Matériel <small>CPU · RAM · disque</small></div>
+      <div class="abs" id="chef"><span class="emoji">🎼</span>chef<br>d'orchestre</div>
+      <div class="abs puce autre" id="a1">VMware</div>
+      <div class="abs puce autre" id="a2">Hyper-V</div>
+      <div class="abs puce autre" id="a3">KVM</div>
+    </div>
+
+    <!-- 4. VirtualBox prête une partie du matériel -->
+    <div class="scene" id="s-res">
+      <div class="abs verre panneau" id="pc">
+        <h3>Ton PC</h3>
+        <div class="rangee"><span class="lab">CPU</span><div class="coeur"></div><div class="coeur"></div><div class="coeur"></div><div class="coeur"></div><div class="coeur"></div><div class="coeur"></div><div class="coeur"></div><div class="coeur"></div></div>
+        <div class="rangee"><span class="lab">RAM</span><div class="ramc"></div><div class="ramc"></div><div class="ramc"></div><div class="ramc"></div><div class="ramc"></div><div class="ramc"></div><div class="ramc"></div><div class="ramc"></div></div>
+        <div class="rangee"><span class="lab">Disque</span><span class="disq emoji" id="disq-pc">💽</span></div>
+      </div>
+      <div class="abs" id="fleche">→</div>
+      <div class="abs verre panneau" id="vmp">
+        <h3 style="color:var(--orange-2)">VM Ubuntu</h3>
+        <div class="rangee"><span class="lab">CPU</span></div>
+        <div class="rangee"><span class="lab">RAM</span></div>
+        <div class="rangee"><span class="lab">Disque</span></div>
+      </div>
+      <div class="abs vol coeur" id="v-c1"></div><div class="abs vol coeur" id="v-c2"></div>
+      <div class="abs vol ramc" id="v-r1"></div><div class="abs vol ramc" id="v-r2"></div><div class="abs vol ramc" id="v-r3"></div><div class="abs vol ramc" id="v-r4"></div>
+      <div class="abs disq emoji vol" id="v-d">💽</div>
+      <div class="abs verre" id="vdi"><span class="emoji">📄</span><div><div class="n">ubuntu-lab.vdi</div><div class="t">un simple fichier de 40 Go<br>sur ton disque Windows</div></div></div>
+    </div>
+
+    <!-- 5. Ubuntu n'y voit que du feu, VT-x, BIOS -->
+    <div class="scene" id="s-dupe">
+      <img class="abs" id="tux-dupe" src="img/tux.svg" alt="">
+      <div class="abs" id="bulle">« Je tourne sur une vraie machine ! »</div>
+    </div>
+    <div class="scene" id="s-puce">
+      <div class="abs" id="puce">CPU</div>
+      <div class="abs" id="vtx">VT-x<small>chez Intel</small></div>
+      <div class="abs" id="amdv">AMD-V<small>chez AMD</small></div>
+    </div>
+    <div class="scene" id="s-bios">
+      <div class="abs" id="bios">
+        <div class="t">BIOS SETUP UTILITY — Advanced</div>
+        <div class="gris">CPU Configuration</div>
+        <div class="ligne-b"><span>Hyper-Threading</span><span>[Enabled]</span></div>
+        <div class="ligne-b"><span class="sel">Intel Virtualization Technology</span><span>[<span id="etat-off">Disabled</span><span id="etat-on">Enabled</span>]</span></div>
+        <div class="ligne-b"><span>Execute Disable Bit</span><span>[Enabled]</span></div>
+        <br><div class="gris">F10: Save and Exit &nbsp;&nbsp; ESC: Exit</div>
+      </div>
+    </div>
+
+    <!-- 6. La règle d'or -->
+    <div class="scene" id="s-regle">
+      <div class="ligne display mots grad" id="regle-titre">La règle d'or</div>
+      <div class="abs emoji" id="medaille">🏆</div>
+      <div class="ligne display" id="moitie">jamais plus de la moitié</div>
+      <div class="abs" id="ram8"><div class="bloc">1</div><div class="bloc">2</div><div class="bloc">3</div><div class="bloc">4</div><div class="bloc">5</div><div class="bloc">6</div><div class="bloc">7</div><div class="bloc">8</div></div>
+      <div class="abs" id="limite"></div><div class="abs" id="limite-lab">MAX</div>
+      <div class="abs" id="leg-vm">VM Ubuntu : 4 Go</div>
+      <div class="abs" id="leg-win">Windows garde 4 Go</div>
+      <div class="abs emoji" id="escargot">🐌</div>
+    </div>
+
+    <!-- 7. L'instantané -->
+    <div class="scene" id="s-super">
+      <div class="ligne display mots grad" id="super-titre">Le super-pouvoir</div>
+      <div class="abs emoji" id="appareil">📸</div>
+    </div>
+    <div class="scene" id="s-snap">
+      <div class="abs polaroid" id="polaroid-vm">
+        <div class="bureau-ubu"><div class="haut"></div><div class="dock"></div><img src="img/ubuntu-logo.svg" alt=""></div>
+        <div class="abs" id="casse"><span>ERREUR</span></div>
+        <div class="leg">Installation propre ✓</div>
+      </div>
+      <div class="abs" id="bouton">⏪ Restaurer</div>
+      <svg class="abs" id="souris" viewBox="0 0 24 36"><path d="M2 2 L2 30 L9 23 L14 34 L19 32 L14 21 L23 21 Z" fill="#fff" stroke="#000" stroke-width="2" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="scene" id="s-check">
+      <div class="abs" id="checkpoint"><div class="gros">💾 CHECKPOINT</div><div class="petit">point de sauvegarde · comme dans un jeu vidéo</div></div>
+    </div>
+
+    <!-- 8. Teste, casse, recommence -->
+    <div class="scene" id="s-final">
+      <div class="ligne display final grad" id="f1">Teste.</div>
+      <div class="ligne display final" id="f2">Casse.</div>
+      <div class="ligne display final grad-v" id="f3">Recommence.</div>
+      <div class="ligne" id="apprend">C'est comme ça qu'on apprend Linux.</div>
+    </div>
+
+  </div></div>
+
+  <div id="vignette" class="layer"></div>
+  <div class="abs" id="badge"><img src="img/tux.svg" alt=""><div><div class="nom"><b>$</b> carnet-linux</div><div class="sous">Module 00 · La VM expliquée</div></div></div>
+  <canvas id="particules" width="1920" height="1080"></canvas>
+  <div class="abs" id="rideau"></div>
+  <div class="abs" id="st"></div>
+  <div class="abs" id="barre"></div>
+  <div id="flash" class="layer"></div>
+</div>
+
+<script src="lib/gsap.min.js"></script>
+<script src="commun.js"></script>
+<script>
+// Position (dans la scène) d'un élément, pour faire voler des copies d'un panneau à l'autre.
+function pos(el) {
+  const s = document.getElementById('stage').getBoundingClientRect(), r = el.getBoundingClientRect();
+  return { x: r.left - s.left, y: r.top - s.top };
+}
+
+Film.demarrer({
+  film: 'vm',
+  fin: { titre: 'La VM expliquée', sous: 'Carnet Linux · Module 00 — Linux &amp; son installation', prompt: 'sudo apt update' },
+  construire(C) {
+    // ======================================================= 1. intro
+    gsap.set('#s-intro', { autoAlpha: 1 });
+    gsap.set('#bouclier', { opacity: 0 });
+    tl.fromTo('#win', { y: 80, scale: 0.85, opacity: 0 }, { y: 0, scale: 1, opacity: 1, duration: 0.9, ease: 'back.out(1.4)' }, 0.2);
+    pop('#bouclier', C.windows + 0.6, { rot: -40 });
+    salve(C.windows + 0.7, 1480, 200, 30, ['#3fb950', '#a7f3b5', '#ffffff'], 'etincelles', 0.6);
+    plonge(C.deuxlettres, '#s-intro', '#s-vm');
+    tl.fromTo('#vm-geant', { scale: 2.6, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.45, ease: 'power4.in', immediateRender: false }, C.deuxlettres + 0.6);
+    flash(C.deuxlettres + 1.05, 0.5);
+    coup(C.deuxlettres + 1.05, 1.07);
+    gsap.set('#vm-sous .mot', { opacity: 0 });
+    motsEntrent('#vm-sous .mot', C.machine);
+
+    // ======================================================= 2. inception
+    rideau(C.imagine, '#s-vm', '#s-inception');
+    gsap.set(['#fenetre-vm', '#etiq-hote', '#etiq-invite'], { opacity: 0 });
+    tl.fromTo(['#ecran', '#pied'], { y: 120, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: 'back.out(1.3)', immediateRender: false }, C.imagine + 0.1);
+    tl.fromTo('#fenetre-vm', { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.8, ease: 'back.out(1.5)', immediateRender: false }, C.dansordi);
+    tl.fromTo('#etiq-hote', { x: -80, opacity: 0 }, { x: 0, opacity: 1, immediateRender: false }, C.hote);
+    tl.to('#ecran', { borderColor: '#3aa0ff', duration: 0.3 }, C.hote2);
+    tl.fromTo('#etiq-invite', { x: 80, opacity: 0 }, { x: 0, opacity: 1, immediateRender: false }, C.invite);
+    tl.to('#fenetre-vm', { borderColor: '#e95420', boxShadow: '0 0 70px rgba(233,84,32,.7)', duration: 0.3 }, C.invite2);
+
+    // ======================================================= 3. la pile
+    plonge(C.entre, '#s-inception', '#s-pile');
+    gsap.set(['.couche', '#chef', '.autre'], { opacity: 0 });
+    motsEntrent('#pile-titre .mot', C.entre);
+    tl.fromTo('#c-mat', { y: 120, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'back.out(1.6)', immediateRender: false }, C.entre + 0.2);
+    tl.fromTo('#c-win', { y: 120, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'back.out(1.6)', immediateRender: false }, C.entre + 0.45);
+    tl.fromTo('#c-ubu', { y: -150, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'back.out(1.6)', immediateRender: false }, C.entre + 0.7);
+    tl.fromTo('#c-vbox', { x: -1400, opacity: 0 }, { x: 0, opacity: 1, duration: 0.55, ease: 'back.out(1.3)', immediateRender: false }, C.hyperviseur);
+    coup(C.hyperviseur + 0.5, 1.03);
+    pop('#chef', C.hyperviseur + 0.6, { rot: 20 });
+    tl.to('#c-vbox', { boxShadow: '0 0 80px rgba(245,197,66,.6)', duration: 0.4 }, C.vbox);
+    tl.to('#c-vbox img', { keyframes: [{ scale: 1.35, rotation: 12, duration: 0.2 }, { scale: 1, rotation: 0, duration: 0.3 }] }, C.vbox + 0.2);
+    tl.to(['.couche:not(#c-vbox)'], { x: 180, duration: 0.5 }, C.autres - 0.1);
+    tl.to('#c-vbox', { x: 180, duration: 0.5 }, C.autres - 0.1);
+    tl.to('#chef', { opacity: 0, duration: 0.3 }, C.autres - 0.1);
+    tl.fromTo('.autre', { x: -200, opacity: 0 }, { x: 0, opacity: 1, duration: 0.45, stagger: 0.25, ease: 'back.out(1.8)', immediateRender: false }, C.autres + 0.3);
+    tl.to('.autre', { borderColor: 'rgba(245,197,66,.9)', color: '#f5c542', duration: 0.3, stagger: 0.1 }, C.principe + 0.4);
+
+    // ======================================================= 4. les ressources
+    rideau(C.prete, '#s-pile', '#s-res');
+    gsap.set(['#fleche', '#vdi', '.vol'], { opacity: 0 });
+    tl.fromTo('#pc', { x: -200, opacity: 0 }, { x: 0, opacity: 1, duration: 0.6, immediateRender: false }, C.prete);
+    tl.fromTo('#vmp', { x: 200, opacity: 0 }, { x: 0, opacity: 1, duration: 0.6, immediateRender: false }, C.prete + 0.15);
+    pop('#fleche', C.prete + 0.7, { depuis: 0.3 });
+    // Les copies volent depuis le panneau du PC jusqu'aux emplacements de la VM.
+    const coeurs = [...document.querySelectorAll('#pc .coeur')], rams = [...document.querySelectorAll('#pc .ramc')];
+    const rangVM = [...document.querySelectorAll('#vmp .rangee')];
+    const vol = (sel, src, dst, t, dx) => {
+      const a = pos(src), b = pos(dst);
+      gsap.set(sel, { left: a.x, top: a.y });
+      tl.set(sel, { opacity: 1 }, t);
+      tl.to(src, { opacity: 0.15, duration: 0.2 }, t);
+      tl.to(sel, { x: b.x + 220 + dx - a.x, y: b.y + (dst.offsetHeight - src.offsetHeight) / 2 - a.y, duration: 0.7, ease: 'power3.inOut' }, t);
+    };
+    vol('#v-c1', coeurs[6], rangVM[0], C.cpu, 0); vol('#v-c2', coeurs[7], rangVM[0], C.cpu + 0.15, 70);
+    vol('#v-r1', rams[4], rangVM[1], C.ram, 0); vol('#v-r2', rams[5], rangVM[1], C.ram + 0.1, 54);
+    vol('#v-r3', rams[6], rangVM[1], C.ram + 0.2, 108); vol('#v-r4', rams[7], rangVM[1], C.ram + 0.3, 162);
+    vol('#v-d', document.getElementById('disq-pc'), rangVM[2], C.disque, 0);
+    tl.to('#v-d', { scale: 0, opacity: 0, duration: 0.3, ease: 'power2.in' }, C.fichier - 0.1);
+    tl.fromTo('#vdi', { scale: 0.4, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(2)', immediateRender: false }, C.fichier + 0.15);
+    coup(C.fichier + 0.3, 1.03);
+
+    // ======================================================= 5. dupe, VT-x, BIOS
+    plonge(C.feu, '#s-res', '#s-dupe');
+    gsap.set('#bulle', { opacity: 0 });
+    tl.fromTo('#tux-dupe', { y: 300, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: 'back.out(1.8)', immediateRender: false }, C.feu);
+    tl.fromTo('#bulle', { scale: 0, opacity: 0, transformOrigin: '0% 60%' }, { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(2)', immediateRender: false }, C.vraie);
+    tl.to('#tux-dupe', { rotation: -8, duration: 0.25, yoyo: true, repeat: 3, ease: 'sine.inOut' }, C.vraie + 0.4);
+
+    rideau(C.rapide, '#s-dupe', '#s-puce');
+    gsap.set(['#vtx', '#amdv'], { opacity: 0 });
+    pop('#puce', C.rapide + 0.1, { depuis: 0.4 });
+    tl.to('#puce', { boxShadow: '0 0 0 18px #0d1117, 0 0 0 22px #f5c542, 0 0 140px rgba(245,197,66,.6)', color: '#f5c542', duration: 0.4 }, C.instructions);
+    tl.fromTo('#vtx', { x: -300, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: 'back.out(1.8)', immediateRender: false }, C.vtx);
+    tl.fromTo('#amdv', { x: 300, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: 'back.out(1.8)', immediateRender: false }, C.amdv);
+
+    plonge(C.bios, '#s-puce', '#s-bios');
+    gsap.set('#etat-on', { display: 'none' });
+    tl.set('#etat-off', { display: 'none' }, C.bios + 1.3);
+    tl.set('#etat-on', { display: 'inline' }, C.bios + 1.3);
+    flash(C.bios + 1.3, 0.3, 0.25);
+    salve(C.bios + 1.35, 1450, 420, 30, ['#00ff66', '#ffffff'], 'etincelles', 0.6);
+
+    // ======================================================= 6. la règle d'or
+    rideau(C.regle, '#s-bios', '#s-regle');
+    gsap.set(['#moitie', '#ram8', '.bloc', '#limite', '#limite-lab', '#leg-vm', '#leg-win', '#escargot', '#medaille'], { opacity: 0 });
+    motsEntrent('#regle-titre .mot', C.regle);
+    pop('#medaille', C.regle + 0.5, { rot: -30 });
+    tl.fromTo('#moitie', { y: 40, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.moitie);
+    tl.set('#ram8', { opacity: 1 }, C.huit);
+    pop('.bloc', C.huit, { stagger: 0.07, depuis: 0.3 });
+    tl.to('.bloc:nth-child(-n+4)', { backgroundColor: '#e95420', borderColor: '#ffb08a', color: '#fff', duration: 0.3, stagger: 0.1 }, C.quatre);
+    tl.to('.bloc:nth-child(n+5)', { backgroundColor: '#0b5fd1', borderColor: '#7cc0ff', color: '#fff', duration: 0.3, stagger: 0.1 }, C.quatre + 0.2);
+    tl.fromTo('#leg-vm', { y: 20, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.quatre + 0.3);
+    tl.fromTo('#leg-win', { y: 20, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.quatre + 0.5);
+    tl.fromTo(['#limite', '#limite-lab'], { scaleY: 0, opacity: 0, transformOrigin: '50% 0%' }, { scaleY: 1, opacity: 1, duration: 0.35, immediateRender: false }, C.pasplus);
+    tl.to('.bloc:nth-child(5)', { backgroundColor: '#c53030', borderColor: '#ff8080', duration: 0.2 }, C.rament);
+    secousse(C.rament + 0.1, 12);
+    pop('#escargot', C.rament + 0.3, { rot: -20 });
+    tl.to('#escargot', { x: -60, duration: 2, ease: 'none' }, C.rament + 0.6);
+
+    // ======================================================= 7. instantané
+    rideau(C.super, '#s-regle', '#s-super');
+    gsap.set('#appareil', { opacity: 0 });
+    motsEntrent('#super-titre .mot', C.super);
+    pop('#appareil', C.instantane, { rot: -15 });
+    plonge(C.photo, '#s-super', '#s-snap');
+    flash(C.photo, 0.95, 0.5);
+    gsap.set(['#casse', '#bouton', '#souris'], { opacity: 0 });
+    tl.fromTo('#polaroid-vm', { rotation: 10, scale: 1.2 }, { rotation: -3, scale: 1, duration: 0.7, ease: 'back.out(1.4)', immediateRender: false }, C.photo);
+    tl.set('#casse', { opacity: 1 }, C.casses + 0.15);
+    secousse(C.casses + 0.15, 22);
+    flash(C.casses + 0.15, 0.4, 0.2);
+    tl.fromTo('#bouton', { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.35, ease: 'back.out(2)', immediateRender: false }, C.clic - 0.5);
+    tl.fromTo('#souris', { x: 0, y: 0, opacity: 0 }, { x: -10, y: -225, opacity: 1, duration: 0.45, ease: 'power2.out', immediateRender: false }, C.clic - 0.4);
+    tl.to('#bouton', { scale: 0.9, duration: 0.08, yoyo: true, repeat: 1 }, C.clic + 0.1);
+    tl.to('#casse', { opacity: 0, filter: 'blur(10px)', duration: 0.6 }, C.arriere + 0.2);
+    tl.fromTo('#polaroid-vm', { rotation: -3 }, { rotation: -363, duration: 0.8, ease: 'power3.inOut', immediateRender: false }, C.arriere + 0.1);
+    salve(C.arriere + 0.9, 960, 430, 50, ['#3fb950', '#ffffff', '#e95420'], 'confetti', 0.9);
+
+    rideau(C.sauvegarde, '#s-snap', '#s-check');
+    tl.fromTo('#checkpoint', { scale: 0.3, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: 'steps(4)', immediateRender: false }, C.sauvegarde + 0.1);
+    tl.to('#checkpoint', { borderColor: '#ffffff', duration: 0.1, yoyo: true, repeat: 5, ease: 'steps(1)' }, C.jeu);
+
+    // ======================================================= 8. conclusion
+    plonge(C.vasy, '#s-check', '#s-final');
+    gsap.set(['#f1', '#f2', '#f3', '#apprend'], { opacity: 0 });
+    const slam = (sel, t) => { tl.fromTo(sel, { scale: 2.4, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.3, ease: 'power4.in', immediateRender: false }, t); coup(t + 0.3, 1.05); };
+    slam('#f1', C.teste); slam('#f2', C.casse); slam('#f3', C.recommence);
+    secousse(C.casse + 0.3, 12);
+    tl.fromTo('#apprend', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.apprend);
+  },
+});
+</script>
+</body>
+</html>

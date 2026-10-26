@@ -1,0 +1,13 @@
+# Configuration de déploiement du site (Worker « cours-linux » avec fichiers statiques).
+# Utilisée par : python publier.py https://linux.tneric.com --deployer
+# Les routes (linux.tneric.com) sont gérées dans le tableau de bord Cloudflare et ne sont pas modifiées ici.
+name = "cours-linux"
+main = "worker.js"
+compatibility_date = "2026-10-01"
+preview_urls = false
+
+[assets]
+directory = "../publication"
+binding = "ASSETS"
+not_found_handling = "404-page"   # sert publication/404.html
+html_handling = "none"            # garde les adresses …/module.html telles quelles (référencement)

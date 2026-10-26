@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Lire une commande et trouver de l'aide — vidéo</title>
+<link rel="stylesheet" href="commun.css">
+<style>
+/* 1. la phrase */
+#phrase-titre { top: 130px; font-size: 100px; }
+#cmd { top: 380px; font-family: var(--mono); font-size: 150px; }
+#cmd span { position: absolute; top: 0; width: 400px; margin-left: -200px; text-align: center; }
+#c-ls { left: 480px; } #c-l { left: 870px; width: 240px; margin-left: -120px; } #c-a { left: 1050px; width: 240px; margin-left: -120px; } #c-la { left: 960px; } #c-etc { left: 1440px; }
+#c-ls { color: #ffa657; } #c-l, #c-a, #c-la { color: #d2a8ff; } #c-etc { color: #a5d6ff; }
+.c-lab { top: 590px; width: 460px; text-align: center; }
+.c-lab b { display: block; font-family: var(--display); font-size: 44px; }
+.c-lab span { font-size: 30px; color: var(--gris); }
+#lab-ls { left: 250px; } #lab-ls b { color: #ffa657; }
+#lab-opt { left: 730px; } #lab-opt b { color: #d2a8ff; }
+#lab-arg { left: 1210px; } #lab-arg b { color: #a5d6ff; }
+.bulle-opt { left: 560px; top: 760px; width: 800px; text-align: center; font-size: 42px; font-family: var(--display); font-weight: 700; color: #e9c7f7; }
+
+/* 2. options longues */
+#longue-titre { top: 150px; font-size: 96px; }
+.vs { top: 380px; width: 640px; height: 300px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.vs .code { font-family: var(--mono); font-size: 110px; color: #d2a8ff; }
+.vs .lab { font-family: var(--display); font-weight: 700; font-size: 38px; color: var(--gris); margin-top: 10px; }
+#vs1 { left: 260px; } #vs2 { left: 1020px; }
+#egal { left: 900px; top: 470px; width: 120px; text-align: center; font-family: var(--display); font-weight: 800; font-size: 100px; color: var(--jaune); }
+
+/* 3. la casse */
+#t-casse { left: 360px; top: 230px; width: 1200px; }
+#t-casse .corps { font-size: 46px; min-height: 260px; }
+#casse-reg { top: 640px; font-family: var(--mono); font-size: 90px; }
+#casse-reg .ok { color: var(--vert); } #casse-reg .ko { color: var(--rouge); }
+
+/* 4. le secret */
+#secret-titre { top: 200px; font-size: 96px; }
+#secret-sous { top: 360px; font-size: 64px; }
+.porte { top: 520px; width: 300px; height: 300px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.porte .ico { font-family: var(--emoji); font-size: 120px; }
+.porte .nom { font-family: var(--mono); font-size: 44px; color: var(--orange-2); }
+#po1 { left: 350px; } #po2 { left: 810px; } #po3 { left: 1270px; }
+
+/* 5-7. les réflexes */
+.reflexe { left: 120px; top: 110px; }
+.reflexe-titre { left: 120px; top: 160px; font-size: 90px; font-family: var(--mono); letter-spacing: 0; }
+#t-help, #t-tldr { left: 320px; top: 330px; width: 1280px; }
+#t-help .corps, #t-tldr .corps { font-size: 34px; min-height: 420px; }
+#man { left: 320px; top: 320px; width: 1280px; height: 470px; background: #0d1117; border: 2px solid #2a3342; border-radius: 22px;
+  font-family: var(--mono); font-size: 32px; color: #d6deeb; padding: 26px 40px; box-shadow: 0 40px 100px rgba(0,0,0,.6); overflow: hidden; }
+#man .tete { display: flex; justify-content: space-between; color: #8b949e; }
+#man b { color: #fff; }
+#man .barre-man { position: absolute; left: 0; right: 0; bottom: 0; padding: 8px 40px; background: #d6deeb; color: #0d1117; font-size: 26px; }
+#man-touches { top: 820px; }
+#man-touches .touche { height: 96px; min-width: 96px; font-size: 40px; margin: 0 10px; border-bottom-width: 9px; }
+#man-touches .lab { font-family: var(--display); font-weight: 700; font-size: 32px; color: var(--gris); margin: 0 30px 0 6px; }
+#t-tldr .vert { color: var(--vert); }
+
+/* 8. les raccourcis */
+#rac-titre { top: 120px; font-size: 90px; }
+.rac { top: 330px; width: 380px; height: 400px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 34px; }
+.rac .touche { height: 120px; font-size: 48px; }
+.rac .lab { font-family: var(--display); font-weight: 800; font-size: 40px; margin-top: 30px; }
+.rac .ex { font-family: var(--mono); font-size: 26px; color: var(--gris); margin-top: 14px; text-align: center; }
+#ra1 { left: 100px; } #ra2 { left: 540px; } #ra3 { left: 980px; } #ra4 { left: 1420px; }
+#stop { left: 1450px; top: 750px; font-family: var(--display); font-weight: 800; font-size: 60px; color: #fff; background: #c53030; padding: 10px 40px; border-radius: 14px; transform: rotate(-6deg); }
+
+/* 9. récap */
+#recap1 { top: 200px; font-size: 96px; }
+#recap-portes { top: 470px; }
+#recap-portes span { display: inline-block; font-family: var(--mono); font-size: 80px; color: var(--orange-2); padding: 20px 50px; margin: 0 20px;
+  border-radius: 24px; border: 3px solid rgba(233,84,32,.6); background: rgba(233,84,32,.1); }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="bg" class="layer"><div id="blob1" class="blob"></div><div id="blob2" class="blob"></div><div id="blob3" class="blob"></div></div>
+  <div id="grille" class="layer"></div>
+  <div id="cam-punch"><div id="cam-drift">
+
+    <div class="scene" id="s-phrase">
+      <div class="ligne display mots" id="phrase-titre">Une commande = une phrase</div>
+      <div class="ligne" id="cmd"><span id="c-ls">ls</span><span id="c-l">-l</span><span id="c-a">-a</span><span id="c-la">-la</span><span id="c-etc">/etc</span></div>
+      <div class="abs c-lab" id="lab-ls"><b>la commande</b><span>le verbe : quoi faire</span></div>
+      <div class="abs c-lab" id="lab-opt"><b>les options</b><span>comment le faire</span></div>
+      <div class="abs c-lab" id="lab-arg"><b>l'argument</b><span>sur quoi agir</span></div>
+      <div class="abs bulle-opt" id="bo1">-l : affichage détaillé</div><div class="abs bulle-opt" id="bo2">-a : fichiers cachés inclus</div><div class="abs bulle-opt" id="bo3">-la = -l -a</div><div class="abs bulle-opt" id="bo4">/etc : le dossier de configuration</div>
+    </div>
+
+    <div class="scene" id="s-longue">
+      <div class="ligne display mots" id="longue-titre">Courte ou longue ?</div>
+      <div class="abs verre vs" id="vs1"><div class="code">-a</div><div class="lab">rapide à taper</div></div>
+      <div class="abs" id="egal">=</div>
+      <div class="abs verre vs" id="vs2"><div class="code">--all</div><div class="lab">plus lisible</div></div>
+    </div>
+
+    <div class="scene" id="s-casse">
+      <div class="abs terminal" id="t-casse"><div class="barre-t"><i></i><i></i><i></i><span>user@ubuntu: ~</span></div>
+        <div class="corps"><div class="l" id="ca1"><span class="p">user@ubuntu:~$</span> <span class="tape">Ls</span></div>
+          <div class="l err" id="ca2">Ls : commande introuvable</div>
+          <div class="l o" id="ca3">(command not found)</div></div></div>
+      <div class="ligne" id="casse-reg"><span class="ok">ls</span> ≠ <span class="ko">Ls</span> ≠ <span class="ko">LS</span></div>
+    </div>
+
+    <div class="scene" id="s-secret">
+      <div class="ligne display mots" id="secret-titre">Personne ne connaît tout par cœur</div>
+      <div class="ligne display grad" id="secret-sous">le secret : savoir où chercher</div>
+      <div class="abs verre porte" id="po1"><div class="ico">🚪</div><div class="nom">--help</div></div>
+      <div class="abs verre porte" id="po2"><div class="ico">🚪</div><div class="nom">man</div></div>
+      <div class="abs verre porte" id="po3"><div class="ico">🚪</div><div class="nom">tldr</div></div>
+    </div>
+
+    <div class="scene" id="s-help">
+      <div class="abs eyebrow reflexe">Réflexe ①</div>
+      <div class="abs display reflexe-titre">--help</div>
+      <div class="abs terminal" id="t-help"><div class="barre-t"><i></i><i></i><i></i><span>user@ubuntu: ~</span></div>
+        <div class="corps"><div class="l" id="h0"><span class="p">user@ubuntu:~$</span> <span class="tape">ls --help</span></div>
+          <div class="l o h">Utilisation : ls [OPTION]... [FICHIER]...</div>
+          <div class="l o h">  -a, --all             inclure les fichiers cachés</div>
+          <div class="l o h">  -h, --human-readable  tailles lisibles (1K 234M 2G)</div>
+          <div class="l o h">  -l                    format d'affichage long</div>
+          <div class="l o h">  -t                    trier par date</div>
+          <div class="l o h">  ...</div></div></div>
+    </div>
+
+    <div class="scene" id="s-man">
+      <div class="abs eyebrow reflexe">Réflexe ②</div>
+      <div class="abs display reflexe-titre">man</div>
+      <div class="abs" id="man">
+        <div class="tete"><span>LS(1)</span><span>Commandes</span><span>LS(1)</span></div><br>
+        <div><b>NOM</b></div><div>&nbsp;&nbsp;&nbsp;&nbsp;ls - Afficher le contenu de répertoires</div><br>
+        <div><b>SYNOPSIS</b></div><div>&nbsp;&nbsp;&nbsp;&nbsp;<b>ls</b> [<i>OPTION</i>]... [<i>FICHIER</i>]...</div><br>
+        <div><b>DESCRIPTION</b></div><div>&nbsp;&nbsp;&nbsp;&nbsp;Afficher des renseignements sur les FICHIERs…</div>
+        <div class="barre-man" id="barre-man">Manual page ls(1) line 1 (press h for help or q to quit)</div><div class="barre-man" id="barre-man2">/options</div>
+      </div>
+      <div class="ligne" id="man-touches"><span class="touche" id="mt1">↑↓</span><span class="lab" id="ml1">naviguer</span><span class="touche" id="mt2">/</span><span class="lab" id="ml2">chercher</span><span class="touche" id="mt3">Q</span><span class="lab" id="ml3">quitter</span></div>
+    </div>
+
+    <div class="scene" id="s-tldr">
+      <div class="abs eyebrow reflexe">Réflexe ③</div>
+      <div class="abs display reflexe-titre">tldr</div>
+      <div class="abs terminal" id="t-tldr"><div class="barre-t"><i></i><i></i><i></i><span>user@ubuntu: ~</span></div>
+        <div class="corps"><div class="l" id="d0"><span class="p">user@ubuntu:~$</span> <span class="tape">tldr ls</span></div>
+          <div class="l o d">  Liste le contenu d'un dossier.</div>
+          <div class="l d"><span class="vert">  - Lister les fichiers, un par ligne :</span></div>
+          <div class="l d">      ls -1</div>
+          <div class="l d"><span class="vert">  - Inclure les fichiers cachés :</span></div>
+          <div class="l d">      ls -a</div>
+          <div class="l d"><span class="vert">  - Format long, tailles lisibles :</span></div>
+          <div class="l d">      ls -lh</div></div></div>
+    </div>
+
+    <div class="scene" id="s-rac">
+      <div class="ligne display mots" id="rac-titre">Taper moins, aller plus vite</div>
+      <div class="abs verre rac" id="ra1"><span class="touche">Tab ⇥</span><div class="lab">compléter</div><div class="ex">tou⇥ → touch</div></div>
+      <div class="abs verre rac" id="ra2"><span class="touche">↑</span><div class="lab">historique</div><div class="ex">commande précédente</div></div>
+      <div class="abs verre rac" id="ra3"><span class="touche">Ctrl R</span><div class="lab">rechercher</div><div class="ex">dans l'historique</div></div>
+      <div class="abs verre rac" id="ra4"><span class="touche">Ctrl C</span><div class="lab">arrêter</div><div class="ex">la commande en cours</div></div>
+      <div class="abs" id="stop">STOP ✋</div>
+    </div>
+
+    <div class="scene" id="s-recap">
+      <div class="ligne display grad" id="recap1">Commande · Options · Argument</div>
+      <div class="ligne" id="recap-portes"><span>--help</span><span>man</span><span>tldr</span></div>
+    </div>
+
+  </div></div>
+
+  <div id="vignette" class="layer"></div>
+  <div class="abs" id="badge"><img src="img/tux.svg" alt=""><div><div class="nom"><b>$</b> carnet-linux</div><div class="sous">Module 01 · Lire une commande, trouver de l'aide</div></div></div>
+  <canvas id="particules" width="1920" height="1080"></canvas>
+  <div class="abs" id="rideau"></div>
+  <div class="abs" id="st"></div>
+  <div class="abs" id="barre"></div>
+  <div id="flash" class="layer"></div>
+</div>
+
+<script src="lib/gsap.min.js"></script>
+<script src="commun.js"></script>
+<script>
+Film.demarrer({
+  film: 'aide',
+  fin: { titre: 'Trouver de l\'aide', sous: 'Carnet Linux · Module 01 — Le bureau &amp; le terminal', prompt: 'tldr tar' },
+  construire(C) {
+    // ---------------------------------------------- 1. la phrase
+    gsap.set('#s-phrase', { autoAlpha: 1 });
+    gsap.set(['#cmd span', '.c-lab', '.bulle-opt'], { opacity: 0 });
+    gsap.set('#c-la', { display: 'none' });
+    motsEntrent('#phrase-titre .mot', 0.3);
+    tl.to('#phrase-titre', { y: -40, scale: 0.8, opacity: 0.5, duration: 0.5 }, C.verbe);
+    pop('#c-ls', C.ls - 0.2, { depuis: 2 });
+    tl.fromTo('#lab-ls', { y: 20, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.ls + 0.3);
+    tl.fromTo('#lab-opt', { y: 20, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.options + 0.3);
+    const bulle = (sel, t) => { tl.set('.bulle-opt', { opacity: 0 }, t); tl.fromTo(sel, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.3, immediateRender: false }, t); };
+    pop('#c-l', C.tl, { depuis: 2 }); bulle('#bo1', C.tl + 0.2);
+    pop('#c-a', C.ta, { depuis: 2 }); bulle('#bo2', C.ta + 0.2);
+    // les options se collent : -l -a → -la
+    tl.to('#c-l', { x: 90, duration: 0.35, ease: 'power2.in' }, C.coller + 0.6);
+    tl.to('#c-a', { x: -90, duration: 0.35, ease: 'power2.in' }, C.coller + 0.6);
+    tl.set(['#c-l', '#c-a'], { display: 'none' }, C.coller + 0.95);
+    tl.set('#c-la', { display: 'inline-block', opacity: 1 }, C.coller + 0.95);
+    tl.fromTo('#c-la', { scale: 1.4 }, { scale: 1, duration: 0.4, ease: 'back.out(3)', immediateRender: false }, C.coller + 0.95);
+    bulle('#bo3', C.coller + 1.0);
+    flash(C.coller + 0.95, 0.25, 0.25);
+    tl.fromTo('#lab-arg', { y: 20, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.argument + 0.3);
+    pop('#c-etc', C.etc - 0.1, { depuis: 2 });
+    bulle('#bo4', C.etc + 0.4);
+    coup(C.etc + 0.2, 1.04);
+
+    // ---------------------------------------------- 2. options longues
+    rideau(C.longue, '#s-phrase', '#s-longue');
+    gsap.set(['#vs1', '#vs2', '#egal'], { opacity: 0 });
+    motsEntrent('#longue-titre .mot', C.longue);
+    pop('#vs1', C.longue + 0.8, { depuis: 0.3 });
+    pop('#vs2', C.all, { depuis: 0.3 });
+    pop('#egal', C.all + 0.4);
+    tl.to('#vs2', { borderColor: 'rgba(63,185,80,.9)', boxShadow: '0 0 60px rgba(63,185,80,.35)', duration: 0.3 }, C.lisible + 1.2);
+
+    // ---------------------------------------------- 3. la casse
+    plonge(C.casse, '#s-longue', '#s-casse');
+    gsap.set('#casse-reg', { opacity: 0 });
+    ligne('#ca1', C.majuscule, 0.4);
+    sortie(['#ca2', '#ca3'], C.notfound, 0.25);
+    secousse(C.notfound + 0.1, 14);
+    tl.fromTo('#casse-reg', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.notfound + 0.8);
+
+    // ---------------------------------------------- 4. le secret
+    rideau(C.personne, '#s-casse', '#s-secret');
+    gsap.set(['#secret-sous', '.porte'], { opacity: 0 });
+    motsEntrent('#secret-titre .mot', C.personne);
+    tl.fromTo('#secret-sous', { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(2)', immediateRender: false }, C.secret);
+    pop('.porte', C.secret + 0.7, { stagger: 0.25, depuis: 0.3 });
+
+    // ---------------------------------------------- 5. --help
+    plonge(C.help, '#s-secret', '#s-help');
+    tl.fromTo('#s-help .reflexe-titre', { x: -80, opacity: 0 }, { x: 0, opacity: 1, immediateRender: false }, C.help);
+    ligne('#h0', C.help + 0.6, 0.6);
+    sortie('#s-help .h', C.resume - 0.3, 0.12);
+
+    // ---------------------------------------------- 6. man
+    rideau(C.man, '#s-help', '#s-man');
+    gsap.set(['#man', '#man-touches .touche', '#man-touches .lab'], { opacity: 0 });
+    tl.fromTo('#s-man .reflexe-titre', { x: -80, opacity: 0 }, { x: 0, opacity: 1, immediateRender: false }, C.man);
+    tl.fromTo('#man', { y: 60, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, immediateRender: false }, C.man + 0.8);
+    pop(['#mt1', '#ml1'], C.fleches, { depuis: 0.4 });
+    pop(['#mt2', '#ml2'], C.cherchemot, { depuis: 0.4 });
+    gsap.set('#barre-man2', { opacity: 0 });
+    tl.set('#barre-man2', { opacity: 1 }, C.cherchemot + 0.4);
+    pop(['#mt3', '#ml3'], C.q, { depuis: 0.4 });
+    tl.to('#mt3', { y: 8, borderBottomWidth: 3, duration: 0.08, yoyo: true, repeat: 1 }, C.q + 0.5);
+    tl.to('#man', { opacity: 0, scale: 0.9, duration: 0.3 }, C.q + 0.7);
+
+    // ---------------------------------------------- 7. tldr
+    rideau(C.tldr, '#s-man', '#s-tldr');
+    tl.fromTo('#s-tldr .reflexe-titre', { x: -80, opacity: 0 }, { x: 0, opacity: 1, immediateRender: false }, C.tldr);
+    ligne('#d0', C.tldr + 0.6, 0.5);
+    sortie('#s-tldr .d', C.exemples, 0.18);
+
+    // ---------------------------------------------- 8. raccourcis
+    plonge(C.tab, '#s-tldr', '#s-rac');
+    gsap.set(['.rac', '#stop'], { opacity: 0 });
+    motsEntrent('#rac-titre .mot', C.tab);
+    pop('#ra1', C.complete - 0.3, { depuis: 0.3 });
+    pop('#ra2', C.haut, { depuis: 0.3 });
+    pop('#ra3', C.ctrlr, { depuis: 0.3 });
+    pop('#ra4', C.ctrlc, { depuis: 0.3 });
+    tl.to('#ra4', { borderColor: 'rgba(248,113,113,.9)', boxShadow: '0 0 60px rgba(248,113,113,.4)', duration: 0.3 }, C.urgence);
+    tl.fromTo('#stop', { scale: 3, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.3, ease: 'power4.in', immediateRender: false }, C.urgence + 0.3);
+    secousse(C.urgence + 0.6, 12);
+
+    // ---------------------------------------------- 9. récap
+    rideau(C.recap, '#s-rac', '#s-recap');
+    gsap.set('#recap-portes span', { opacity: 0 });
+    tl.fromTo('#recap1', { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(2)', immediateRender: false }, C.recap);
+    pop('#recap-portes span', C.portes + 0.6, { stagger: 0.35, depuis: 0.3 });
+    salve(C.final, 960, 520, 60, ['#e95420', '#b36bd6', '#f5c542', '#ffffff'], 'confetti', 1);
+  },
+});
+</script>
+</body>
+</html>

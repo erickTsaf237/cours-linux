@@ -1,0 +1,126 @@
+/* Socle commun des vidéos du carnet Linux (1920×1080). */
+@font-face { font-family: 'Bricolage'; src: url(fonts/bricolage-grotesque-800.woff2) format('woff2'); font-weight: 800; }
+@font-face { font-family: 'Bricolage'; src: url(fonts/bricolage-grotesque-700.woff2) format('woff2'); font-weight: 700; }
+@font-face { font-family: 'Bricolage'; src: url(fonts/bricolage-grotesque-600.woff2) format('woff2'); font-weight: 600; }
+@font-face { font-family: 'Instrument'; src: url(fonts/instrument-sans-400.woff2) format('woff2'); font-weight: 400; }
+@font-face { font-family: 'Instrument'; src: url(fonts/instrument-sans-600.woff2) format('woff2'); font-weight: 600; }
+@font-face { font-family: 'Mono'; src: url(fonts/jetbrains-mono-500.woff2) format('woff2'); font-weight: 500; }
+
+:root {
+  --nuit: #070b14;
+  --nuit-2: #0d1424;
+  --carte: #141c2e;
+  --bord: rgba(255,255,255,.12);
+  --orange: #e95420;
+  --orange-2: #ff8a3d;
+  --violet: #b36bd6;
+  --violet-2: #77216f;
+  --cyan: #38bdf8;
+  --vert: #3fb950;
+  --jaune: #f5c542;
+  --rouge: #f87171;
+  --gris: #9aa7bd;
+  --blanc: #ffffff;
+  --display: 'Bricolage', 'Segoe UI', sans-serif;
+  --texte: 'Instrument', 'Segoe UI', sans-serif;
+  --mono: 'Mono', Consolas, monospace;
+  --emoji: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--nuit); }
+body { font-family: var(--texte); color: var(--blanc); -webkit-font-smoothing: antialiased; }
+
+#stage { position: relative; width: 1920px; height: 1080px; overflow: hidden; background: var(--nuit); }
+.abs { position: absolute; }
+.layer { position: absolute; inset: 0; }
+.scene { position: absolute; inset: 0; visibility: hidden; opacity: 0; }
+#cam-punch, #cam-drift { position: absolute; inset: 0; transform-origin: 50% 45%; }
+
+/* ---------------------------------------------------------------- fond */
+#bg { background: radial-gradient(120% 90% at 50% 120%, #1a1030 0%, #0c1222 50%, var(--nuit) 100%); }
+.blob { position: absolute; border-radius: 50%; }
+#blob1 { width: 1200px; height: 1200px; background: radial-gradient(circle, rgba(233,84,32,.22) 0%, rgba(233,84,32,0) 65%); }
+#blob2 { width: 1400px; height: 1400px; background: radial-gradient(circle, rgba(179,107,214,.22) 0%, rgba(179,107,214,0) 65%); }
+#blob3 { width: 900px; height: 900px; background: radial-gradient(circle, rgba(56,189,248,.12) 0%, rgba(56,189,248,0) 65%); }
+#grille { opacity: .06; background-image: linear-gradient(rgba(255,255,255,.7) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.7) 1px, transparent 1px); background-size: 80px 80px; }
+#teinte { opacity: 0; }
+#vignette { background: radial-gradient(115% 100% at 50% 50%, rgba(0,0,0,0) 55%, rgba(0,0,0,.6) 100%); pointer-events: none; }
+#flash { background: #fff; opacity: 0; pointer-events: none; z-index: 50; }
+#rideau { width: 3800px; left: 0; top: -200px; height: 1480px; z-index: 40; transform: translateX(-3800px) skewX(-14deg);
+  background: linear-gradient(90deg, rgba(233,84,32,0) 0%, var(--orange) 18%, var(--violet-2) 50%, var(--violet) 82%, rgba(179,107,214,0) 100%); }
+canvas#particules { position: absolute; inset: 0; z-index: 30; pointer-events: none; }
+
+/* --------------------------------------------------------- badge haut */
+#badge { left: 56px; top: 44px; display: flex; align-items: center; gap: 16px; z-index: 20; opacity: 0; }
+#badge img { width: 54px; height: 54px; }
+#badge .nom { font-family: var(--mono); font-size: 24px; color: #fff; }
+#badge .nom b { color: var(--orange); font-weight: 500; }
+#badge .sous { font-family: var(--texte); font-size: 19px; color: var(--gris); letter-spacing: .04em; }
+
+/* ------------------------------------------------- sous-titres karaoké */
+#st { left: 0; right: 0; bottom: 58px; display: flex; justify-content: center; z-index: 25; pointer-events: none; }
+#st .boite { background: rgba(7,11,20,.72); border: 1.5px solid rgba(255,255,255,.1); border-radius: 22px;
+  padding: 14px 34px 16px; font-family: var(--display); font-weight: 700; font-size: 46px; letter-spacing: -.01em;
+  white-space: nowrap; box-shadow: 0 20px 50px rgba(0,0,0,.45); }
+#st .m { color: rgba(255,255,255,.42); margin: 0 .13em; display: inline-block; }
+#st .m.dit { color: #fff; }
+#st .m.cur { color: var(--orange-2); transform: translateY(-3px); }
+#barre { left: 0; bottom: 0; height: 6px; width: 1920px; transform-origin: 0 50%; z-index: 26;
+  background: linear-gradient(90deg, var(--orange), var(--violet)); }
+
+/* --------------------------------------------------------- typographie */
+.display { font-family: var(--display); font-weight: 800; letter-spacing: -0.035em; line-height: .95; }
+.eyebrow { font-family: var(--mono); font-size: 30px; letter-spacing: .14em; text-transform: uppercase; color: var(--orange-2); }
+.grad { background: linear-gradient(100deg, #fff 0%, #ffd2bd 30%, var(--orange) 65%, var(--violet) 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.grad-v { background: linear-gradient(100deg, #fff 0%, #e9c7f7 35%, var(--violet) 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.mot { display: inline-block; will-change: transform; }
+.ligne { position: absolute; left: 0; right: 0; text-align: center; white-space: nowrap; }
+.emoji { font-family: var(--emoji); }
+
+/* --------------------------------------------------------- composants */
+.verre { background: linear-gradient(145deg, rgba(255,255,255,.12), rgba(255,255,255,.04));
+  border: 1.5px solid rgba(255,255,255,.16); border-radius: 30px;
+  box-shadow: 0 30px 80px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.2); }
+.polaroid { background: #f4efe6; padding: 18px 18px 70px; border-radius: 6px; box-shadow: 0 40px 90px rgba(0,0,0,.6); }
+.polaroid img { display: block; width: 100%; height: 100%; object-fit: cover; filter: contrast(1.05) saturate(.9); }
+.polaroid .leg { position: absolute; left: 0; right: 0; bottom: 16px; text-align: center; color: #2a2f3a;
+  font-family: var(--display); font-weight: 700; font-size: 30px; }
+.terminal { background: #0d1117; border: 1.5px solid #2a3342; border-radius: 22px; overflow: hidden; box-shadow: 0 40px 100px rgba(0,0,0,.6); }
+.terminal .barre-t { height: 54px; background: #161b22; display: flex; align-items: center; gap: 12px; padding: 0 22px; border-bottom: 1.5px solid #2a3342; }
+.terminal .barre-t i { width: 18px; height: 18px; border-radius: 50%; display: block; }
+.terminal .barre-t i:nth-child(1) { background: #ff5f57; } .terminal .barre-t i:nth-child(2) { background: #febc2e; } .terminal .barre-t i:nth-child(3) { background: #28c840; }
+.terminal .barre-t span { flex: 1; text-align: center; font-family: var(--mono); color: #7d8590; font-size: 22px; margin-right: 80px; }
+.terminal .corps { padding: 30px 38px; font-family: var(--mono); font-size: 34px; line-height: 1.55; color: #d6deeb; }
+.p { color: var(--vert); } .k { color: #ffa657; } .f { color: #d2a8ff; } .s { color: #a5d6ff; } .c { color: #6e7781; }
+.puce { display: inline-flex; align-items: center; gap: 14px; border-radius: 999px; padding: 14px 30px; font-weight: 600; font-size: 30px;
+  background: rgba(255,255,255,.08); border: 1.5px solid rgba(255,255,255,.16); }
+.tampon { font-family: var(--display); font-weight: 800; text-transform: uppercase; border: 10px solid currentColor; border-radius: 18px;
+  padding: 6px 30px; letter-spacing: .02em; }
+
+/* ------------------------------------------------------- carte de fin */
+#s-fin .logo { left: 50%; top: 250px; width: 230px; }
+#s-fin .titre { top: 520px; font-size: 120px; }
+#s-fin .sous { top: 660px; font-size: 40px; color: var(--gris); font-family: var(--texte); }
+#s-fin .prompt { top: 760px; font-family: var(--mono); font-size: 40px; }
+.curseur { display: inline-block; width: .6em; height: 1.05em; background: var(--orange); vertical-align: -0.15em; margin-left: 6px; }
+/* Dégradé porté par chaque mot animé (un parent en background-clip ne suit pas les enfants transformés). */
+.mots.grad .mot, .mots.grad-v .mot { background: inherit; -webkit-background-clip: text; background-clip: text; color: transparent; padding: 0 .02em .08em; }
+
+/* ---------- briques des vidéos du cours ---------- */
+.touche { display: inline-grid; place-items: center; min-width: 130px; height: 130px; padding: 0 34px; border-radius: 24px;
+  background: linear-gradient(#2c3546, #161b24); border: 2px solid #4a5568; border-bottom-width: 12px;
+  font-family: var(--mono); font-size: 56px; color: #fff; box-shadow: 0 24px 50px rgba(0,0,0,.5); }
+.terminal .l { white-space: pre; min-height: 1.55em; }
+.terminal .o { color: #8b949e; }
+.terminal .v { color: #79c0ff; } .terminal .err { color: var(--rouge); } .terminal .ok { color: var(--vert); }
+.noeud { display: flex; align-items: center; gap: 14px; padding: 14px 24px; border-radius: 18px; white-space: nowrap;
+  background: #141c2e; border: 2.5px solid rgba(255,255,255,.18); font-family: var(--mono); font-size: 38px; color: #79c0ff;
+  box-shadow: 0 16px 40px rgba(0,0,0,.4); }
+.noeud .ico { font-family: var(--emoji); font-size: 40px; }
+.noeud.fichier { color: #e6edf3; }
+.chemin-geant { font-family: var(--mono); font-size: 76px; white-space: nowrap; }
+.etiquette { font-family: var(--display); font-weight: 700; font-size: 34px; color: var(--gris); text-align: center; }
+.station { width: 300px; height: 230px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+.station .ico { font-family: var(--emoji); font-size: 96px; line-height: 1.1; }
+.station .nom { font-family: var(--display); font-weight: 800; font-size: 46px; margin-top: 10px; }
+.station .role { font-size: 26px; color: var(--gris); }

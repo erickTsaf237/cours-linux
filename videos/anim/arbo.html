@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Tout part de / — vidéo</title>
+<link rel="stylesheet" href="commun.css">
+<style>
+/* 1. Windows : des lettres de lecteur */
+.lecteur { top: 360px; width: 340px; height: 300px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.lecteur .ico { font-family: var(--emoji); font-size: 120px; }
+.lecteur .nom { font-family: var(--mono); font-size: 80px; color: #7cc0ff; }
+#d1 { left: 330px; } #d2 { left: 790px; } #d3 { left: 1250px; }
+#win-titre { top: 160px; font-size: 90px; }
+
+/* 2. la racine */
+#slash-geant { top: 120px; font-size: 640px; line-height: 1; font-family: var(--mono); }
+#racine-lab { top: 800px; font-size: 60px; }
+
+/* 3. l'arbre */
+#arbre-svg { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; }
+#arbre-svg line { stroke: rgba(255,255,255,.22); stroke-width: 3; }
+#n-racine { left: 905px; top: 70px; font-size: 54px; padding: 10px 34px; color: #fff; background: linear-gradient(135deg, var(--orange), var(--violet-2)); border: 0; }
+.noeud { position: absolute; }
+.noeud.vu { opacity: .55; }
+#desc { left: 260px; top: 640px; width: 1400px; height: 210px; padding: 30px 44px; display: flex; align-items: center; gap: 36px; }
+.dsc { position: absolute; left: 44px; right: 44px; top: 30px; bottom: 30px; display: flex; align-items: center; gap: 36px; opacity: 0; }
+.dsc .ico { font-family: var(--emoji); font-size: 110px; }
+.dsc .chem { font-family: var(--mono); font-size: 60px; color: var(--orange-2); }
+.dsc .txt { font-family: var(--display); font-weight: 700; font-size: 44px; line-height: 1.2; }
+.dsc .txt small { display: block; font-family: var(--texte); font-weight: 400; font-size: 30px; color: var(--gris); margin-top: 6px; }
+#tampon-fichier { left: 1300px; top: 560px; color: var(--jaune); font-size: 60px; transform: rotate(-8deg); }
+#live { left: 1460px; top: 600px; font-family: var(--mono); font-size: 34px; color: #fff; background: #c53030; padding: 6px 18px; border-radius: 10px; }
+
+/* 4. à retenir */
+#ret-titre { top: 140px; font-size: 100px; }
+.ret { top: 360px; width: 460px; height: 380px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+.ret .ico { font-family: var(--emoji); font-size: 130px; }
+.ret .chem { font-family: var(--mono); font-size: 64px; color: var(--orange-2); margin-top: 10px; }
+.ret .txt { font-family: var(--display); font-weight: 700; font-size: 38px; color: var(--gris); }
+#rt1 { left: 200px; } #rt2 { left: 730px; } #rt3 { left: 1260px; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="bg" class="layer"><div id="blob1" class="blob"></div><div id="blob2" class="blob"></div><div id="blob3" class="blob"></div></div>
+  <div id="grille" class="layer"></div>
+  <div id="cam-punch"><div id="cam-drift">
+
+    <div class="scene" id="s-win">
+      <div class="ligne display mots" id="win-titre">Sous Windows : des lettres</div>
+      <div class="abs verre lecteur" id="d1"><div class="ico">💽</div><div class="nom">C:</div></div>
+      <div class="abs verre lecteur" id="d2"><div class="ico">💿</div><div class="nom">D:</div></div>
+      <div class="abs verre lecteur" id="d3"><div class="ico">🔌</div><div class="nom">E:</div></div>
+    </div>
+
+    <div class="scene" id="s-racine">
+      <div class="ligne grad" id="slash-geant">/</div>
+      <div class="ligne display" id="racine-lab">la racine : un seul point de départ</div>
+    </div>
+
+    <div class="scene" id="s-arbre">
+      <svg id="arbre-svg"></svg>
+      <div class="noeud" id="n-racine">/</div>
+      <div id="noeuds"></div>
+      <div class="abs verre" id="desc">
+        <div class="dsc" id="x-home"><span class="ico">🏠</span><div><div class="chem">/home</div><div class="txt">Les dossiers personnels<small>un par utilisateur : /home/user</small></div></div></div>
+        <div class="dsc" id="x-root"><span class="ico">👑</span><div><div class="chem">/root</div><div class="txt">La maison de l'administrateur<small>root n'habite pas dans /home</small></div></div></div>
+        <div class="dsc" id="x-etc"><span class="ico">⚙️</span><div><div class="chem">/etc</div><div class="txt">La configuration du système<small>des fichiers texte : le panneau de contrôle</small></div></div></div>
+        <div class="dsc" id="x-usr"><span class="ico">🧰</span><div><div class="chem">/usr/bin</div><div class="txt">Les programmes<small>ls, c'est le fichier /usr/bin/ls</small></div></div></div>
+        <div class="dsc" id="x-var"><span class="ico">📜</span><div><div class="chem">/var</div><div class="txt">Les données qui varient<small>journaux (/var/log), bases de données, sites web</small></div></div></div>
+        <div class="dsc" id="x-tmp"><span class="ico">🗑️</span><div><div class="chem">/tmp</div><div class="txt">Les fichiers temporaires<small>effacés au redémarrage</small></div></div></div>
+        <div class="dsc" id="x-boot"><span class="ico">🚀</span><div><div class="chem">/boot</div><div class="txt">Le noyau et le démarrage<small>on n'y touche pas !</small></div></div></div>
+        <div class="dsc" id="x-dev"><span class="ico">🔌</span><div><div class="chem">/dev</div><div class="txt">Les périphériques<small>ton disque : /dev/sda</small></div></div></div>
+        <div class="dsc" id="x-proc"><span class="ico">🔮</span><div><div class="chem">/proc</div><div class="txt">Un dossier « magique »<small>le noyau y décrit le système en direct</small></div></div></div>
+        <div class="dsc" id="x-media"><span class="ico">💾</span><div><div class="chem">/media · /mnt</div><div class="txt">Clés USB et disques montés<small>ils apparaissent ici</small></div></div></div>
+      </div>
+      <div class="abs tampon" id="tampon-fichier">Tout est fichier !</div>
+      <div class="abs" id="live">● EN DIRECT</div>
+    </div>
+
+    <div class="scene" id="s-ret">
+      <div class="ligne display mots" id="ret-titre">Les trois à retenir</div>
+      <div class="abs verre ret" id="rt1"><div class="ico">🏠</div><div class="chem">/home</div><div class="txt">pour toi</div></div>
+      <div class="abs verre ret" id="rt2"><div class="ico">⚙️</div><div class="chem">/etc</div><div class="txt">la configuration</div></div>
+      <div class="abs verre ret" id="rt3"><div class="ico">📜</div><div class="chem">/var</div><div class="txt">les journaux</div></div>
+    </div>
+
+  </div></div>
+
+  <div id="vignette" class="layer"></div>
+  <div class="abs" id="badge"><img src="img/tux.svg" alt=""><div><div class="nom"><b>$</b> carnet-linux</div><div class="sous">Module 02 · Tout part de /</div></div></div>
+  <canvas id="particules" width="1920" height="1080"></canvas>
+  <div class="abs" id="rideau"></div>
+  <div class="abs" id="st"></div>
+  <div class="abs" id="barre"></div>
+  <div id="flash" class="layer"></div>
+</div>
+
+<script src="lib/gsap.min.js"></script>
+<script src="commun.js"></script>
+<script>
+// Les dossiers de l'arbre : deux rangées sous la racine.
+const DOSSIERS = [
+  ['home', '🏠', 0, 0], ['root', '👑', 1, 0], ['etc', '⚙️', 2, 0], ['usr', '🧰', 3, 0], ['var', '📜', 4, 0],
+  ['tmp', '🗑️', 0, 1], ['boot', '🚀', 1, 1], ['dev', '🔌', 2, 1], ['proc', '🔮', 3, 1], ['media', '💾', 4, 1],
+];
+(() => {
+  const box = document.getElementById('noeuds'), svg = document.getElementById('arbre-svg');
+  DOSSIERS.forEach(([nom, ico, col, rang]) => {
+    const d = document.createElement('div');
+    d.className = 'noeud'; d.id = 'n-' + nom;
+    d.innerHTML = `<span class="ico">${ico}</span>${nom}/`;
+    const x = 120 + col * 350 + (rang ? 175 : 0) - (rang ? 120 : 0), y = rang ? 420 : 250;
+    d.style.left = x + 'px'; d.style.top = y + 'px';
+    box.appendChild(d);
+  });
+})();
+
+Film.demarrer({
+  film: 'arbo',
+  fin: { titre: 'Tout part de /', sous: 'Carnet Linux · Module 02 — Le système de fichiers', prompt: 'cd / &amp;&amp; ls' },
+  construire(C) {
+    // Lignes de l'arbre, tracées une fois les nœuds mesurés.
+    const svg = document.getElementById('arbre-svg'), r0 = document.getElementById('n-racine');
+    const cx = (el) => el.offsetLeft + el.offsetWidth / 2;
+    DOSSIERS.forEach(([nom]) => {
+      const n = document.getElementById('n-' + nom);
+      const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      l.setAttribute('x1', cx(r0)); l.setAttribute('y1', r0.offsetTop + r0.offsetHeight);
+      l.setAttribute('x2', cx(n)); l.setAttribute('y2', n.offsetTop);
+      l.id = 'l-' + nom;
+      svg.appendChild(l);
+    });
+
+    // ---------------------------------------------- 1. Windows
+    gsap.set('#s-win', { autoAlpha: 1 });
+    gsap.set('.lecteur', { opacity: 0 });
+    motsEntrent('#win-titre .mot', 0.3);
+    pop('.lecteur', C.windows + 0.4, { stagger: 0.35, depuis: 0.3 });
+    tl.to('.lecteur', { y: 600, rotation: (i) => [-20, 10, 25][i], opacity: 0, duration: 0.6, ease: 'power3.in', stagger: 0.08 }, C.seul + 0.3);
+
+    // ---------------------------------------------- 2. la racine
+    plonge(C.racine, '#s-win', '#s-racine');
+    gsap.set(['#slash-geant', '#racine-lab'], { opacity: 0 });
+    tl.fromTo('#slash-geant', { scale: 3, opacity: 0, rotation: -20 }, { scale: 1, opacity: 1, rotation: 0, duration: 0.45, ease: 'power4.in', immediateRender: false }, C.slash - 0.2);
+    coup(C.slash + 0.25, 1.08);
+    flash(C.slash + 0.25, 0.5);
+    tl.fromTo('#racine-lab', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.slash + 0.6);
+
+    // ---------------------------------------------- 3. l'arbre
+    plonge(C.tout, '#s-racine', '#s-arbre');
+    gsap.set(['.noeud:not(#n-racine)', '#arbre-svg line', '#desc', '#tampon-fichier', '#live'], { opacity: 0 });
+    pop('#n-racine', C.tout + 0.1, { depuis: 3 });
+    // Tous les dossiers apparaissent en fantôme : « chaque dossier a un rôle »
+    tl.to('#arbre-svg line', { opacity: 1, duration: 0.3, stagger: 0.05 }, C.role);
+    tl.fromTo('.noeud:not(#n-racine)', { scale: 0, opacity: 0 }, { scale: 1, opacity: 0.35, duration: 0.4, ease: 'back.out(2)', stagger: 0.07, immediateRender: false }, C.role + 0.2);
+    tl.fromTo('#desc', { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, immediateRender: false }, C.home - 0.3);
+
+    const ordre = [['home', C.home], ['root', C.root], ['etc', C.etc], ['usr', C.usr], ['var', C.var],
+                   ['tmp', C.tmp], ['boot', C.boot], ['dev', C.dev], ['proc', C.proc], ['media', C.media]];
+    ordre.forEach(([nom, t], i) => {
+      const suiv = ordre[i + 1] ? ordre[i + 1][1] : C.retiens;
+      tl.to('#n-' + nom, { opacity: 1, scale: 1.12, borderColor: 'rgba(233,84,32,.95)', boxShadow: '0 0 50px rgba(233,84,32,.5)', duration: 0.3 }, t);
+      tl.to('#l-' + nom, { attr: { 'stroke-width': 6 }, stroke: '#e95420', duration: 0.3 }, t);
+      tl.to('#n-' + nom, { scale: 1, borderColor: 'rgba(255,255,255,.18)', boxShadow: '0 16px 40px rgba(0,0,0,.4)', duration: 0.3 }, suiv - 0.1);
+      tl.to('#l-' + nom, { attr: { 'stroke-width': 3 }, stroke: 'rgba(255,255,255,.35)', duration: 0.3 }, suiv - 0.1);
+      tl.fromTo('#x-' + nom, { opacity: 0, x: 40 }, { opacity: 1, x: 0, duration: 0.3, immediateRender: false }, t + 0.05);
+      tl.to('#x-' + nom, { opacity: 0, x: -40, duration: 0.2 }, suiv - 0.15);
+    });
+    coup(C.lsbin + 0.2, 1.03);
+    tl.fromTo('#tampon-fichier', { scale: 3, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.3, ease: 'power4.in', immediateRender: false }, C.fichier);
+    secousse(C.fichier + 0.3, 12);
+    tl.to('#tampon-fichier', { opacity: 0, duration: 0.3 }, C.proc - 0.2);
+    tl.fromTo('#live', { opacity: 0 }, { opacity: 1, duration: 0.2, immediateRender: false }, C.proc + 1.2);
+    tl.to('#live', { opacity: 0.3, duration: 0.4, yoyo: true, repeat: 7, ease: 'steps(1)' }, C.proc + 1.4);
+    tl.to('#live', { opacity: 0, duration: 0.2 }, C.media - 0.2);
+
+    // ---------------------------------------------- 4. à retenir
+    rideau(C.retiens, '#s-arbre', '#s-ret');
+    gsap.set('.ret', { opacity: 0 });
+    motsEntrent('#ret-titre .mot', C.retiens);
+    pop('#rt1', C.t_home, { depuis: 0.3 }); pop('#rt2', C.t_etc, { depuis: 0.3 }); pop('#rt3', C.t_var, { depuis: 0.3 });
+    salve(C.final + 0.3, 960, 520, 60, ['#e95420', '#b36bd6', '#f5c542', '#ffffff'], 'confetti', 1);
+  },
+});
+</script>
+</body>
+</html>

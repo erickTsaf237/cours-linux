@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lire et éditer sous Linux : less, tail -f, nano, Vim | Cours Linux</title>
+  <meta name="description" content="Module 03 du cours Linux : lire des fichiers avec cat, less, head, tail -f et wc, éditer avec nano, survivre à Vim (et le quitter !), encodages et fins de ligne. Vidéos, quiz et exercices corrigés.">
+  <meta name="theme-color" content="#e95420">
+  <link rel="apple-touch-icon" href="../assets/img/icone-180.png">
+  <link rel="icon" href="../assets/img/tux.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <script>try{const t=JSON.parse(localStorage.getItem("theme"));if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<div class="progress-bar"></div>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../index.html"><img src="../assets/img/tux.svg" alt=""><span><span class="dollar">$</span> carnet-linux</span></a>
+    <nav class="nav">
+      <a href="../index.html">Programme</a>
+      <a href="03-lire-editer.html" class="active hide-sm">Module 03</a>
+      <button class="theme-toggle" type="button" aria-label="Changer de thème">☀️</button>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <span class="eyebrow">PHASE 1 · MODULE 03</span>
+      <h1>Lire &amp; éditer des <span class="grad">fichiers</span></h1>
+      <p class="lead">Sous Linux, presque tout est du texte : configuration, journaux, scripts. Ce module te donne les outils pour lire
+        n'importe quel fichier, le surveiller en direct, et le modifier avec nano… puis avec Vim, l'éditeur des pros.</p>
+      <div class="hero-meta">
+        <span class="chip">⏱️ Lecture <b>~45 min</b></span>
+        <span class="chip">🧪 Pratique <b>~1 h 30</b></span>
+        <span class="chip">🎚️ Niveau <b>débutant</b></span>
+      </div>
+    </div>
+    <div class="hero-art"><img class="tux" src="../assets/img/tux.svg" alt="Tux"></div>
+  </div>
+</section>
+
+<div class="layout">
+  <aside class="toc">
+    <div class="toc-title">Sommaire</div>
+    <ol></ol>
+  </aside>
+
+  <article class="content">
+
+    <!-- ================================================== -->
+    <h2 id="objectifs" data-short="Objectifs">🎯 Ce que tu sauras à la fin</h2>
+    <div class="cards four">
+      <div class="card" style="--c:var(--accent)"><div class="icon">👀</div><h4>Lire</h4><p>Choisir le bon outil : <code>cat</code>, <code>less</code>, <code>head</code>, <code>tail</code>.</p></div>
+      <div class="card" style="--c:var(--cyan)"><div class="icon">📡</div><h4>Surveiller</h4><p>Suivre un journal en direct avec <code>tail -f</code>.</p></div>
+      <div class="card" style="--c:var(--green)"><div class="icon">📝</div><h4>Éditer</h4><p>Modifier un fichier avec <code>nano</code> en toute sérénité.</p></div>
+      <div class="card" style="--c:var(--violet)"><div class="icon">🧙</div><h4>Vim</h4><p>Comprendre ses modes, et ne plus jamais y rester coincé.</p></div>
+    </div>
+
+    <!-- ================================================== -->
+    <h2 id="lire" data-short="Lire un fichier">Lire un fichier : un outil par situation</h2>
+    <figure class="video-card">
+      <div class="video-head"><span class="video-badge">▶ Vidéo · 1 min 30</span><strong>Lire un fichier</strong><span>cat, less, head, tail et wc</span></div>
+      <video controls preload="none" playsinline poster="../assets/video/lire.jpg"><source src="../assets/video/lire.mp4" type="video/mp4">Ton navigateur ne lit pas la vidéo : <a href="../assets/video/lire.mp4">télécharge-la ici</a>.</video>
+      <figcaption>Animation réalisée pour ce cours. Voix off et musique générées par IA (Google Gemini et Lyria).</figcaption>
+    </figure>
+
+    <div class="table-wrap"><table>
+      <tr><th>Besoin</th><th>Commande</th><th>Exemple</th></tr>
+      <tr><td>Afficher un petit fichier en entier</td><td><code>cat</code></td><td><code>cat /etc/hostname</code></td></tr>
+      <tr><td>Lire un long fichier page par page</td><td><code>less</code></td><td><code>less /etc/services</code></td></tr>
+      <tr><td>Voir le début</td><td><code>head</code></td><td><code>head -n 5 /etc/passwd</code></td></tr>
+      <tr><td>Voir la fin</td><td><code>tail</code></td><td><code>tail -n 20 /var/log/syslog</code></td></tr>
+      <tr><td>Suivre les ajouts en direct</td><td><code>tail -f</code></td><td><code>tail -f /var/log/syslog</code></td></tr>
+      <tr><td>Compter lignes, mots, octets</td><td><code>wc</code></td><td><code>wc -l /etc/passwd</code></td></tr>
+    </table></div>
+
+    <h3><code>cat</code> : tout, tout de suite</h3>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">cat</span> <span class="s">/etc/os-release</span>
+<span class="o">PRETTY_NAME="Ubuntu 24.04.4 LTS"</span>
+<span class="o">NAME="Ubuntu"</span>
+<span class="o">VERSION_ID="24.04"</span>
+<span class="o">VERSION_CODENAME=noble</span>
+<span class="o">...</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">cat</span> <span class="f">-n</span> <span class="s">/etc/hostname</span>     <span class="c"># -n numérote les lignes</span>
+<span class="o">     1	ubuntu</span></pre></div>
+    <p>Son nom vient de <em>concatenate</em> : <code>cat a.txt b.txt</code> affiche les deux fichiers à la suite. Sa cousine <code>tac</code> affiche un fichier… à l'envers, de la dernière ligne à la première.</p>
+
+    <div class="callout warn"><span class="callout-title">Pas de <code>cat</code> sur un fichier binaire</span>
+      <p>Un <code>cat</code> sur un programme ou une image affiche des caractères incompréhensibles et peut dérégler le terminal.
+        Vérifie d'abord avec <code>file nom</code>. Si le terminal est déjà déréglé, tape <code>reset</code> (même à l'aveugle) et <kbd>Entrée</kbd>.</p></div>
+
+    <h3><code>less</code> : le lecteur page par page</h3>
+    <p>C'est le même lecteur que <code>man</code> : tu connais déjà ses touches. Il ne charge pas tout le fichier en mémoire, donc il ouvre instantanément
+      des fichiers de plusieurs gigaoctets.</p>
+    <div class="table-wrap"><table>
+      <tr><th>Touche</th><th>Action</th></tr>
+      <tr><td><kbd>Espace</kbd> / <kbd>B</kbd></td><td>Page suivante / précédente</td></tr>
+      <tr><td><kbd>G</kbd> / <kbd>Maj</kbd> + <kbd>G</kbd></td><td>Début / fin du fichier</td></tr>
+      <tr><td><kbd>/</kbd>mot puis <kbd>N</kbd> / <kbd>Maj</kbd> + <kbd>N</kbd></td><td>Rechercher, occurrence suivante / précédente</td></tr>
+      <tr><td><kbd>Maj</kbd> + <kbd>F</kbd></td><td>Mode « suivi » comme <code>tail -f</code> (<kbd>Ctrl</kbd> + <kbd>C</kbd> pour en sortir)</td></tr>
+      <tr><td><kbd>Q</kbd></td><td>Quitter</td></tr>
+    </table></div>
+    <p>Option pratique : <code>less -N fichier</code> affiche les numéros de ligne.</p>
+
+    <h3><code>head</code> et <code>tail</code> : le début et la fin</h3>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">head</span> <span class="f">-n 3</span> <span class="s">/etc/passwd</span>
+<span class="o">root:x:0:0:root:/root:/bin/bash</span>
+<span class="o">daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin</span>
+<span class="o">bin:x:2:2:bin:/bin:/usr/sbin/nologin</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">tail</span> <span class="f">-n 2</span> <span class="s">/etc/passwd</span>
+<span class="o">user:x:1000:1000:user,,,:/home/user:/bin/bash</span>
+<span class="o">vboxadd:x:999:1::/var/run/vboxadd:/bin/false</span></pre></div>
+
+    <h3><code>tail -f</code> : le direct</h3>
+    <p>Avec <code>-f</code> (<em>follow</em>), <code>tail</code> ne s'arrête pas : chaque ligne ajoutée au fichier s'affiche immédiatement.
+      C'est l'outil de base pour surveiller un serveur ou comprendre ce qui se passe pendant une manipulation. Essaie avec deux terminaux côte à côte :</p>
+    <div class="terminal" data-title="Terminal 1"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">tail</span> <span class="f">-f</span> <span class="s">/var/log/syslog</span>
+<span class="o">2026-10-22T11:20:41 ubuntu systemd[1]: Started ...</span>
+<span class="o">2026-10-22T11:20:58 ubuntu <span class="hl">user: Bonjour depuis le terminal 2 !</span></span>   <span class="c"># apparaît en direct</span></pre></div>
+    <div class="terminal" data-title="Terminal 2"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">logger</span> <span class="s">"Bonjour depuis le terminal 2 !"</span>   <span class="c"># écrit un message dans le journal</span></pre></div>
+    <p><kbd>Ctrl</kbd> + <kbd>C</kbd> arrête le suivi. Variante robuste : <code>tail -F</code> continue même si le fichier est remplacé (rotation des journaux).</p>
+
+    <h3><code>wc</code> : compter</h3>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">wc</span> <span class="s">/etc/passwd</span>
+<span class="o">  37   64 2072 /etc/passwd</span>       <span class="c"># lignes, mots, octets</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">wc</span> <span class="f">-l</span> <span class="s">/etc/passwd</span>          <span class="c"># seulement les lignes</span>
+<span class="o">37 /etc/passwd</span></pre></div>
+
+    <!-- ================================================== -->
+    <h2 id="nano" data-short="Éditer avec nano">Éditer avec <code>nano</code></h2>
+    <p><strong>nano</strong> est l'éditeur le plus simple du terminal, installé par défaut sur Ubuntu. Ses raccourcis sont affichés en bas de l'écran,
+      avec deux notations à connaître : <code>^</code> = <kbd>Ctrl</kbd> et <code>M-</code> = <kbd>Alt</kbd>.</p>
+    <div class="terminal" data-title="GNU nano 7.2 — notes.txt"><pre><span class="o">  GNU nano 7.2                         notes.txt</span>
+Ma première note sous Linux.
+Elle est écrite avec nano.
+
+<span class="o">^G Aide      ^O Écrire    ^W Chercher  ^K Couper    ^T Exécuter  ^C Position</span>
+<span class="o">^X Quitter   ^R Lire fich.^\ Remplacer ^U Coller    ^J Justifier ^/ Aller ligne</span></pre></div>
+    <div class="table-wrap"><table>
+      <tr><th>Raccourci</th><th>Action</th></tr>
+      <tr><td><kbd>Ctrl</kbd> + <kbd>O</kbd> puis <kbd>Entrée</kbd></td><td>Enregistrer (<em>write Out</em>)</td></tr>
+      <tr><td><kbd>Ctrl</kbd> + <kbd>X</kbd></td><td>Quitter (propose d'enregistrer si besoin)</td></tr>
+      <tr><td><kbd>Ctrl</kbd> + <kbd>K</kbd> / <kbd>Ctrl</kbd> + <kbd>U</kbd></td><td>Couper la ligne / coller</td></tr>
+      <tr><td><kbd>Ctrl</kbd> + <kbd>W</kbd></td><td>Rechercher</td></tr>
+      <tr><td><kbd>Ctrl</kbd> + <kbd>\</kbd></td><td>Rechercher et remplacer</td></tr>
+      <tr><td><kbd>Alt</kbd> + <kbd>U</kbd> / <kbd>Alt</kbd> + <kbd>E</kbd></td><td>Annuler / rétablir</td></tr>
+      <tr><td><kbd>Ctrl</kbd> + <kbd>/</kbd></td><td>Aller à une ligne donnée</td></tr>
+    </table></div>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">nano</span> <span class="s">notes.txt</span>                <span class="c"># crée le fichier s'il n'existe pas</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">nano</span> <span class="f">-l</span> <span class="s">notes.txt</span>             <span class="c"># avec les numéros de ligne</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> nano <span class="s">/etc/hosts</span>          <span class="c"># un fichier système : il faut sudo</span></pre></div>
+
+    <div class="callout danger"><span class="callout-title">Éditer un fichier système</span>
+      <p>Avant de modifier un fichier de <code>/etc</code>, fais-en une copie : <code>sudo cp /etc/hosts /etc/hosts.bak</code>. Une faute dans certains
+        fichiers (<code>/etc/fstab</code>, <code>/etc/sudoers</code>…) peut empêcher le système de démarrer ou te priver de <code>sudo</code>.
+        Dans la VM, un instantané avant ne coûte rien.</p></div>
+
+    <!-- ================================================== -->
+    <h2 id="vim" data-short="Survivre à Vim">Vim : survivre, puis briller</h2>
+    <figure class="video-card">
+      <div class="video-head"><span class="video-badge">▶ Vidéo · 1 min 30</span><strong>Survivre à Vim</strong><span>les modes et la formule magique</span></div>
+      <video controls preload="none" playsinline poster="../assets/video/vim.jpg"><source src="../assets/video/vim.mp4" type="video/mp4">Ton navigateur ne lit pas la vidéo : <a href="../assets/video/vim.mp4">télécharge-la ici</a>.</video>
+      <figcaption>Animation réalisée pour ce cours. Voix off et musique générées par IA (Google Gemini et Lyria).</figcaption>
+    </figure>
+
+    <p><strong>Vim</strong> (<em>Vi IMproved</em>, 1991) descend de <code>vi</code>, écrit en 1976. Il est présent sur pratiquement tous les serveurs Unix et Linux du monde,
+      ce qui en fait l'éditeur à connaître quand rien d'autre n'est disponible. Sur Ubuntu, une version minimale est installée ; la version complète s'obtient avec
+      <code>sudo apt install vim</code>.</p>
+
+    <div class="callout story"><span class="callout-title">La blague la plus célèbre de l'informatique</span>
+      <p>« Comment quitter Vim ? » est l'une des questions les plus consultées de l'histoire de Stack Overflow, vue des millions de fois.
+        La blague dit qu'on ne quitte pas Vim : on redémarre l'ordinateur. Après cette section, tu n'en auras plus besoin.</p></div>
+
+    <h3>Les modes : la clé de tout</h3>
+    <p>Dans la plupart des éditeurs, taper une lettre écrit cette lettre. Dans Vim, cela dépend du <strong>mode</strong> :</p>
+    <div class="flow">
+      <div class="flow-step" style="border-color:var(--cyan)"><div class="ico">🎮</div><b>Mode normal</b><span>au démarrage · les touches sont des commandes</span></div>
+      <div class="flow-arrow">⇄</div>
+      <div class="flow-step" style="border-color:var(--green)"><div class="ico">✍️</div><b>Mode insertion</b><span><kbd>i</kbd> pour entrer · <kbd>Échap</kbd> pour sortir</span></div>
+      <div class="flow-arrow">·</div>
+      <div class="flow-step" style="border-color:var(--accent)"><div class="ico">⌨️</div><b>Mode commande</b><span><kbd>:</kbd> depuis le mode normal · <code>:w</code>, <code>:q</code>…</span></div>
+    </div>
+
+    <h3>Le kit de survie</h3>
+    <div class="table-wrap"><table>
+      <tr><th>Je veux…</th><th>Je tape</th></tr>
+      <tr><td>Écrire du texte</td><td><kbd>i</kbd>, puis je tape normalement</td></tr>
+      <tr><td>Arrêter d'écrire</td><td><kbd>Échap</kbd> (en cas de doute : <kbd>Échap</kbd>, toujours)</td></tr>
+      <tr><td>Enregistrer</td><td><code>:w</code> <kbd>Entrée</kbd></td></tr>
+      <tr><td>Enregistrer et quitter</td><td><code>:wq</code> <kbd>Entrée</kbd> (ou <code>ZZ</code>)</td></tr>
+      <tr><td><strong>Quitter sans enregistrer</strong></td><td><code>:q!</code> <kbd>Entrée</kbd> : la formule magique</td></tr>
+    </table></div>
+
+    <h3>Pour aller plus vite (mode normal)</h3>
+    <div class="table-wrap"><table>
+      <tr><th>Catégorie</th><th>Touches</th></tr>
+      <tr><td>Se déplacer</td><td><kbd>h</kbd> <kbd>j</kbd> <kbd>k</kbd> <kbd>l</kbd> (gauche, bas, haut, droite) · <kbd>w</kbd> / <kbd>b</kbd> mot suivant / précédent · <kbd>0</kbd> / <kbd>$</kbd> début / fin de ligne · <kbd>gg</kbd> / <kbd>G</kbd> début / fin du fichier</td></tr>
+      <tr><td>Insérer</td><td><kbd>i</kbd> avant le curseur · <kbd>a</kbd> après · <kbd>o</kbd> nouvelle ligne en dessous · <kbd>A</kbd> en fin de ligne</td></tr>
+      <tr><td>Modifier</td><td><kbd>x</kbd> supprime un caractère · <kbd>dd</kbd> supprime (coupe) la ligne · <kbd>yy</kbd> copie la ligne · <kbd>p</kbd> colle · <kbd>u</kbd> annule · <kbd>Ctrl</kbd> + <kbd>R</kbd> rétablit · <kbd>.</kbd> répète</td></tr>
+      <tr><td>Chercher</td><td><kbd>/</kbd>mot puis <kbd>n</kbd> / <kbd>N</kbd> · <code>:%s/ancien/nouveau/g</code> remplace partout</td></tr>
+      <tr><td>Combiner</td><td>Un nombre devant répète : <kbd>3dd</kbd> supprime 3 lignes, <kbd>5j</kbd> descend de 5 lignes</td></tr>
+    </table></div>
+
+    <div class="callout tip"><span class="callout-title"><code>vimtutor</code> : le meilleur cours de Vim</span>
+      <p>Tape <code>vimtutor</code> dans un terminal : un tutoriel interactif de 30 minutes s'ouvre, dans Vim lui-même. Il existe en français
+        (<code>vimtutor fr</code>, avec le paquet <code>vim</code> complet). C'est la façon la plus efficace d'apprendre.</p></div>
+
+    <h3>Choisir son éditeur par défaut</h3>
+    <p>Certaines commandes (<code>crontab -e</code>, <code>git commit</code>, <code>sudoedit</code>…) ouvrent un éditeur automatiquement. Pour choisir lequel :</p>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> update-alternatives <span class="f">--config</span> <span class="s">editor</span>
+<span class="o">  Sélection   Chemin              Priorité  État</span>
+<span class="o">* 0            /bin/nano            40       mode automatique</span>
+<span class="o">  1            /usr/bin/vim.basic   30       mode manuel</span>
+<span class="o">...</span></pre></div>
+
+    <!-- ================================================== -->
+    <h2 id="encodage" data-short="Encodages &amp; fins de ligne">Encodages et fins de ligne</h2>
+    <p>Un fichier texte n'est qu'une suite d'octets. Deux conventions décident de la façon de les interpréter, et sont source de bugs mystérieux :</p>
+    <div class="cards">
+      <div class="card" style="--c:var(--accent)"><div class="icon">🔤</div><h4>L'encodage</h4>
+        <p>Comment les caractères (é, ç, €, emoji) sont codés en octets. Linux utilise <strong>UTF-8</strong> partout. Un vieux fichier en Latin-1 affichera des accents cassés (<code>Ã©</code> au lieu de <code>é</code>).</p></div>
+      <div class="card" style="--c:var(--violet)"><div class="icon">↵</div><h4>La fin de ligne</h4>
+        <p>Linux termine les lignes par <strong>LF</strong> (<code>\n</code>), Windows par <strong>CRLF</strong> (<code>\r\n</code>). Un script écrit sous Windows peut refuser de fonctionner sous Linux.</p></div>
+    </div>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">file</span> <span class="s">script.sh</span>
+<span class="o">script.sh: Bourne-Again shell script, ASCII text executable, <span class="hl">with CRLF line terminators</span></span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">./script.sh</span>
+<span class="o"><span class="err">bash: ./script.sh: /bin/bash^M: bad interpreter: No such file or directory</span></span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">cat</span> <span class="f">-A</span> <span class="s">script.sh</span> | <span class="k">head</span> <span class="f">-2</span>    <span class="c"># -A montre les caractères invisibles</span>
+<span class="o">#!/bin/bash<span class="hl">^M$</span></span>
+<span class="o">echo "Bonjour"<span class="hl">^M$</span></span>                          <span class="c"># ^M = le \r de Windows, $ = fin de ligne</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> apt install <span class="s">dos2unix</span> &amp;&amp; <span class="k">dos2unix</span> <span class="s">script.sh</span>   <span class="c"># conversion</span></pre></div>
+    <p>Pour l'encodage, <code>file -i fichier</code> indique le jeu de caractères, et <code>iconv -f latin1 -t utf-8 ancien.txt &gt; nouveau.txt</code> convertit.</p>
+
+    <!-- ================================================== -->
+    <h2 id="glossaire" data-short="Glossaire">Glossaire du module</h2>
+    <dl class="glossary">
+      <dt>cat</dt><dd>Affiche (et concatène) des fichiers.</dd>
+      <dt>less</dt><dd>Lecteur page par page, aussi utilisé par <code>man</code>.</dd>
+      <dt>head / tail</dt><dd>Début / fin d'un fichier ; <code>tail -f</code> suit les ajouts en direct.</dd>
+      <dt>wc</dt><dd>Compte lignes, mots et octets.</dd>
+      <dt>Éditeur de texte</dt><dd>Programme pour modifier un fichier texte : nano, Vim, Emacs…</dd>
+      <dt>nano</dt><dd>Éditeur simple, raccourcis affichés à l'écran.</dd>
+      <dt>Vim</dt><dd>Éditeur modal, puissant, présent sur presque tous les serveurs.</dd>
+      <dt>Mode normal / insertion / commande</dt><dd>Les trois états de Vim : commandes, saisie de texte, commandes en <code>:</code>.</dd>
+      <dt>UTF-8</dt><dd>L'encodage de caractères standard sous Linux.</dd>
+      <dt>LF / CRLF</dt><dd>Fin de ligne Linux / Windows.</dd>
+    </dl>
+
+    <!-- ================================================== -->
+    <h2 id="quiz" data-short="Quiz">🧠 Quiz : as-tu tout retenu ?</h2>
+    <div class="quiz">
+      <div class="q" data-answer="1">
+        <div class="q-text">1. Quel outil pour lire confortablement un fichier de 50 000 lignes ?</div>
+        <div class="q-opts"><button><code>cat</code></button><button><code>less</code></button><button><code>wc</code></button></div>
+        <div class="q-explain"><code>less</code> affiche page par page et permet de chercher. <code>cat</code> ferait tout défiler.</div>
+      </div>
+      <div class="q" data-answer="2">
+        <div class="q-text">2. Comment afficher les 20 dernières lignes d'un journal ?</div>
+        <div class="q-opts"><button><code>head -n 20</code></button><button><code>less -20</code></button><button><code>tail -n 20</code></button></div>
+        <div class="q-explain"><code>tail</code> montre la fin, <code>head</code> le début.</div>
+      </div>
+      <div class="q" data-answer="0">
+        <div class="q-text">3. Que fait <code>tail -f</code> ?</div>
+        <div class="q-opts"><button>Il affiche les nouvelles lignes en direct</button><button>Il force la lecture d'un fichier protégé</button><button>Il affiche le fichier complet</button></div>
+        <div class="q-explain"><code>-f</code> = <em>follow</em>. On l'arrête avec <kbd>Ctrl</kbd> + <kbd>C</kbd>.</div>
+      </div>
+      <div class="q" data-answer="1">
+        <div class="q-text">4. Dans nano, <code>^O</code> signifie…</div>
+        <div class="q-opts"><button><kbd>Maj</kbd> + <kbd>O</kbd></button><button><kbd>Ctrl</kbd> + <kbd>O</kbd> : enregistrer</button><button><kbd>Alt</kbd> + <kbd>O</kbd></button></div>
+        <div class="q-explain"><code>^</code> représente <kbd>Ctrl</kbd>, <code>M-</code> représente <kbd>Alt</kbd>.</div>
+      </div>
+      <div class="q" data-answer="2">
+        <div class="q-text">5. Tu viens d'ouvrir Vim et tu tapes des lettres : rien ne s'écrit. Pourquoi ?</div>
+        <div class="q-opts"><button>Le fichier est en lecture seule</button><button>Il faut d'abord enregistrer</button><button>Tu es en mode normal : il faut appuyer sur <kbd>i</kbd></button></div>
+        <div class="q-explain">Au démarrage, Vim est en mode normal, où les touches sont des commandes.</div>
+      </div>
+      <div class="q" data-answer="0">
+        <div class="q-text">6. Comment quitter Vim sans enregistrer ?</div>
+        <div class="q-opts"><button><kbd>Échap</kbd> puis <code>:q!</code></button><button><kbd>Ctrl</kbd> + <kbd>X</kbd></button><button><code>:wq</code></button></div>
+        <div class="q-explain"><code>:q!</code> force la sortie en abandonnant les modifications. <code>:wq</code> enregistre puis quitte.</div>
+      </div>
+      <div class="q" data-answer="1">
+        <div class="q-text">7. Dans Vim (mode normal), que fait <kbd>dd</kbd> ?</div>
+        <div class="q-opts"><button>Duplique la ligne</button><button>Supprime (coupe) la ligne</button><button>Descend de deux lignes</button></div>
+        <div class="q-explain"><kbd>dd</kbd> coupe la ligne ; <kbd>p</kbd> la recolle ailleurs.</div>
+      </div>
+      <div class="q" data-answer="2">
+        <div class="q-text">8. Un script venu de Windows affiche « /bin/bash^M: bad interpreter ». La cause ?</div>
+        <div class="q-opts"><button>Bash n'est pas installé</button><button>Un problème d'accents</button><button>Des fins de ligne CRLF</button></div>
+        <div class="q-explain">Le <code>^M</code> est le <code>\r</code> des fins de ligne Windows. Solution : <code>dos2unix</code>.</div>
+      </div>
+      <div class="quiz-score">Réponds aux questions pour voir ton score.</div>
+    </div>
+
+    <!-- ================================================== -->
+    <h2 id="mission" data-short="Mission pratique">🚀 Mission pratique</h2>
+    <div class="mission">
+      <h4>À faire dans la machine virtuelle</h4>
+      <p class="mission-astuce">Coche chaque étape une fois faite : sa correction s'affiche juste en dessous.</p>
+      <ul class="checklist" data-key="m03">
+        <li><label><input type="checkbox"><span>Afficher <code>/etc/os-release</code> avec <code>cat</code>, puis numéroter ses lignes.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> cat /etc/os-release
+<span class="p">$</span> cat -n /etc/os-release
+<span class="o">     1	PRETTY_NAME=&quot;Ubuntu 24.04.x LTS&quot;</span>
+<span class="o">     2	NAME=&quot;Ubuntu&quot;</span>
+<span class="o">...</span></pre></div></li>
+        <li><label><input type="checkbox"><span>Ouvrir <code>/etc/services</code> avec <code>less</code>, y chercher <code>ssh</code>, aller à la fin, quitter.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> less /etc/services
+<span class="c"># /ssh puis Entrée : la ligne « ssh 22/tcp » est surlignée</span>
+<span class="c"># n : occurrence suivante  ·  Maj+G : fin du fichier  ·  q : quitter</span></pre></div></li>
+        <li><label><input type="checkbox"><span>Afficher les 3 premières et les 3 dernières lignes de <code>/etc/passwd</code>, puis compter ses lignes.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> head -n 3 /etc/passwd
+<span class="p">$</span> tail -n 3 /etc/passwd
+<span class="p">$</span> wc -l /etc/passwd
+<span class="o">37 /etc/passwd</span></pre><p>Le nombre de lignes dépend des paquets installés.</p></div></li>
+        <li><label><input type="checkbox"><span>Suivre <code>/var/log/syslog</code> avec <code>tail -f</code> dans un terminal et y écrire avec <code>logger</code> depuis un autre.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="c"># Terminal 1</span>
+<span class="p">$</span> tail -f /var/log/syslog
+<span class="c"># Terminal 2</span>
+<span class="p">$</span> logger &quot;Bonjour depuis le terminal 2&quot;
+<span class="c"># Terminal 1 affiche aussitôt :</span>
+<span class="o">... ubuntu user: Bonjour depuis le terminal 2</span></pre><p>« Permission non accordée » ? Utilise <code>sudo tail -f /var/log/syslog</code>. <kbd>Ctrl</kbd> + <kbd>C</kbd> pour arrêter.</p></div></li>
+        <li><label><input type="checkbox"><span>Créer <code>~/labo/notes.txt</code> avec nano : écrire 5 lignes, couper/coller une ligne, enregistrer, quitter.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> mkdir -p ~/labo
+<span class="p">$</span> nano ~/labo/notes.txt</pre><p>Écris 5 lignes. Sur une ligne : <kbd>Ctrl</kbd> + <kbd>K</kbd> (couper), déplace le curseur, <kbd>Ctrl</kbd> + <kbd>U</kbd> (coller). Enregistre avec <kbd>Ctrl</kbd> + <kbd>O</kbd> puis <kbd>Entrée</kbd>, quitte avec <kbd>Ctrl</kbd> + <kbd>X</kbd>. Vérifie avec <code>cat ~/labo/notes.txt</code>.</p></div></li>
+        <li><label><input type="checkbox"><span>Ouvrir le même fichier dans Vim, ajouter une ligne, enregistrer et quitter avec <code>:wq</code>.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> vim ~/labo/notes.txt</pre><p><kbd>G</kbd> (aller à la fin), <kbd>o</kbd> (nouvelle ligne en dessous, mode insertion), tape ta ligne, <kbd>Échap</kbd>, puis <code>:wq</code> et <kbd>Entrée</kbd>.</p></div></li>
+        <li><label><input type="checkbox"><span>Rouvrir le fichier dans Vim, tout casser (<kbd>dd</kbd> plusieurs fois), puis quitter sans enregistrer avec <code>:q!</code>.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><p>Dans Vim : <kbd>dd</kbd> plusieurs fois, puis <kbd>Échap</kbd> et <code>:q!</code> <kbd>Entrée</kbd>. Vérifie avec <code>cat ~/labo/notes.txt</code> : le fichier est intact. (Si tu tapes seulement <code>:q</code>, Vim refuse avec l'erreur E37.)</p></div></li>
+        <li><label><input type="checkbox"><span>Remplacer un mot partout dans le fichier avec <code>:%s/ancien/nouveau/g</code>.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><p>Dans Vim, en mode normal : <code>:%s/note/mémo/g</code> puis <kbd>Entrée</kbd>. <code>%</code> = tout le fichier, <code>g</code> = toutes les occurrences de chaque ligne. Ajoute <code>c</code> à la fin (<code>/gc</code>) pour confirmer chaque remplacement. Enregistre avec <code>:wq</code>.</p></div></li>
+        <li><label><input type="checkbox"><span>Faire au moins les leçons 1 et 2 de <code>vimtutor</code>.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> vimtutor
+<span class="c"># version française complète :</span>
+<span class="p">$</span> sudo apt install vim
+<span class="p">$</span> vimtutor fr</pre><p>Le tutoriel travaille sur une copie : aucun risque de casser quoi que ce soit.</p></div></li>
+        <li><label><input type="checkbox"><span>Bonus : sauvegarder <code>/etc/hosts</code> en <code>/etc/hosts.bak</code>, y ajouter une ligne avec <code>sudo nano</code>, vérifier, puis restaurer la copie.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> sudo cp /etc/hosts /etc/hosts.bak
+<span class="p">$</span> sudo nano /etc/hosts
+<span class="c"># ajouter la ligne :  127.0.0.1   monsite.local</span>
+<span class="p">$</span> ping -c 1 monsite.local
+<span class="o">64 octets de localhost (127.0.0.1) : icmp_seq=1 ...</span>
+<span class="p">$</span> sudo cp /etc/hosts.bak /etc/hosts</pre></div></li>
+      </ul>
+    </div>
+
+    <!-- ================================================== -->
+    <h2 id="questions" data-short="Questions fréquentes">💬 Questions fréquentes</h2>
+    <p>Les questions qui reviennent le plus souvent sur ce module, avec leurs réponses.</p>
+    <div class="qa" id="qa-list">
+      <details>
+        <summary>Vim affiche « E37: No write since last change »</summary>
+        <p>Tu as tapé <code>:q</code> alors que le fichier a été modifié : Vim refuse de perdre ton travail. Choisis : <code>:wq</code> pour enregistrer
+          et quitter, ou <code>:q!</code> pour abandonner les modifications.</p>
+      </details>
+      <details>
+        <summary>« [ Fichier « … » non accessible en écriture ] » dans nano</summary>
+        <p>Le fichier appartient à root (typiquement dans <code>/etc</code>). Quitte sans enregistrer, puis rouvre-le avec <code>sudo nano fichier</code>.
+          Dans Vim, l'astuce <code>:w !sudo tee %</code> permet d'enregistrer quand même, mais mieux vaut prendre l'habitude d'ouvrir le fichier avec les bons droits.</p>
+      </details>
+      <details>
+        <summary>Je n'ai pas le droit de lire <code>/var/log/syslog</code></summary>
+        <p>Les journaux sont réservés aux administrateurs. Sur Ubuntu, le premier compte créé appartient au groupe <code>adm</code>, qui peut les lire ;
+          sinon, utilise <code>sudo tail -f /var/log/syslog</code>. La commande <code>journalctl</code> (module 10) offre une autre façon de lire les journaux.</p>
+      </details>
+    </div>
+
+    <button class="done-btn" data-module="03" type="button">🏁 Marquer ce module comme terminé</button>
+
+    <nav class="page-nav">
+      <a href="02-systeme-de-fichiers.html"><small>← Précédent</small>Module 02 — Le système de fichiers</a>
+      <a class="next" href="04-utilisateurs-permissions.html"><small>Suivant →</small>Module 04 — Utilisateurs, groupes &amp; permissions</a>
+    </nav>
+  </article>
+</div>
+
+<footer class="site-footer">
+  <div>Carnet Linux · Module 03 · 🐧</div>
+</footer>
+
+<script src="../assets/js/main.js"></script>
+</body>
+</html>

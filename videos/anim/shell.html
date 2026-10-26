@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Le voyage d'une commande — vidéo</title>
+<link rel="stylesheet" href="commun.css">
+<style>
+/* 1. ls */
+#t-ls { left: 310px; top: 170px; width: 1300px; }
+#t-ls .corps { font-size: 48px; min-height: 330px; }
+#entree { left: 1450px; top: 600px; }
+
+/* 2. la route */
+#route-titre { top: 150px; font-size: 110px; }
+.st { top: 420px; }
+#st1 { left: 130px; } #st2 { left: 580px; } #st3 { left: 1030px; } #st4 { left: 1480px; }
+.fl { top: 500px; font-size: 80px; color: var(--orange); font-family: var(--display); font-weight: 800; }
+#fl1 { left: 470px; } #fl2 { left: 920px; } #fl3 { left: 1370px; }
+#bille { left: 250px; top: 690px; padding: 10px 28px; border-radius: 999px; background: var(--orange); font-family: var(--mono); font-size: 40px;
+  box-shadow: 0 0 40px rgba(233,84,32,.8); }
+
+/* 3. le terminal */
+.etape { left: 120px; top: 110px; }
+.etape-titre { left: 120px; top: 160px; font-size: 100px; }
+#fen { left: 960px; top: 160px; width: 820px; }
+#fen .corps { font-size: 34px; min-height: 300px; }
+#fl-aff, #fl-tr { left: 200px; font-family: var(--display); font-weight: 800; font-size: 52px; }
+#fl-aff { top: 420px; color: var(--cyan); } #fl-tr { top: 520px; color: var(--vert); }
+#mainframe { left: 760px; top: 170px; width: 400px; height: 560px; border-radius: 20px; background: linear-gradient(#2b3242, #171c26);
+  border: 3px solid #4a5568; box-shadow: 0 40px 80px rgba(0,0,0,.6); }
+.diode { position: absolute; width: 20px; height: 20px; border-radius: 50%; }
+#mf-lab { left: 760px; top: 750px; width: 400px; text-align: center; font-family: var(--display); font-weight: 800; font-size: 40px; color: var(--gris); }
+.vt { width: 300px; height: 230px; }
+.vt .ecr { width: 300px; height: 190px; border-radius: 16px; background: #04140a; border: 10px solid #2b3242; box-shadow: inset 0 0 40px rgba(63,185,80,.3);
+  font-family: var(--mono); color: #6dff8a; font-size: 26px; padding: 14px; text-shadow: 0 0 10px rgba(109,255,138,.7); }
+.vt .clav { width: 260px; height: 30px; margin: 10px auto 0; border-radius: 6px; background: #2b3242; }
+#vt1 { left: 200px; top: 160px; } #vt2 { left: 200px; top: 520px; } #vt3 { left: 1420px; top: 160px; }
+.cable { position: absolute; height: 6px; background: repeating-linear-gradient(90deg, #f5c542 0 14px, transparent 14px 24px); transform-origin: 0 50%; }
+#tele { left: 1420px; top: 460px; width: 300px; height: 300px; }
+#papier { position: absolute; left: 40px; top: 0; width: 220px; height: 200px; background: #f4efe6; color: #222; font-family: var(--mono); font-size: 20px;
+  padding: 10px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,.4); }
+#papier div { white-space: nowrap; }
+#machine-tele { position: absolute; left: 0; top: 190px; width: 300px; height: 110px; border-radius: 18px; background: #5b6474; border: 3px solid #7a8496; }
+#tty { top: 250px; font-size: 300px; }
+#tty-sous { top: 600px; font-size: 52px; color: var(--gris); font-family: var(--display); font-weight: 700; }
+#tty-dev { top: 700px; font-family: var(--mono); font-size: 40px; color: #79c0ff; }
+
+/* 4. le shell */
+#bash-logo { left: 1480px; top: 130px; font-family: var(--mono); font-size: 70px; padding: 20px 40px; border-radius: 20px; background: #0d1117;
+  border: 3px solid var(--vert); color: var(--vert); }
+#cmdline { top: 400px; font-family: var(--mono); font-size: 96px; }
+.tok { display: inline-block; padding: 6px 22px; border-radius: 16px; margin: 0 14px; }
+#k1 { color: #ffa657; } #k2 { color: #d2a8ff; } #k3 { color: #a5d6ff; }
+.tok-lab { top: 540px; width: 380px; text-align: center; font-family: var(--display); font-weight: 700; font-size: 34px; }
+#path { left: 360px; top: 640px; width: 1200px; font-family: var(--mono); font-size: 40px; }
+#path div { padding: 6px 0; }
+#exec { left: 560px; top: 640px; width: 800px; text-align: center; padding: 28px; border-radius: 26px; font-family: var(--mono); font-size: 40px;
+  background: rgba(233,84,32,.15); border: 3px solid var(--orange); }
+
+/* 5. le noyau */
+#tux-n { left: 810px; top: 250px; width: 300px; }
+#noyau-lab { top: 110px; font-size: 80px; }
+.res { top: 300px; width: 330px; height: 220px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.res .ico { font-family: var(--emoji); font-size: 90px; }
+.res .nom { font-family: var(--display); font-weight: 800; font-size: 44px; }
+#r1 { left: 220px; } #r2 { left: 1370px; } #r3 { left: 795px; top: 640px; }
+
+/* 6. retour */
+#retour-titre { top: 140px; font-size: 100px; }
+#t-ret { left: 360px; top: 330px; width: 1200px; }
+#t-ret .corps { font-size: 44px; min-height: 330px; }
+
+/* 7. l'invite */
+#invite-titre { top: 140px; font-size: 90px; }
+#prompt { top: 380px; font-family: var(--mono); font-size: 130px; }
+#prompt span { display: inline-block; padding: 0 6px; border-radius: 16px; }
+#pu { color: var(--vert); } #pa { color: #fff; } #pm { color: var(--vert); } #pd { color: #79c0ff; } #pdol { color: #fff; }
+#proot { color: var(--rouge); } #pdiese { color: var(--rouge); }
+.p-lab { top: 600px; text-align: center; font-family: var(--display); font-weight: 700; font-size: 34px; color: var(--gris); width: 400px; }
+#danger { top: 720px; font-size: 64px; color: var(--rouge); }
+#teinte-rouge { background: radial-gradient(90% 80% at 50% 50%, #3b1218 0%, #1b0b10 70%, #110609 100%); opacity: 0; }
+
+/* 8-9. récap */
+#recap-titre { top: 140px; font-size: 100px; }
+.rc { top: 360px; }
+#rc1 { left: 250px; } #rc2 { left: 810px; } #rc3 { left: 1370px; }
+#touches { top: 420px; }
+#touches .touche { margin: 0 22px; font-size: 64px; }
+#ouvre-titre { top: 200px; font-size: 100px; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="bg" class="layer"><div id="blob1" class="blob"></div><div id="blob2" class="blob"></div><div id="blob3" class="blob"></div></div>
+  <div id="teinte-rouge" class="layer"></div>
+  <div id="grille" class="layer"></div>
+  <div id="cam-punch"><div id="cam-drift">
+
+    <div class="scene" id="s-ls">
+      <div class="abs terminal" id="t-ls"><div class="barre-t"><i></i><i></i><i></i><span>user@ubuntu: ~</span></div>
+        <div class="corps"><div class="l" id="ls-l1"><span class="p">user@ubuntu:~$</span> <span class="tape">ls</span></div>
+          <div class="l o" id="ls-o1">Bureau  Documents  Images  Musique</div>
+          <div class="l o" id="ls-o2">Public  Téléchargements  Vidéos</div>
+          <div class="l" id="ls-l2"><span class="p">user@ubuntu:~$</span> <span class="curseur" id="cur-ls"></span></div></div></div>
+      <div class="abs touche" id="entree">⏎ Entrée</div>
+    </div>
+
+    <div class="scene" id="s-route">
+      <div class="ligne display grad" id="route-titre">Le voyage d'une commande</div>
+      <div class="abs verre station st" id="st1"><div class="ico">⌨️</div><div class="nom">Toi</div><div class="role">tu tapes</div></div>
+      <div class="abs verre station st" id="st2"><div class="ico">🖥️</div><div class="nom">Terminal</div><div class="role">affiche</div></div>
+      <div class="abs verre station st" id="st3"><div class="ico">🐚</div><div class="nom">Shell</div><div class="role">interprète</div></div>
+      <div class="abs verre station st" id="st4"><div class="ico">🐧</div><div class="nom">Noyau</div><div class="role">exécute</div></div>
+      <div class="abs fl" id="fl1">→</div><div class="abs fl" id="fl2">→</div><div class="abs fl" id="fl3">→</div>
+      <div class="abs" id="bille">ls</div>
+    </div>
+
+    <div class="scene" id="s-term">
+      <div class="abs eyebrow etape">Étape ① </div>
+      <div class="abs display etape-titre">Le terminal</div>
+      <div class="abs terminal" id="fen"><div class="barre-t"><i></i><i></i><i></i><span>Terminal</span></div>
+        <div class="corps"><div class="l"><span class="p">user@ubuntu:~$</span> ls</div><div class="l o">Bureau  Documents  Images</div><div class="l"><span class="p">user@ubuntu:~$</span> <span class="curseur" id="cur-fen"></span></div></div></div>
+      <div class="abs" id="fl-aff">⬇ il affiche le texte</div>
+      <div class="abs" id="fl-tr">⬆ il transmet le clavier</div>
+    </div>
+
+    <div class="scene" id="s-70">
+      <div class="abs eyebrow etape">Années 1970</div>
+      <div class="abs" id="mainframe"></div>
+      <div class="abs" id="mf-lab">l'ordinateur central</div>
+      <div class="cable" id="c1"></div><div class="cable" id="c2"></div><div class="cable" id="c3"></div>
+      <div class="abs vt" id="vt1"><div class="ecr">$ login_</div><div class="clav"></div></div>
+      <div class="abs vt" id="vt2"><div class="ecr">$ ls_</div><div class="clav"></div></div>
+      <div class="abs vt" id="vt3"><div class="ecr">$ date_</div><div class="clav"></div></div>
+      <div class="abs" id="tele"><div id="papier"><div>LOGIN: KEN</div><div>% LS</div><div>BIN  DEV  ETC</div><div>% DATE</div><div>TUE JAN 4 1972</div><div>% _</div></div><div id="machine-tele"></div></div>
+    </div>
+
+    <div class="scene" id="s-tty">
+      <div class="ligne display grad" id="tty">TTY</div>
+      <div class="ligne" id="tty-sous">TeleTYpewriter : le téléscripteur</div>
+      <div class="ligne" id="tty-dev">/dev/tty1  /dev/tty2  /dev/tty3 …</div>
+    </div>
+
+    <div class="scene" id="s-shell">
+      <div class="abs eyebrow etape">Étape ②</div>
+      <div class="abs display etape-titre">Le shell</div>
+      <div class="abs" id="bash-logo">$_ bash</div>
+      <div class="ligne" id="cmdline"><span class="tok" id="k1">ls</span><span class="tok" id="k2">-l</span><span class="tok" id="k3">Documents</span></div>
+      <div class="abs tok-lab" id="kl1" style="left:420px;color:#ffa657">commande</div>
+      <div class="abs tok-lab" id="kl2" style="left:770px;color:#d2a8ff">option</div>
+      <div class="abs tok-lab" id="kl3" style="left:1120px;color:#a5d6ff">argument</div>
+      <div class="abs" id="path"><div id="pa1">🔍 /usr/local/bin/ls <span class="err">✗ absent</span></div><div id="pa2">🔍 /usr/bin/ls <span class="ok">✓ trouvé !</span></div></div>
+      <div class="abs" id="exec">« Noyau, lance /usr/bin/ls ! »</div>
+    </div>
+
+    <div class="scene" id="s-noyau">
+      <img class="abs" id="tux-n" src="img/tux.svg" alt="">
+      <div class="ligne display grad" id="noyau-lab">③ Le noyau</div>
+      <div class="abs verre res" id="r1"><div class="ico">⏱️</div><div class="nom">Processeur</div></div>
+      <div class="abs verre res" id="r2"><div class="ico">🧠</div><div class="nom">Mémoire</div></div>
+      <div class="abs verre res" id="r3"><div class="ico">💽</div><div class="nom">Disque</div></div>
+    </div>
+
+    <div class="scene" id="s-retour">
+      <div class="ligne display" id="retour-titre">Le chemin inverse</div>
+      <div class="abs terminal" id="t-ret"><div class="barre-t"><i></i><i></i><i></i><span>user@ubuntu: ~</span></div>
+        <div class="corps"><div class="l"><span class="p">user@ubuntu:~$</span> ls</div>
+          <div class="l o" id="ret-o1">Bureau  Documents  Images  Musique</div>
+          <div class="l o" id="ret-o2">Public  Téléchargements  Vidéos</div>
+          <div class="l" id="ret-p"><span class="p">user@ubuntu:~$</span> <span class="curseur" id="cur-ret"></span></div></div></div>
+    </div>
+
+    <div class="scene" id="s-invite">
+      <div class="ligne display mots" id="invite-titre">L'invite te parle</div>
+      <div class="ligne" id="prompt"><span id="pu">user</span><span id="proot">root</span><span id="pa">@</span><span id="pm">ubuntu</span><span id="pd">:~</span><span id="pdol">$</span><span id="pdiese">#</span></div>
+      <div class="abs p-lab" id="lab-u" style="left:230px">nom d'utilisateur</div>
+      <div class="abs p-lab" id="lab-m" style="left:730px">nom de la machine</div>
+      <div class="abs p-lab" id="lab-d" style="left:1130px">dossier courant</div>
+      <div class="abs p-lab" id="lab-dol" style="left:1340px;top:690px">utilisateur normal</div>
+      <div class="ligne display" id="danger">⚠️ root : l'administrateur</div>
+    </div>
+
+    <div class="scene" id="s-recap">
+      <div class="ligne display mots" id="recap-titre">Trois rôles, une commande</div>
+      <div class="abs verre station rc" id="rc1"><div class="ico">🖥️</div><div class="nom">Terminal</div><div class="role">affiche</div></div>
+      <div class="abs verre station rc" id="rc2"><div class="ico">🐚</div><div class="nom">Shell</div><div class="role">interprète</div></div>
+      <div class="abs verre station rc" id="rc3"><div class="ico">🐧</div><div class="nom">Noyau</div><div class="role">exécute</div></div>
+    </div>
+
+    <div class="scene" id="s-ouvre">
+      <div class="ligne display grad" id="ouvre-titre">À toi de jouer !</div>
+      <div class="ligne" id="touches"><span class="touche" id="kc">Ctrl</span><span class="touche" id="ka">Alt</span><span class="touche" id="kt">T</span></div>
+    </div>
+
+  </div></div>
+
+  <div id="vignette" class="layer"></div>
+  <div class="abs" id="badge"><img src="img/tux.svg" alt=""><div><div class="nom"><b>$</b> carnet-linux</div><div class="sous">Module 01 · Le voyage d'une commande</div></div></div>
+  <canvas id="particules" width="1920" height="1080"></canvas>
+  <div class="abs" id="rideau"></div>
+  <div class="abs" id="st"></div>
+  <div class="abs" id="barre"></div>
+  <div id="flash" class="layer"></div>
+</div>
+
+<script src="lib/gsap.min.js"></script>
+<script src="commun.js"></script>
+<script>
+// Diodes de l'ordinateur central et câbles vers les terminaux.
+(() => {
+  const mf = document.getElementById('mainframe'), r = hasard(3), c = ['#3fb950', '#f5c542', '#f87171', '#38bdf8'];
+  for (let i = 0; i < 36; i++) {
+    const d = document.createElement('div');
+    d.className = 'diode'; d.dataset.i = i;
+    d.style.left = (40 + (i % 6) * 56) + 'px'; d.style.top = (50 + Math.floor(i / 6) * 70) + 'px';
+    d.style.background = c[Math.floor(r() * 4)];
+    mf.appendChild(d);
+  }
+  const cable = (id, x1, y1, x2, y2) => {
+    const el = document.getElementById(id), L = Math.hypot(x2 - x1, y2 - y1);
+    Object.assign(el.style, { left: x1 + 'px', top: y1 + 'px', width: L + 'px', transform: `rotate(${Math.atan2(y2 - y1, x2 - x1)}rad)` });
+  };
+  cable('c1', 500, 260, 760, 330); cable('c2', 500, 620, 760, 560); cable('c3', 1160, 330, 1420, 260);
+})();
+
+Film.demarrer({
+  film: 'shell',
+  fin: { titre: 'Le voyage d\'une commande', sous: 'Carnet Linux · Module 01 — Le bureau &amp; le terminal', prompt: 'man bash' },
+  construire(C) {
+    // ---------------------------------------------- 1. ls + Entrée
+    gsap.set('#s-ls', { autoAlpha: 1 });
+    tl.fromTo('#t-ls', { y: 80, opacity: 0, scale: 0.9 }, { y: 0, opacity: 1, scale: 1, duration: 0.8, ease: 'back.out(1.4)' }, 0.2);
+    ligne('#ls-l1', 0.4, 0.1);
+    gsap.set('#ls-l1 .ch', { display: 'none' });
+    taper('#ls-l1 .tape', C.ls1 + 0.6, C.ls1 + 1.2);
+    gsap.set('#entree', { opacity: 0 });
+    tl.fromTo('#entree', { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: 'back.out(2.5)', immediateRender: false }, C.entree - 0.2);
+    tl.to('#entree', { y: 10, borderBottomWidth: 4, duration: 0.08, yoyo: true, repeat: 1 }, C.entree + 0.3);
+    sortie(['#ls-o1', '#ls-o2', '#ls-l2'], C.liste);
+    CURSEURS.push({ el: document.getElementById('cur-ls'), t0: C.liste + 0.3 });
+    flash(C.liste, 0.25, 0.3);
+
+    // ---------------------------------------------- 2. la route
+    plonge(C.voyage, '#s-ls', '#s-route');
+    gsap.set(['.st', '.fl', '#bille'], { opacity: 0 });
+    tl.fromTo('#route-titre', { y: 40, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.voyage);
+    pop('.st', C.voyage + 0.6, { stagger: 0.3, depuis: 0.4 });
+    pop('.fl', C.voyage + 0.9, { stagger: 0.3 });
+    tl.set('#bille', { opacity: 1 }, C.voyage + 2.0);
+    tl.fromTo('#bille', { x: 0 }, { x: 1350, duration: 1.4, ease: 'power2.inOut', immediateRender: false }, C.voyage + 2.0);
+
+    // ---------------------------------------------- 3. le terminal
+    rideau(C.terminal, '#s-route', '#s-term');
+    gsap.set(['#fen', '#fl-aff', '#fl-tr'], { opacity: 0 });
+    tl.fromTo('.etape-titre', { x: -80, opacity: 0 }, { x: 0, opacity: 1, immediateRender: false }, C.terminal + 0.1);
+    tl.fromTo('#fen', { x: 300, opacity: 0 }, { x: 0, opacity: 1, duration: 0.6, ease: 'back.out(1.4)', immediateRender: false }, C.fenetre);
+    CURSEURS.push({ el: document.getElementById('cur-fen'), t0: C.fenetre });
+    tl.fromTo('#fl-aff', { x: -60, opacity: 0 }, { x: 0, opacity: 1, immediateRender: false }, C.travail + 0.6);
+    tl.fromTo('#fl-tr', { x: -60, opacity: 0 }, { x: 0, opacity: 1, immediateRender: false }, C.travail + 1.6);
+
+    // les années 70
+    plonge(C.annees, '#s-term', '#s-70');
+    gsap.set(['#mainframe', '#mf-lab', '.cable', '.vt', '#tele'], { opacity: 0 });
+    pop('#mainframe', C.geant - 0.3, { depuis: 0.5 });
+    tl.fromTo('#mf-lab', { opacity: 0 }, { opacity: 1, immediateRender: false }, C.geant + 0.3);
+    tl.to('.cable', { opacity: 1, duration: 0.3, stagger: 0.15 }, C.terminaux - 0.2);
+    pop('.vt', C.terminaux, { stagger: 0.2, depuis: 0.5 });
+    tl.fromTo('#tele', { y: 200, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: 'back.out(1.5)', immediateRender: false }, C.teletype);
+    tl.fromTo('#papier div', { opacity: 0 }, { opacity: 1, duration: 0.1, stagger: 0.25, immediateRender: false }, C.papier);
+    tl.to('#papier', { y: -60, duration: 1.6, ease: 'none' }, C.papier + 0.3);
+
+    plonge(C.tty, '#s-70', '#s-tty');
+    gsap.set(['#tty-sous', '#tty-dev'], { opacity: 0 });
+    tl.fromTo('#tty', { scale: 2.6, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: 'power4.in', immediateRender: false }, C.tty + 0.3);
+    coup(C.tty + 0.7, 1.06);
+    tl.fromTo('#tty-sous', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.tty + 1.0);
+    tl.fromTo('#tty-dev', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.tty + 1.8);
+
+    // ---------------------------------------------- 4. le shell
+    rideau(C.shell, '#s-tty', '#s-shell');
+    gsap.set(['#bash-logo', '#cmdline', '.tok-lab', '#pa1', '#pa2', '#exec'], { opacity: 0 });
+    pop('#bash-logo', C.bash, { rot: -10 });
+    tl.fromTo('#cmdline', { y: 40, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.interprete);
+    tl.to('#k1', { x: -90, backgroundColor: 'rgba(255,166,87,.15)', duration: 0.5, ease: 'back.out(2)' }, C.decoupe);
+    tl.to('#k2', { backgroundColor: 'rgba(210,168,255,.15)', duration: 0.5 }, C.decoupe);
+    tl.to('#k3', { x: 90, backgroundColor: 'rgba(165,214,255,.15)', duration: 0.5, ease: 'back.out(2)' }, C.decoupe);
+    tl.fromTo('.tok-lab', { y: 20, opacity: 0 }, { y: 0, opacity: 1, stagger: 0.15, immediateRender: false }, C.decoupe + 0.4);
+    tl.to(['#cmdline', '.tok-lab'], { y: -120, duration: 0.5 }, C.cherche);
+    tl.fromTo('#pa1', { x: -40, opacity: 0 }, { x: 0, opacity: 1, immediateRender: false }, C.cherche + 0.3);
+    tl.fromTo('#pa2', { x: -40, opacity: 0 }, { x: 0, opacity: 1, immediateRender: false }, C.cherche + 0.9);
+    tl.to('#path', { opacity: 0, duration: 0.3 }, C.demande - 0.1);
+    pop('#exec', C.demande + 0.2, { depuis: 0.6 });
+
+    // ---------------------------------------------- 5. le noyau
+    rideau(C.noyau, '#s-shell', '#s-noyau');
+    gsap.set(['.res', '#noyau-lab'], { opacity: 0 });
+    tl.fromTo('#tux-n', { y: -500 }, { y: 0, duration: 0.8, ease: 'bounce.out', immediateRender: false }, C.noyau);
+    tl.fromTo('#noyau-lab', { opacity: 0, scale: 0.8 }, { opacity: 1, scale: 1, immediateRender: false }, C.noyau + 0.6);
+    pop('#r1', C.cpu + 0.4, { depuis: 0.3 }); pop('#r2', C.memoire, { depuis: 0.3 }); pop('#r3', C.disque + 0.3, { depuis: 0.3 });
+    tl.to('#noyau-lab', { opacity: 0, duration: 0.3 }, C.disque);
+
+    // ---------------------------------------------- 6. le retour
+    plonge(C.inverse, '#s-noyau', '#s-retour');
+    tl.fromTo('#retour-titre', { y: 40, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.inverse);
+    tl.fromTo('#t-ret', { y: 80, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.inverse + 0.5);
+    sortie(['#ret-o1', '#ret-o2'], C.affiche, 0.2);
+    sortie('#ret-p', C.main + 0.4);
+    CURSEURS.push({ el: document.getElementById('cur-ret'), t0: C.main + 0.4 });
+    tl.to('#ret-p', { backgroundColor: 'rgba(63,185,80,.15)', duration: 0.3, yoyo: true, repeat: 1 }, C.main + 0.6);
+
+    // ---------------------------------------------- 7. l'invite
+    rideau(C.invite, '#s-retour', '#s-invite');
+    gsap.set(['#prompt span', '.p-lab', '#danger'], { opacity: 0 });
+    gsap.set(['#proot', '#pdiese'], { display: 'none' });
+    motsEntrent('#invite-titre .mot', C.invite);
+    const marque = (sel, lab, t, coul) => {
+      tl.fromTo(sel, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.35, immediateRender: false }, t);
+      tl.to(sel, { backgroundColor: coul, duration: 0.25 }, t + 0.1);
+      tl.to(sel, { backgroundColor: 'rgba(0,0,0,0)', duration: 0.4 }, t + 1.2);
+      if (lab) tl.fromTo(lab, { y: 20, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, t + 0.2);
+    };
+    marque('#pu', '#lab-u', C.nom, 'rgba(63,185,80,.25)');
+    marque('#pa', null, C.arobase, 'rgba(255,255,255,.2)');
+    marque('#pm', '#lab-m', C.machine, 'rgba(63,185,80,.25)');
+    marque('#pd', '#lab-d', C.deuxpoints, 'rgba(121,192,255,.25)');
+    marque('#pdol', '#lab-dol', C.dollar + 0.6, 'rgba(255,255,255,.2)');
+    tl.to('.p-lab', { opacity: 0, duration: 0.3 }, C.diese);
+    tl.set('#pdol', { display: 'none' }, C.diese + 0.3);
+    tl.set('#pdiese', { display: 'inline-block', opacity: 1 }, C.diese + 0.3);
+    tl.set('#pu', { display: 'none' }, C.root);
+    tl.set('#proot', { display: 'inline-block', opacity: 1 }, C.root);
+    tl.to('#teinte-rouge', { opacity: 1, duration: 0.4 }, C.root);
+    secousse(C.root + 0.1, 18);
+    tl.fromTo('#danger', { scale: 2, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.35, ease: 'power4.in', immediateRender: false }, C.root + 0.5);
+
+    // ---------------------------------------------- 8. récap
+    rideau(C.trois, '#s-invite', '#s-recap');
+    tl.to('#teinte-rouge', { opacity: 0, duration: 0.5 }, C.trois);
+    gsap.set('.rc', { opacity: 0 });
+    motsEntrent('#recap-titre .mot', C.trois);
+    pop('#rc1', C.trois, { depuis: 0.3 }); pop('#rc2', C.trois + 0.5, { depuis: 0.3 }); pop('#rc3', C.trois + 1.0, { depuis: 0.3 });
+
+    // ---------------------------------------------- 9. à toi
+    plonge(C.ouvre, '#s-recap', '#s-ouvre');
+    gsap.set(['#kc', '#ka', '#kt'], { opacity: 0 });
+    tl.fromTo('#ouvre-titre', { y: 40, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.ouvre);
+    pop('#kc', C.ctrl, { depuis: 0.3 }); pop('#ka', C.ctrl + 0.35, { depuis: 0.3 }); pop('#kt', C.ctrl + 0.7, { depuis: 0.3 });
+    salve(C.ctrl + 0.9, 960, 480, 50, ['#e95420', '#f5c542', '#ffffff'], 'confetti', 0.9);
+  },
+});
+
+// Diodes qui clignotent (rendu par image, déterministe).
+const ambianceBase = ambiance;
+ambiance = (t) => {
+  ambianceBase(t);
+  document.querySelectorAll('.diode').forEach((d) => { d.style.opacity = (Math.sin(t * 7 + d.dataset.i * 1.7) > 0.1) ? 1 : 0.25; });
+};
+</script>
+</body>
+</html>

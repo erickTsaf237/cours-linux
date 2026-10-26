@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Expressions régulières — vidéo</title>
+<link rel="stylesheet" href="commun.css">
+<style>
+#titre { top: 220px; font-size: 110px; }
+#sous { top: 400px; font-size: 60px; font-family: var(--display); font-weight: 700; color: var(--gris); }
+#detecteur { top: 560px; font-family: var(--mono); font-size: 64px; }
+
+.sym { font-family: var(--mono); font-size: 160px; line-height: 1; color: var(--orange-2); }
+.sym-lab { font-family: var(--display); font-weight: 800; font-size: 44px; }
+.symbox { top: 140px; width: 420px; height: 300px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+#sb1 { left: 500px; } #sb2 { left: 1000px; }
+.texte { left: 360px; width: 1200px; padding: 26px 36px; border-radius: 20px; background: #0d1117; border: 2px solid #2a3342;
+  font-family: var(--mono); font-size: 36px; color: #8b949e; line-height: 1.6; }
+.texte div { white-space: pre; border-radius: 8px; padding: 0 8px; }
+#tx-root { top: 500px; }
+.hlt { background: rgba(245,197,66,.25); color: #f5c542; }
+
+.carte { width: 520px; height: 260px; display: flex; flex-direction: column; justify-content: center; padding: 0 40px; }
+.carte .c { font-family: var(--mono); font-size: 76px; color: var(--orange-2); }
+.carte .t { font-family: var(--display); font-weight: 800; font-size: 38px; }
+.carte .ex { font-family: var(--mono); font-size: 30px; color: var(--gris); margin-top: 8px; }
+#k1 { left: 120px; top: 200px; } #k2 { left: 700px; top: 200px; } #k3 { left: 1280px; top: 200px; }
+#bande { top: 560px; font-family: var(--mono); font-size: 80px; letter-spacing: .1em; }
+#bande span { display: inline-block; padding: 0 10px; border-radius: 12px; }
+
+#ere-titre { top: 100px; font-family: var(--mono); font-size: 90px; color: var(--orange-2); }
+#e1 { left: 220px; top: 280px; } #e2 { left: 1180px; top: 280px; } #e3 { left: 220px; top: 590px; } #e4 { left: 1180px; top: 590px; }
+
+#motif { top: 200px; font-family: var(--mono); font-size: 78px; }
+#motif span { display: inline-block; }
+#tx-ip { top: 420px; }
+
+#piege-titre { top: 110px; font-size: 90px; }
+.cmp { top: 300px; width: 700px; height: 300px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+.cmp .c { font-family: var(--mono); font-size: 110px; }
+.cmp .t { font-family: var(--display); font-weight: 700; font-size: 38px; color: var(--gris); }
+#cp1 { left: 180px; } #cp2 { left: 1040px; }
+#apos { top: 700px; font-family: var(--mono); font-size: 60px; color: var(--jaune); }
+
+#fin-titre { top: 200px; font-size: 100px; }
+#langs { top: 450px; }
+#langs span { display: inline-block; font-family: var(--mono); font-size: 50px; color: var(--orange-2); padding: 12px 30px; margin: 10px;
+  border-radius: 18px; border: 2px solid rgba(233,84,32,.5); background: rgba(233,84,32,.1); }
+#heures { top: 700px; font-size: 56px; font-family: var(--display); font-weight: 700; color: var(--vert); }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="bg" class="layer"><div id="blob1" class="blob"></div><div id="blob2" class="blob"></div><div id="blob3" class="blob"></div></div>
+  <div id="grille" class="layer"></div>
+  <div id="cam-punch"><div id="cam-drift">
+
+    <div class="scene" id="s-intro">
+      <div class="ligne display grad" id="titre">Expression régulière</div>
+      <div class="ligne" id="sous">pas un mot précis : une forme</div>
+      <div class="ligne" id="detecteur">grep + regex = 🔍 détecteur</div>
+    </div>
+
+    <div class="scene" id="s-ancres">
+      <div class="abs verre symbox" id="sb1"><div class="sym">^</div><div class="sym-lab">début de ligne</div></div>
+      <div class="abs verre symbox" id="sb2"><div class="sym">$</div><div class="sym-lab">fin de ligne</div></div>
+      <div class="abs texte" id="tx-root"><div id="lr1">root:x:0:0:root:/root:/bin/bash</div><div>daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin</div><div>user:x:1000:1000:pas root:/home/user:/bin/bash</div><div id="lr4">rootkit-scan:x:998:998::/var/lib:/bin/false</div></div>
+    </div>
+
+    <div class="scene" id="s-point">
+      <div class="abs verre carte" id="k1"><div class="c">.</div><div class="t">un caractère quelconque</div><div class="ex">c.t → cat, cot, c4t</div></div>
+      <div class="abs verre carte" id="k2"><div class="c">*</div><div class="t">répète, 0 fois ou plus</div><div class="ex">ab*c → ac, abc, abbbc</div></div>
+      <div class="abs verre carte" id="k3"><div class="c">.*</div><div class="t">n'importe quoi</div><div class="ex">^root.*bash$</div></div>
+    </div>
+
+    <div class="scene" id="s-crochets">
+      <div class="abs verre carte" id="k4" style="left:280px;top:200px"><div class="c">[0-9]</div><div class="t">un chiffre</div></div>
+      <div class="abs verre carte" id="k5" style="left:1120px;top:200px"><div class="c">[a-z]</div><div class="t">une lettre minuscule</div></div>
+      <div class="ligne" id="bande"><span class="b-ch">x</span><span class="b-ch b-num">7</span><span class="b-ch">B</span><span class="b-ch b-min">z</span><span class="b-ch b-num">3</span><span class="b-ch b-min">q</span><span class="b-ch">!</span><span class="b-ch b-num">0</span></div>
+    </div>
+
+    <div class="scene" id="s-ere">
+      <div class="ligne" id="ere-titre">grep -E</div>
+      <div class="abs verre carte" id="e1"><div class="c">+</div><div class="t">une fois ou plus</div><div class="ex">[0-9]+ → 7, 42, 2026</div></div>
+      <div class="abs verre carte" id="e2"><div class="c">?</div><div class="t">zéro ou une fois</div><div class="ex">https? → http, https</div></div>
+      <div class="abs verre carte" id="e3"><div class="c">{n,m}</div><div class="t">n à m répétitions</div><div class="ex">[0-9]{5} → 75001</div></div>
+      <div class="abs verre carte" id="e4"><div class="c">|</div><div class="t">ceci ou cela</div><div class="ex">error|fail</div></div>
+    </div>
+
+    <div class="scene" id="s-ip">
+      <div class="ligne" id="motif"><span id="m1" style="color:#d2a8ff">(</span><span id="m2" style="color:#ffa657">[0-9]{1,3}</span><span id="m3" style="color:#79c0ff">\.</span><span id="m4" style="color:#d2a8ff">){3}</span><span id="m5" style="color:#ffa657">[0-9]{1,3}</span></div>
+      <div class="abs texte" id="tx-ip"><div><span class="ipm">192.168.1.10</span> - - "GET /index.html" 200</div><div><span class="ipm">10.0.0.5</span> - - "GET /admin" 403</div><div><span class="ipm">172.16.0.8</span> - - "GET /blog.html" 200</div><div><span class="ipm">192.168.1.22</span> - - "POST /login" 401</div></div>
+    </div>
+
+    <div class="scene" id="s-piege">
+      <div class="ligne display mots" id="piege-titre">Le piège</div>
+      <div class="abs verre cmp" id="cp1"><div class="c" style="color:#79c0ff">*</div><div class="t">joker du shell : n'importe quoi</div></div>
+      <div class="abs verre cmp" id="cp2"><div class="c" style="color:#ffa657">.*</div><div class="t">regex : n'importe quoi</div></div>
+      <div class="ligne" id="apos">grep '^[0-9]' fichier</div>
+    </div>
+
+    <div class="scene" id="s-final">
+      <div class="ligne display grad" id="fin-titre">Une fois apprivoisées…</div>
+      <div class="ligne" id="langs"><span>grep</span><span>sed</span><span>awk</span><span>Python</span><span>JavaScript</span><span>vim</span></div>
+      <div class="ligne" id="heures">⏱️ des heures gagnées</div>
+    </div>
+
+  </div></div>
+  <div id="vignette" class="layer"></div>
+  <div class="abs" id="badge"><img src="img/tux.svg" alt=""><div><div class="nom"><b>$</b> carnet-linux</div><div class="sous">Module 06 · Expressions régulières</div></div></div>
+  <canvas id="particules" width="1920" height="1080"></canvas>
+  <div class="abs" id="rideau"></div>
+  <div class="abs" id="st"></div>
+  <div class="abs" id="barre"></div>
+  <div id="flash" class="layer"></div>
+</div>
+<script src="lib/gsap.min.js"></script>
+<script src="commun.js"></script>
+<script>
+Film.demarrer({
+  film: 'regex',
+  fin: { titre: 'Expressions régulières', sous: 'Carnet Linux · Module 06 — Rechercher &amp; expressions régulières', prompt: "grep -E '^[0-9]+' fichier" },
+  construire(C) {
+    const allume = (sel, t, coul = 'rgba(245,197,66,.28)', txt = '#f5c542') => tl.to(sel, { backgroundColor: coul, color: txt, duration: 0.3, stagger: 0.12 }, t);
+
+    // 1. intro
+    gsap.set('#s-intro', { autoAlpha: 1 });
+    gsap.set(['#sous', '#detecteur'], { opacity: 0 });
+    tl.fromTo('#titre', { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: 'back.out(2)' }, 0.3);
+    tl.fromTo('#sous', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.forme);
+    tl.fromTo('#detecteur', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.grep);
+
+    // 2. les ancres
+    rideau(C.ancres, '#s-intro', '#s-ancres');
+    gsap.set(['#sb1', '#sb2', '#tx-root'], { opacity: 0 });
+    pop('#sb1', C.circ, { depuis: 0.3 }); pop('#sb2', C.dollar, { depuis: 0.3 });
+    tl.fromTo('#tx-root', { y: 40, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.exroot - 0.3);
+    allume(['#lr1', '#lr4'], C.exroot + 1.4);
+
+    // 3. le point et l'étoile
+    plonge(C.point, '#s-ancres', '#s-point');
+    gsap.set('.carte', { opacity: 0 });
+    pop('#k1', C.point, { depuis: 0.3 }); pop('#k2', C.etoile, { depuis: 0.3 }); pop('#k3', C.pointetoile, { depuis: 0.3 });
+
+    // 4. les crochets
+    rideau(C.crochets, '#s-point', '#s-crochets');
+    gsap.set('#bande', { opacity: 0 });
+    tl.fromTo('#bande', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.crochets + 0.6);
+    pop('#k4', C.chiffre, { depuis: 0.3 });
+    allume('.b-num', C.chiffre + 0.8);
+    pop('#k5', C.lettre, { depuis: 0.3 });
+    tl.to('.b-num', { backgroundColor: 'rgba(0,0,0,0)', color: '#ffffff', duration: 0.2 }, C.lettre);
+    allume('.b-min', C.lettre + 0.8, 'rgba(121,192,255,.28)', '#79c0ff');
+
+    // 5. le mode étendu
+    plonge(C.etendu, '#s-crochets', '#s-ere');
+    tl.fromTo('#ere-titre', { scale: 2, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.35, ease: 'power4.in', immediateRender: false }, C.etendu);
+    pop('#e1', C.plus, { depuis: 0.3 }); pop('#e2', C.interro, { depuis: 0.3 }); pop('#e3', C.accolades, { depuis: 0.3 }); pop('#e4', C.barre, { depuis: 0.3 });
+
+    // 6. l'adresse IP
+    rideau(C.assemble, '#s-ere', '#s-ip');
+    gsap.set(['#motif span', '#tx-ip'], { opacity: 0 });
+    pop('#m2', C.assemble + 0.6, { depuis: 0.3 }); pop('#m3', C.assemble + 1.4, { depuis: 0.3 });
+    pop(['#m1', '#m4'], C.assemble + 2.3, { depuis: 0.3 }); pop('#m5', C.assemble + 3.0, { depuis: 0.3 });
+    tl.fromTo('#tx-ip', { y: 40, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.ip - 0.3);
+    allume('.ipm', C.ip + 0.8);
+    salve(C.ip + 1.3, 960, 520, 40, ['#f5c542', '#ffffff'], 'etincelles', 0.7);
+
+    // 7. le piège
+    plonge(C.piege, '#s-ip', '#s-piege');
+    gsap.set(['.cmp', '#apos'], { opacity: 0 });
+    motsEntrent('#piege-titre .mot', C.piege);
+    pop('#cp1', C.jokers + 0.4, { depuis: 0.3 }); pop('#cp2', C.jokers + 1.2, { depuis: 0.3 });
+    tl.fromTo('#apos', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.apostrophes);
+
+    // 8. la fin
+    rideau(C.peur, '#s-piege', '#s-final');
+    gsap.set(['#langs span', '#heures'], { opacity: 0 });
+    tl.fromTo('#fin-titre', { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(2)', immediateRender: false }, C.peur + 0.3);
+    tl.fromTo('#heures', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.heures + 1.2);
+    pop('#langs span', C.heures + 2.0, { stagger: 0.25, depuis: 0.3 });
+  },
+});
+</script>
+</body>
+</html>

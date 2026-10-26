@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Les trois flux — vidéo</title>
+<link rel="stylesheet" href="commun.css">
+<style>
+#prog { left: 760px; top: 330px; width: 400px; height: 220px; border-radius: 30px; background: linear-gradient(145deg, var(--orange), #b8361a);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 30px 80px rgba(233,84,32,.45); }
+#prog b { font-family: var(--display); font-weight: 800; font-size: 56px; } #prog span { font-family: var(--mono); font-size: 30px; opacity: .85; }
+.bout { font-family: var(--emoji); font-size: 120px; position: absolute; }
+#clavier { left: 150px; top: 360px; } #ecran1 { left: 1560px; top: 170px; } #ecran2 { left: 1560px; top: 560px; }
+#fichier { left: 1560px; top: 170px; }
+.tuyau { position: absolute; height: 14px; border-radius: 7px; transform-origin: 0 50%; }
+#tu0 { left: 330px; top: 433px; width: 420px; background: var(--cyan); }
+#tu1 { left: 1170px; top: 400px; width: 420px; background: var(--vert); }
+#tu2 { left: 1170px; top: 480px; width: 420px; background: var(--rouge); }
+.flab { position: absolute; font-family: var(--mono); font-size: 40px; }
+#fl0 { left: 390px; top: 360px; color: var(--cyan); } #fl1 { left: 1130px; top: 200px; color: var(--vert); } #fl2 { left: 1130px; top: 640px; color: var(--rouge); }
+.goutte { position: absolute; width: 22px; height: 22px; border-radius: 50%; }
+#flux-titre { top: 90px; font-size: 90px; }
+
+#syntaxe { top: 160px; font-family: var(--mono); font-size: 100px; }
+#exemple { top: 340px; font-family: var(--mono); font-size: 60px; color: #fff; }
+.cible { top: 500px; left: 360px; width: 1200px; height: 300px; display: flex; align-items: center; justify-content: center; gap: 40px; text-align: left; }
+.cible .ico { font-family: var(--emoji); font-size: 130px; }
+.cible .t { font-family: var(--display); font-weight: 800; font-size: 52px; }
+.cible .t small { display: block; font-family: var(--texte); font-weight: 400; font-size: 34px; color: var(--gris); margin-top: 8px; }
+.syn { display: none; }
+
+#trou { left: 710px; top: 230px; width: 500px; height: 500px; border-radius: 50%;
+  background: radial-gradient(circle, #000 0%, #000 38%, rgba(179,107,214,.6) 52%, rgba(233,84,32,.35) 62%, rgba(0,0,0,0) 72%); }
+#null-lab { top: 790px; font-family: var(--mono); font-size: 80px; }
+.debris { position: absolute; font-family: var(--mono); font-size: 40px; color: #8b949e; }
+
+#recap-num { top: 260px; }
+.rn { display: inline-block; width: 420px; margin: 0 20px; text-align: center; }
+.rn b { display: block; font-family: var(--mono); font-size: 160px; line-height: 1; }
+.rn span { font-family: var(--display); font-weight: 800; font-size: 48px; }
+#recap-chev { top: 640px; font-family: var(--mono); font-size: 70px; color: var(--orange-2); }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="bg" class="layer"><div id="blob1" class="blob"></div><div id="blob2" class="blob"></div><div id="blob3" class="blob"></div></div>
+  <div id="grille" class="layer"></div>
+  <div id="cam-punch"><div id="cam-drift">
+
+    <div class="scene" id="s-flux">
+      <div class="ligne display mots" id="flux-titre">Trois canaux par programme</div>
+      <div class="tuyau" id="tu0"></div><div class="tuyau" id="tu1"></div><div class="tuyau" id="tu2"></div>
+      <div id="gouttes"></div>
+      <div class="abs" id="prog"><b>programme</b><span>ex. ls</span></div>
+      <div class="bout" id="clavier">⌨️</div><div class="bout" id="ecran1">🖥️</div><div class="bout" id="ecran2">🖥️</div>
+      <div class="flab" id="fl0">0 · stdin</div><div class="flab" id="fl1">1 · stdout</div><div class="flab" id="fl2">2 · stderr</div>
+    </div>
+
+    <div class="scene" id="s-redir">
+      <div class="ligne" id="syntaxe"><span class="syn" id="sy1" style="color:var(--vert)">&gt;</span><span class="syn" id="sy2" style="color:var(--vert)">&gt;&gt;</span><span class="syn" id="sy3" style="color:var(--rouge)">2&gt;</span><span class="syn" id="sy4" style="color:var(--jaune)">2&gt;&amp;1</span></div>
+      <div class="ligne" id="exemple"><span class="syn" id="ex1">ls &gt; liste.txt</span><span class="syn" id="ex2">echo "ok" &gt;&gt; journal.txt</span><span class="syn" id="ex3">ls /x 2&gt; erreurs.txt</span><span class="syn" id="ex4">cmd &gt; tout.txt 2&gt;&amp;1</span></div>
+      <div class="abs verre cible syn" id="ci1"><span class="ico">📄</span><div class="t">stdout → liste.txt<small>⚠️ le fichier est écrasé à chaque fois</small></div></div>
+      <div class="abs verre cible syn" id="ci2"><span class="ico">📓</span><div class="t">ajouté à la fin<small>rien n'est effacé : parfait pour un journal</small></div></div>
+      <div class="abs verre cible syn" id="ci3"><span class="ico">🚨</span><div class="t">stderr → erreurs.txt<small>les résultats restent à l'écran</small></div></div>
+      <div class="abs verre cible syn" id="ci4"><span class="ico">🗂️</span><div class="t">tout → tout.txt<small>les erreurs rejoignent la sortie standard</small></div></div>
+    </div>
+
+    <div class="scene" id="s-null">
+      <div class="abs" id="trou"></div>
+      <div class="ligne grad-v" id="null-lab">/dev/null</div>
+      <div class="debris" id="db1" style="left:150px;top:200px">Permission non accordée</div>
+      <div class="debris" id="db2" style="left:1350px;top:250px">warning: ...</div>
+      <div class="debris" id="db3" style="left:220px;top:760px">erreur 42</div>
+      <div class="debris" id="db4" style="left:1400px;top:740px">bla bla bla</div>
+    </div>
+
+    <div class="scene" id="s-inf">
+      <div class="ligne" id="inf-s" style="top:180px;font-family:var(--mono);font-size:140px;color:var(--cyan)">&lt;</div>
+      <div class="ligne" id="inf-ex" style="top:400px;font-family:var(--mono);font-size:64px">wc -l &lt; liste.txt</div>
+      <div class="ligne" id="inf-t" style="top:540px;font-family:var(--display);font-weight:700;font-size:48px;color:var(--gris)">📄 le fichier alimente l'entrée standard</div>
+    </div>
+
+    <div class="scene" id="s-recap">
+      <div class="ligne" id="recap-num">
+        <span class="rn" id="rn0"><b style="color:var(--cyan)">0</b><span>l'entrée</span></span><span class="rn" id="rn1"><b style="color:var(--vert)">1</b><span>la sortie</span></span><span class="rn" id="rn2"><b style="color:var(--rouge)">2</b><span>les erreurs</span></span>
+      </div>
+      <div class="ligne" id="recap-chev">&gt;  &gt;&gt;  2&gt;  2&gt;&amp;1  &lt;</div>
+    </div>
+
+  </div></div>
+  <div id="vignette" class="layer"></div>
+  <div class="abs" id="badge"><img src="img/tux.svg" alt=""><div><div class="nom"><b>$</b> carnet-linux</div><div class="sous">Module 05 · Les trois flux</div></div></div>
+  <canvas id="particules" width="1920" height="1080"></canvas>
+  <div class="abs" id="rideau"></div>
+  <div class="abs" id="st"></div>
+  <div class="abs" id="barre"></div>
+  <div id="flash" class="layer"></div>
+</div>
+<script src="lib/gsap.min.js"></script>
+<script src="commun.js"></script>
+<script>
+// Gouttes de données qui circulent dans les tuyaux (calculées par image).
+const GOUTTES = [];
+(() => {
+  const box = document.getElementById('gouttes');
+  const def = [['#38bdf8', 330, 440, 750, 440], ['#3fb950', 1170, 405, 1560, 255], ['#f87171', 1170, 475, 1560, 625]];
+  def.forEach(([c, x1, y1, x2, y2], k) => {
+    for (let i = 0; i < 5; i++) {
+      const g = document.createElement('div'); g.className = 'goutte'; g.style.background = c; g.style.boxShadow = `0 0 16px ${c}`;
+      box.appendChild(g); GOUTTES.push({ g, k, i, x1, y1, x2, y2 });
+    }
+  });
+})();
+let T0 = [Infinity, Infinity, Infinity];
+
+Film.demarrer({
+  film: 'flux',
+  fin: { titre: 'Les trois flux', sous: 'Carnet Linux · Module 05 — Redirections, pipes &amp; filtres', prompt: 'ls &gt; liste.txt' },
+  construire(C) {
+    T0 = [C.clavier, C.ecran, C.stderr + 1.0];
+    // 1. les trois flux
+    gsap.set('#s-flux', { autoAlpha: 1 });
+    gsap.set(['.tuyau', '.bout', '.flab', '#prog'], { opacity: 0 });
+    motsEntrent('#flux-titre .mot', 0.3);
+    pop('#prog', C.trois + 0.8, { depuis: 0.4 });
+    gsap.set('#tu1', { rotation: -21 }); gsap.set('#tu2', { rotation: 21 });
+    const tuyau = (sel, t) => tl.fromTo(sel, { opacity: 0, scaleX: 0 }, { opacity: 1, scaleX: 1, duration: 0.5, immediateRender: false }, t);
+    tuyau('#tu0', C.stdin); pop('#fl0', C.stdin, { depuis: 0.3 }); pop('#clavier', C.clavier, { depuis: 0.3 });
+    tuyau('#tu1', C.stdout); pop('#fl1', C.stdout, { depuis: 0.3 }); pop('#ecran1', C.ecran, { depuis: 0.3 });
+    tuyau('#tu2', C.stderr); pop('#fl2', C.stderr, { depuis: 0.3 }); pop('#ecran2', C.stderr + 1.0, { depuis: 0.3 });
+    tl.to(['#tu1', '#tu2'], { boxShadow: '0 0 40px rgba(255,255,255,.6)', duration: 0.3, yoyo: true, repeat: 3 }, C.separe + 1.5);
+    flash(C.tout + 0.3, 0.3);
+
+    // 2. les redirections (une syntaxe à la fois)
+    rideau(C.rediriger, '#s-flux', '#s-redir');
+    const montre = (n, t) => {
+      for (let k = 1; k <= 4; k++) tl.set(['#sy' + k, '#ex' + k, '#ci' + k], { display: 'none' }, t);
+      tl.set(['#sy' + n, '#ex' + n], { display: 'inline-block' }, t);
+      tl.set('#ci' + n, { display: 'flex' }, t);
+      tl.fromTo('#sy' + n, { scale: 2.2, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.35, ease: 'power4.in', immediateRender: false }, t);
+      tl.fromTo('#ci' + n, { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, immediateRender: false }, t + 0.6);
+    };
+    montre(1, C.chevron);
+    tl.fromTo('#ex1', { opacity: 0 }, { opacity: 1, duration: 0.3, immediateRender: false }, C.exls);
+    tl.to('#ci1', { borderColor: 'rgba(248,113,113,.9)', duration: 0.3 }, C.ecrase);
+    montre(2, C.ajouter);
+    montre(3, C.deux);
+    montre(4, C.tout2 + 0.8);
+
+    // 3. /dev/null
+    plonge(C.taire, '#s-redir', '#s-null');
+    gsap.set(['#null-lab', '.debris'], { opacity: 0 });
+    tl.fromTo('#trou', { scale: 0, rotation: 0 }, { scale: 1, rotation: 180, duration: 1.2, ease: 'power2.out', immediateRender: false }, C.taire);
+    tl.to('#trou', { rotation: 900, duration: 12, ease: 'none' }, C.taire + 1.2);
+    tl.fromTo('#null-lab', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.null);
+    ['#db1', '#db2', '#db3', '#db4'].forEach((d, i) => {
+      tl.set(d, { opacity: 1 }, C.trounoir + i * 0.4);
+      tl.to(d, { left: 900, top: 460, scale: 0, rotation: 360, opacity: 0, duration: 1.2, ease: 'power2.in' }, C.trounoir + i * 0.4);
+    });
+
+    // 4. < (entrée)
+    rideau(C.inferieur, '#s-null', '#s-inf');
+    gsap.set(['#inf-ex', '#inf-t'], { opacity: 0 });
+    tl.fromTo('#inf-s', { scale: 2.5, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.35, ease: 'power4.in', immediateRender: false }, C.inferieur + 0.5);
+    tl.fromTo('#inf-ex', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.inferieur + 1.5);
+    tl.fromTo('#inf-t', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.inferieur + 2.5);
+
+    // 5. récap
+    plonge(C.recap, '#s-inf', '#s-recap');
+    gsap.set(['.rn', '#recap-chev'], { opacity: 0 });
+    pop('#rn0', C.recap, { depuis: 0.3 }); pop('#rn1', C.recap + 1.2, { depuis: 0.3 }); pop('#rn2', C.recap + 2.4, { depuis: 0.3 });
+    tl.fromTo('#recap-chev', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.final);
+  },
+});
+
+const ambianceBase = ambiance;
+ambiance = (t) => {
+  ambianceBase(t);
+  for (const d of GOUTTES) {
+    const dt = t - T0[d.k];
+    if (dt < 0 || t > 27.5) { d.g.style.opacity = 0; continue; }
+    const p = ((dt * 0.6 + d.i / 5) % 1);
+    d.g.style.opacity = 1;
+    d.g.style.transform = `translate(${d.x1 + (d.x2 - d.x1) * p - 11}px, ${d.y1 + (d.y2 - d.y1) * p - 11}px)`;
+  }
+};
+</script>
+</body>
+</html>

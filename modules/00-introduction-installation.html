@@ -1,0 +1,907 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Installer Ubuntu 24.04 dans VirtualBox | Cours Linux</title>
+  <meta name="description" content="Module 00 du cours Linux : histoire d'Unix et de Linux, distributions, virtualisation avec VirtualBox, partitions et installation d'Ubuntu 24.04 pas à pas. Vidéos, quiz et exercices corrigés.">
+  <meta name="theme-color" content="#e95420">
+  <link rel="apple-touch-icon" href="../assets/img/icone-180.png">
+  <link rel="icon" href="../assets/img/tux.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <script>try{const t=JSON.parse(localStorage.getItem("theme"));if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<div class="progress-bar"></div>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../index.html"><img src="../assets/img/tux.svg" alt=""><span><span class="dollar">$</span> carnet-linux</span></a>
+    <nav class="nav">
+      <a href="../index.html">Programme</a>
+      <a href="00-introduction-installation.html" class="active hide-sm">Module 00</a>
+      <button class="theme-toggle" type="button" aria-label="Changer de thème">☀️</button>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <span class="eyebrow">PHASE 1 · MODULE 00</span>
+      <h1>Linux &amp; son <span class="grad">installation</span></h1>
+      <p class="lead">D'où vient Linux, ce qu'est vraiment une « distribution », comment fonctionne une machine virtuelle,
+        ce qui se passe sur le disque quand on installe un système… et comment installer Ubuntu 24.04 proprement dans VirtualBox.</p>
+      <div class="hero-meta">
+        <span class="chip">⏱️ Lecture <b>~45 min</b></span>
+        <span class="chip">🧪 Pratique <b>~1 h</b></span>
+        <span class="chip">🎚️ Niveau <b>débutant</b></span>
+      </div>
+    </div>
+    <div class="hero-art">
+      <img class="tux" src="../assets/img/tux.svg" alt="Tux">
+    </div>
+  </div>
+</section>
+
+<div class="layout">
+  <aside class="toc">
+    <div class="toc-title">Sommaire</div>
+    <ol></ol>
+  </aside>
+
+  <article class="content">
+
+    <!-- ================================================== -->
+    <h2 id="objectifs" data-short="Objectifs">🎯 Ce que tu sauras à la fin</h2>
+    <div class="cards four">
+      <div class="card" style="--c:var(--accent)"><div class="icon">🏛️</div><h4>L'histoire</h4><p>Expliquer d'où vient Linux et pourquoi on dit parfois « GNU/Linux ».</p></div>
+      <div class="card" style="--c:var(--violet)"><div class="icon">🧩</div><h4>Les distributions</h4><p>Situer Ubuntu parmi les grandes familles et comprendre les versions LTS.</p></div>
+      <div class="card" style="--c:var(--cyan)"><div class="icon">📦</div><h4>La virtualisation</h4><p>Savoir ce que fait VirtualBox et bien régler une machine virtuelle.</p></div>
+      <div class="card" style="--c:var(--green)"><div class="icon">💽</div><h4>Le disque</h4><p>Comprendre partitions, UEFI, GPT, ext4, swap et le démarrage.</p></div>
+    </div>
+
+    <!-- ================================================== -->
+    <h2 id="os" data-short="Système d'exploitation">Qu'est-ce qu'un système d'exploitation ?</h2>
+    <p>Un ordinateur, c'est d'abord du <strong>matériel</strong> : un processeur, de la mémoire, un disque, une carte réseau.
+      Aucun programme ne parle directement à ce matériel. Entre les deux, il y a le <strong>système d'exploitation</strong>
+      (<em>OS, Operating System</em>), qui joue le rôle de chef d'orchestre :</p>
+    <ul>
+      <li>il <strong>partage le processeur</strong> entre les programmes qui tournent en même temps ;</li>
+      <li>il <strong>distribue la mémoire</strong> et empêche un programme de lire celle d'un autre ;</li>
+      <li>il <strong>organise les fichiers</strong> sur le disque ;</li>
+      <li>il <strong>pilote les périphériques</strong> (clavier, écran, réseau, USB…) ;</li>
+      <li>il <strong>contrôle qui a le droit de faire quoi</strong> (utilisateurs, permissions).</li>
+    </ul>
+    <p>Le cœur de l'OS s'appelle le <strong>noyau</strong> (<em>kernel</em>). Linux, au sens strict, <em>c'est uniquement ce noyau</em>.
+      Autour de lui, on trouve les outils qui permettent de l'utiliser : le shell, les commandes, les bibliothèques, puis les applications.</p>
+
+    <figure>
+      <div class="diagram">
+        <svg viewBox="0 0 760 320" role="img" aria-label="Les couches d'un système Linux">
+          <rect x="20" y="10" width="520" height="62" rx="12" fill="#b36bd6"/>
+          <text x="40" y="38" fill="#fff" font-family="Space Grotesk" font-weight="700" font-size="20">Applications</text>
+          <text x="40" y="60" fill="#fff" opacity=".85" font-size="13" font-family="Inter">Firefox, LibreOffice, VS Code, tes propres scripts…</text>
+
+          <rect x="20" y="84" width="520" height="62" rx="12" fill="#0b7fb3"/>
+          <text x="40" y="112" fill="#fff" font-family="Space Grotesk" font-weight="700" font-size="20">Shell &amp; outils GNU</text>
+          <text x="40" y="134" fill="#fff" opacity=".85" font-size="13" font-family="Inter">bash, ls, cp, grep, la bibliothèque C (glibc)…</text>
+
+          <rect x="20" y="168" width="520" height="62" rx="12" fill="#e95420"/>
+          <text x="40" y="196" fill="#fff" font-family="Space Grotesk" font-weight="700" font-size="20">Noyau Linux</text>
+          <text x="40" y="218" fill="#fff" opacity=".85" font-size="13" font-family="Inter">processus, mémoire, systèmes de fichiers, pilotes, réseau</text>
+
+          <rect x="20" y="242" width="520" height="62" rx="12" fill="#3a4256"/>
+          <text x="40" y="270" fill="#fff" font-family="Space Grotesk" font-weight="700" font-size="20">Matériel</text>
+          <text x="40" y="292" fill="#fff" opacity=".85" font-size="13" font-family="Inter">CPU, RAM, disque, carte réseau, écran</text>
+
+          <path d="M565 14 Q578 14 578 30 L578 62 Q578 78 590 78 Q578 78 578 94 L578 128 Q578 146 565 146" fill="none" class="svg-line" stroke-width="2"/>
+          <text x="600" y="72" class="svg-text" font-size="15" font-weight="700">Espace</text>
+          <text x="600" y="92" class="svg-text" font-size="15" font-weight="700">utilisateur</text>
+
+          <line x1="560" y1="157" x2="740" y2="157" class="svg-line" stroke-dasharray="5 5" stroke-width="1.5"/>
+          <text x="600" y="152" class="svg-mono" font-size="11">↕ appels système</text>
+
+          <path d="M565 172 Q578 172 578 186 L578 200 Q578 210 590 210 Q578 210 578 220 L578 228 Q578 230 565 230" fill="none" class="svg-line" stroke-width="2"/>
+          <text x="600" y="205" class="svg-text" font-size="15" font-weight="700">Espace noyau</text>
+          <text x="600" y="223" class="svg-sub" font-size="12">tous les droits</text>
+        </svg>
+      </div>
+      <figcaption>Les couches d'un système Linux. Les programmes ne touchent jamais le matériel : ils demandent au noyau via des « appels système ».</figcaption>
+    </figure>
+
+    <div class="callout key"><span class="callout-title">À retenir</span>
+      <p><strong>Linux = le noyau.</strong> Ce que tu as installé (Ubuntu) est une <strong>distribution</strong> : le noyau Linux
+        plus des milliers d'outils et d'applications assemblés et testés ensemble.</p></div>
+
+    <!-- ================================================== -->
+    <h2 id="histoire" data-short="Histoire">De Unix à Linux : une histoire en trois actes</h2>
+    <p>Commence par la version courte en vidéo, puis plonge dans les détails.</p>
+    <figure class="video-card">
+      <div class="video-head"><span class="video-badge">▶ Vidéo · 1 min 28</span><strong>De Unix à Linux</strong><span>toute l'histoire en 90 secondes</span></div>
+      <video controls preload="none" playsinline poster="../assets/video/unix.jpg"><source src="../assets/video/unix.mp4" type="video/mp4">Ton navigateur ne lit pas la vidéo : <a href="../assets/video/unix.mp4">télécharge-la ici</a>.</video>
+      <figcaption>Animation réalisée pour ce carnet. Voix off et musique générées par IA (Google Gemini et Lyria).</figcaption>
+    </figure>
+
+    <div class="people">
+      <div class="person">
+        <img src="../assets/img/thompson-ritchie.jpg" alt="Ken Thompson et Dennis Ritchie en 1973" loading="lazy">
+        <div class="info"><div class="name">Ken Thompson &amp; Dennis Ritchie</div>
+          <div class="role">Créateurs d'Unix (1969) et du langage C, aux laboratoires Bell d'AT&amp;T.</div></div>
+      </div>
+      <div class="person">
+        <img src="../assets/img/stallman.jpg" alt="Richard Stallman" loading="lazy">
+        <div class="info"><div class="name">Richard Stallman</div>
+          <div class="role">Lance le projet GNU (1983) et la Free Software Foundation. Auteur de la licence GPL.</div></div>
+      </div>
+      <div class="person">
+        <img src="../assets/img/linus-torvalds.jpg" alt="Linus Torvalds" loading="lazy">
+        <div class="info"><div class="name">Linus Torvalds</div>
+          <div class="role">Étudiant finlandais qui écrit le noyau Linux en 1991. Il crée aussi Git en 2005.</div></div>
+      </div>
+    </div>
+
+    <h3>Acte 1 — Unix, l'ancêtre (1969)</h3>
+    <p>À la fin des années 60, Ken Thompson et Dennis Ritchie écrivent <strong>Unix</strong> aux laboratoires Bell. En 1973, ils le
+      réécrivent dans un langage qu'ils viennent d'inventer, le <strong>C</strong>. C'est une révolution : un système écrit en C
+      peut être <em>porté</em> sur d'autres machines. Unix se répand dans les universités et les entreprises, mais il appartient à AT&amp;T
+      et sa licence devient de plus en plus chère et restrictive.</p>
+    <p>Unix apporte des idées qu'on retrouve encore aujourd'hui dans Linux, et que tu vas pratiquer tout au long de ce carnet :</p>
+    <ul>
+      <li><strong>Tout est fichier</strong> : un disque, un clavier, un processus, tout se manipule comme un fichier.</li>
+      <li><strong>Des petits outils qui font une seule chose, et bien.</strong></li>
+      <li><strong>On les combine</strong> : la sortie d'un programme devient l'entrée du suivant (le fameux <code>|</code>).</li>
+      <li><strong>Du texte partout</strong> : configuration, journaux, échanges entre programmes.</li>
+    </ul>
+
+    <h3>Acte 2 — GNU et le logiciel libre (1983)</h3>
+    <img class="float-logo" src="../assets/img/gnu.svg" alt="La tête de gnou, logo du projet GNU">
+    <p>Richard Stallman, chercheur au MIT, veut un système <strong>libre</strong> : que chacun puisse utiliser, étudier, modifier et
+      redistribuer. En 1983, il annonce le projet <strong>GNU</strong> (acronyme récursif : <em>GNU's Not Unix</em>), un clone complet
+      d'Unix. En quelques années, GNU produit l'essentiel : le compilateur <code>gcc</code>, l'éditeur Emacs, le shell <code>bash</code>,
+      les commandes de base (<code>ls</code>, <code>cp</code>, <code>grep</code>…). Il ne manque qu'une pièce, la plus difficile : <strong>le noyau</strong>.</p>
+
+    <h3>Acte 3 — Linux, « juste un hobby » (1991)</h3>
+    <p>En 1991, Linus Torvalds, 21 ans, étudiant à Helsinki, écrit un petit noyau pour son PC 386. Le 25 août, il poste ce message
+      devenu légendaire sur un forum Usenet :</p>
+
+    <blockquote class="quote">
+      <span class="hdr">From: torvalds@klaava.Helsinki.FI (Linus Benedict Torvalds)<br>Newsgroups: comp.os.minix<br>Date: 25 Aug 91</span>
+      Hello everybody out there using minix –<br><br>
+      I'm doing a (free) operating system (<span style="color:#f5c542">just a hobby, won't be big and professional like gnu</span>)
+      for 386(486) AT clones. […]
+      <footer>« Je fais un système d'exploitation (libre), juste un hobby, ça ne sera pas gros et professionnel comme GNU. »</footer>
+    </blockquote>
+
+    <p>En 1992, il place Linux sous la licence <strong>GPL</strong> de GNU. Le noyau de Linus et les outils de GNU s'assemblent
+      comme deux pièces de puzzle : le premier système d'exploitation entièrement libre est né.</p>
+
+    <div class="callout story"><span class="callout-title">Le saviez-vous ?</span>
+      <p>Linus voulait appeler son noyau « Freax » (free + freak + x). C'est l'administrateur du serveur FTP qui l'a
+        rangé dans un dossier nommé <code>linux</code>… et le nom est resté. La mascotte <strong>Tux</strong>, un manchot, a été
+        dessinée par Larry Ewing en 1996 : Linus avait raconté avoir été mordu par un manchot dans un zoo.</p></div>
+
+    <h3>La suite en accéléré</h3>
+    <div class="timeline">
+      <div class="tl-item"><span class="tl-year">1969</span><h4>Naissance d'Unix</h4><p>Ken Thompson et Dennis Ritchie aux Bell Labs.</p></div>
+      <div class="tl-item"><span class="tl-year">1983</span><h4>Annonce du projet GNU</h4><p>Richard Stallman veut un Unix entièrement libre.</p></div>
+      <div class="tl-item"><span class="tl-year">1991</span><h4>Linux 0.01</h4><p>Linus Torvalds publie la première version de son noyau.</p></div>
+      <div class="tl-item"><span class="tl-year">1993</span><h4>Debian et Slackware</h4><p>Les premières grandes distributions apparaissent.</p></div>
+      <div class="tl-item"><span class="tl-year">1994</span><h4>Red Hat</h4><p>Linux entre dans les entreprises avec du support commercial.</p></div>
+      <div class="tl-item"><span class="tl-year">2004</span><h4>Ubuntu 4.10</h4><p>Canonical lance une distribution facile, basée sur Debian.</p></div>
+      <div class="tl-item"><span class="tl-year">2005</span><h4>Git</h4><p>Linus crée Git pour gérer le code du noyau.</p></div>
+      <div class="tl-item"><span class="tl-year">2008</span><h4>Android</h4><p>Le premier téléphone Android sort. Son noyau est Linux.</p></div>
+      <div class="tl-item"><span class="tl-year">2017</span><h4>100 % des supercalculateurs</h4><p>Depuis novembre 2017, les 500 ordinateurs les plus puissants du monde tournent tous sous Linux.</p></div>
+      <div class="tl-item"><span class="tl-year">Aujourd'hui</span><h4>Partout</h4><p>Serveurs web, cloud, conteneurs, box internet, voitures, téléviseurs, Steam Deck, Raspberry Pi…</p></div>
+    </div>
+
+    <!-- ================================================== -->
+    <h2 id="libre" data-short="Logiciel libre">Logiciel libre, open source et licences</h2>
+    <p>Linux est un <strong>logiciel libre</strong>. Pour Stallman, un logiciel est libre s'il garantit <strong>quatre libertés</strong> :</p>
+    <div class="cards four">
+      <div class="card" style="--c:var(--accent)"><div class="icon">0️⃣</div><h4>Utiliser</h4><p>Exécuter le programme comme tu veux, pour n'importe quel usage.</p></div>
+      <div class="card" style="--c:var(--violet)"><div class="icon">1️⃣</div><h4>Étudier</h4><p>Lire le code source pour comprendre comment il fonctionne.</p></div>
+      <div class="card" style="--c:var(--cyan)"><div class="icon">2️⃣</div><h4>Partager</h4><p>Redistribuer des copies à qui tu veux.</p></div>
+      <div class="card" style="--c:var(--green)"><div class="icon">3️⃣</div><h4>Améliorer</h4><p>Modifier le programme et publier tes versions modifiées.</p></div>
+    </div>
+    <p>(Oui, les informaticiens comptent à partir de zéro. Tu t'y habitueras.)</p>
+    <p>La licence <strong>GPL</strong> ajoute une règle astucieuse, le <em>copyleft</em> : si tu redistribues une version modifiée,
+      tu dois la publier sous la même licence. Personne ne peut donc « refermer » Linux. C'est pour ça que des entreprises
+      concurrentes (Google, Microsoft, Intel, Red Hat…) contribuent toutes au même noyau.</p>
+
+    <div class="callout info"><span class="callout-title">Libre ≠ gratuit</span>
+      <p>En anglais, <em>free</em> veut dire à la fois « libre » et « gratuit ». Stallman répète : <em>« free as in free speech, not as in free beer »</em>.
+        On peut vendre du logiciel libre (Red Hat le fait très bien). Le terme <strong>open source</strong>, apparu en 1998, désigne en pratique
+        les mêmes logiciels, avec un discours plus orienté entreprise.</p></div>
+
+    <!-- ================================================== -->
+    <h2 id="distributions" data-short="Distributions">Les distributions : un noyau, mille visages</h2>
+    <p>Personne n'installe « juste Linux ». On installe une <strong>distribution</strong> (ou <em>distro</em>), qui assemble :</p>
+
+    <div class="flow">
+      <div class="flow-step"><div class="ico">🐧</div><b>Noyau Linux</b><span>le cœur</span></div>
+      <div class="flow-arrow">+</div>
+      <div class="flow-step"><div class="ico">🛠️</div><b>Outils GNU</b><span>shell, commandes</span></div>
+      <div class="flow-arrow">+</div>
+      <div class="flow-step"><div class="ico">📦</div><b>Gestionnaire de paquets</b><span>apt, dnf, pacman…</span></div>
+      <div class="flow-arrow">+</div>
+      <div class="flow-step"><div class="ico">🖼️</div><b>Bureau</b><span>GNOME, KDE…</span></div>
+      <div class="flow-arrow">=</div>
+      <div class="flow-step" style="border-color:var(--accent)"><div class="ico">💿</div><b>Distribution</b><span>Ubuntu, Fedora…</span></div>
+    </div>
+
+    <p>Il existe des centaines de distributions, mais presque toutes descendent de quelques grandes familles.
+      Ce qui les distingue surtout : leur <strong>gestionnaire de paquets</strong>, leur <strong>rythme de mise à jour</strong> et leur <strong>public</strong>.</p>
+
+    <div class="cards">
+      <div class="card" style="--c:#d70a53"><div class="icon">🌀</div><h4>Famille Debian</h4>
+        <p>Stable et immense. Paquets <code>.deb</code>, outil <code>apt</code>.</p>
+        <div class="tags"><span class="tag">Debian</span><span class="tag">Ubuntu</span><span class="tag">Linux Mint</span><span class="tag">Pop!_OS</span><span class="tag">Kali</span></div></div>
+      <div class="card" style="--c:#ee0000"><div class="icon">🎩</div><h4>Famille Red Hat</h4>
+        <p>Le standard en entreprise. Paquets <code>.rpm</code>, outil <code>dnf</code>.</p>
+        <div class="tags"><span class="tag">RHEL</span><span class="tag">Fedora</span><span class="tag">Rocky</span><span class="tag">AlmaLinux</span><span class="tag">CentOS Stream</span></div></div>
+      <div class="card" style="--c:#1793d1"><div class="icon">🏔️</div><h4>Famille Arch</h4>
+        <p>Minimaliste, toujours à jour (<em>rolling release</em>). Outil <code>pacman</code>.</p>
+        <div class="tags"><span class="tag">Arch</span><span class="tag">Manjaro</span><span class="tag">EndeavourOS</span><span class="tag">SteamOS</span></div></div>
+      <div class="card" style="--c:#73ba25"><div class="icon">🦎</div><h4>Famille SUSE</h4>
+        <p>Très présente en Europe et en entreprise. Outil <code>zypper</code>.</p>
+        <div class="tags"><span class="tag">openSUSE</span><span class="tag">SLES</span></div></div>
+      <div class="card" style="--c:#0d597f"><div class="icon">🏔</div><h4>Les indépendantes</h4>
+        <p>Pour des usages précis : conteneurs ultra-légers, compilation sur mesure…</p>
+        <div class="tags"><span class="tag">Alpine</span><span class="tag">Gentoo</span><span class="tag">NixOS</span><span class="tag">Slackware</span></div></div>
+    </div>
+
+    <div class="callout tip"><span class="callout-title">Pourquoi Ubuntu est un bon choix pour apprendre</span>
+      <p>C'est la distribution la plus utilisée sur les postes de travail et dans le cloud. La documentation et les réponses en ligne
+        sont innombrables. Et tout ce que tu apprends sur Ubuntu marche sur Debian, et à 90 % sur les autres familles :
+        <code>ls</code>, <code>grep</code>, <code>systemctl</code> ou <code>ssh</code> sont les mêmes partout. Seul le gestionnaire de paquets change vraiment.</p></div>
+
+    <!-- ================================================== -->
+    <h2 id="ubuntu" data-short="Ubuntu">Ubuntu sous la loupe</h2>
+    <img class="float-logo" src="../assets/img/ubuntu-logo.svg" alt="Logo Ubuntu">
+    <p>Ubuntu est éditée par l'entreprise britannique <strong>Canonical</strong>, fondée par Mark Shuttleworth. Le mot vient
+      d'une philosophie d'Afrique australe que l'on traduit souvent par <em>« je suis parce que nous sommes »</em>.</p>
+
+    <h3>Lire un numéro de version</h3>
+    <p>Une nouvelle version sort tous les six mois, en <strong>avril</strong> et en <strong>octobre</strong>. Le numéro est simplement <strong>année.mois</strong> :</p>
+    <div class="terminal" data-title="décodage"><pre><span class="hl">24</span>.<span class="hl">04</span> LTS  <span class="c"># sortie en avril (04) 2024 (24)</span>
+<span class="s">Noble Numbat</span> <span class="c"># nom de code : un adjectif + un animal, même initiale</span>
+<span class="o">noble</span>        <span class="c"># le nom court, utilisé dans les fichiers de configuration</span></pre></div>
+
+    <h3>LTS ou pas LTS ?</h3>
+    <p>Une version sur quatre, celle d'avril des années paires, est une <strong>LTS</strong> (<em>Long Term Support</em>) :
+      elle reçoit des correctifs de sécurité pendant des années. Les autres ne sont supportées que 9 mois.</p>
+    <div class="table-wrap"><table>
+      <tr><th>Type</th><th>Exemple</th><th>Support standard</th><th>Pour qui ?</th></tr>
+      <tr><td><strong>LTS</strong></td><td>24.04 Noble Numbat</td><td class="yes">5 ans (jusqu'en mai 2029), prolongeable jusqu'à 10 ans et plus avec Ubuntu Pro</td><td>Serveurs, entreprises, apprentissage</td></tr>
+      <tr><td><strong>Intermédiaire</strong></td><td>24.10, 25.04, 25.10</td><td class="mid">9 mois</td><td>Curieux qui veulent les dernières nouveautés</td></tr>
+    </table></div>
+    <p>Ton choix de la 24.04 LTS est donc le bon : c'est une version stable, très documentée, et que tu retrouveras sur de nombreux serveurs
+      en production pendant des années. (La LTS suivante, 26.04, est sortie en avril 2026 : tout ce que tu apprends ici s'y applique.)</p>
+
+    <h3>Les « saveurs » d'Ubuntu</h3>
+    <p>Ubuntu existe en plusieurs <strong>saveurs</strong> officielles. Le système est le même, seul l'<strong>environnement de bureau</strong> change :</p>
+    <div class="table-wrap"><table>
+      <tr><th>Saveur</th><th>Bureau</th><th>Style</th></tr>
+      <tr><td><strong>Ubuntu</strong> (ta version)</td><td>GNOME</td><td>Moderne, épuré, barre latérale à gauche</td></tr>
+      <tr><td>Kubuntu</td><td>KDE Plasma</td><td>Proche de Windows, très personnalisable</td></tr>
+      <tr><td>Xubuntu / Lubuntu</td><td>Xfce / LXQt</td><td>Légers, pour machines modestes</td></tr>
+      <tr><td>Ubuntu Server</td><td>aucun</td><td>Uniquement le terminal : c'est le standard des serveurs</td></tr>
+    </table></div>
+
+    <div class="callout info"><span class="callout-title">Bureau ≠ système</span>
+      <p>Sous Windows, l'interface graphique fait partie du système. Sous Linux, c'est un <strong>programme comme un autre</strong> :
+        on peut en changer, en installer plusieurs, ou s'en passer complètement. La plupart des serveurs Linux du monde n'ont
+        <strong>aucune</strong> interface graphique. C'est pour ça que ce carnet insiste autant sur le terminal.</p></div>
+
+    <!-- ================================================== -->
+    <h2 id="methodes" data-short="Façons d'installer">Les différentes façons d'installer Linux</h2>
+    <p>Avant d'entrer dans la virtualisation, voici toutes les options possibles et pourquoi la VM est idéale pour apprendre :</p>
+    <div class="table-wrap"><table>
+      <tr><th>Méthode</th><th>Principe</th><th>Risque pour Windows</th><th>Performances</th><th>Idéal pour</th></tr>
+      <tr><td><strong>Machine virtuelle</strong> ✅</td><td>Un ordinateur simulé dans une fenêtre</td><td class="yes">Aucun</td><td class="mid">Bonnes</td><td>Apprendre, tester, casser sans peur</td></tr>
+      <tr><td><strong>Live USB</strong></td><td>Démarrer Linux depuis une clé, sans rien installer</td><td class="yes">Aucun</td><td class="mid">Moyennes</td><td>Essayer, dépanner un PC</td></tr>
+      <tr><td><strong>WSL</strong></td><td>Linux intégré à Windows (Windows Subsystem for Linux)</td><td class="yes">Aucun</td><td class="yes">Très bonnes</td><td>Développeurs sous Windows (pas d'interface graphique complète)</td></tr>
+      <tr><td><strong>Dual boot</strong></td><td>Windows et Linux sur le même disque, choix au démarrage</td><td class="mid">Moyen</td><td class="yes">Maximales</td><td>Usage quotidien des deux systèmes</td></tr>
+      <tr><td><strong>Installation complète</strong></td><td>Linux remplace Windows</td><td class="no">Windows effacé</td><td class="yes">Maximales</td><td>Passer à Linux pour de bon</td></tr>
+      <tr><td><strong>Cloud</strong></td><td>Louer un serveur Linux chez AWS, OVH, Hetzner…</td><td class="yes">Aucun</td><td class="yes">Variables</td><td>Héberger des services, s'entraîner sur un vrai serveur</td></tr>
+    </table></div>
+
+    <!-- ================================================== -->
+    <h2 id="virtualisation" data-short="Virtualisation">Comprendre la virtualisation</h2>
+    <img class="float-logo" src="../assets/img/virtualbox.png" alt="Logo VirtualBox">
+    <p>Une <strong>machine virtuelle</strong> (VM) est un ordinateur entièrement simulé par logiciel. Ubuntu, dans la VM, croit tourner
+      sur un vrai PC : il voit un processeur, de la RAM, un disque, une carte réseau. En réalité, tout cela est fourni par
+      <strong>VirtualBox</strong>, qui découpe une partie des ressources de ton vrai PC.</p>
+    <figure class="video-card">
+      <div class="video-head"><span class="video-badge">▶ Vidéo · 1 min 25</span><strong>La VM expliquée</strong><span>hôte, invité, hyperviseur, instantanés</span></div>
+      <video controls preload="none" playsinline poster="../assets/video/vm.jpg"><source src="../assets/video/vm.mp4" type="video/mp4">Ton navigateur ne lit pas la vidéo : <a href="../assets/video/vm.mp4">télécharge-la ici</a>.</video>
+      <figcaption>Animation réalisée pour ce carnet. Voix off et musique générées par IA (Google Gemini et Lyria).</figcaption>
+    </figure>
+
+    <h3>Le vocabulaire</h3>
+    <dl class="glossary">
+      <dt>Hôte (host)</dt><dd>Le vrai ordinateur et son système (Windows, macOS ou Linux).</dd>
+      <dt>Invité (guest)</dt><dd>Le système qui tourne dans la VM : Ubuntu 24.04.</dd>
+      <dt>Hyperviseur</dt><dd>Le logiciel qui crée et fait tourner les VM : VirtualBox.</dd>
+      <dt>Disque virtuel</dt><dd>Un gros fichier sur ton disque Windows (<code>.vdi</code>) que la VM voit comme un disque dur entier.</dd>
+      <dt>Image ISO</dt><dd>Un fichier qui contient le « DVD » d'installation d'Ubuntu.</dd>
+    </dl>
+
+    <h3>Deux types d'hyperviseurs</h3>
+    <figure>
+      <div class="diagram">
+        <svg viewBox="0 0 760 330" role="img" aria-label="Hyperviseur de type 1 et de type 2">
+          <text x="180" y="24" text-anchor="middle" class="svg-text" font-size="17" font-weight="700">Type 1 — « bare metal »</text>
+          <text x="180" y="44" text-anchor="middle" class="svg-sub" font-size="12">serveurs, datacenters, cloud</text>
+          <rect x="20" y="64" width="100" height="64" rx="10" fill="#b36bd6"/><text x="70" y="101" text-anchor="middle" fill="#fff" font-size="14" font-family="Inter" font-weight="600">VM Linux</text>
+          <rect x="130" y="64" width="100" height="64" rx="10" fill="#b36bd6"/><text x="180" y="101" text-anchor="middle" fill="#fff" font-size="14" font-family="Inter" font-weight="600">VM Windows</text>
+          <rect x="240" y="64" width="100" height="64" rx="10" fill="#b36bd6"/><text x="290" y="101" text-anchor="middle" fill="#fff" font-size="14" font-family="Inter" font-weight="600">VM Linux</text>
+          <rect x="20" y="140" width="320" height="104" rx="10" fill="#e95420"/>
+          <text x="180" y="186" text-anchor="middle" fill="#fff" font-size="16" font-family="Space Grotesk" font-weight="700">Hyperviseur</text>
+          <text x="180" y="208" text-anchor="middle" fill="#fff" opacity=".85" font-size="12" font-family="Inter">VMware ESXi, Proxmox (KVM), Hyper-V</text>
+          <rect x="20" y="256" width="320" height="60" rx="10" fill="#3a4256"/>
+          <text x="180" y="291" text-anchor="middle" fill="#fff" font-size="15" font-family="Inter" font-weight="600">Matériel du serveur</text>
+
+          <line x1="380" y1="20" x2="380" y2="316" class="svg-line" stroke-dasharray="4 6" opacity=".5"/>
+
+          <text x="580" y="24" text-anchor="middle" class="svg-text" font-size="17" font-weight="700">Type 2 — « hébergé »</text>
+          <text x="580" y="44" text-anchor="middle" class="svg-sub" font-size="12">ex. VirtualBox, installé sur ton PC</text>
+          <rect x="420" y="64" width="200" height="64" rx="10" fill="#b36bd6" stroke="#f5c542" stroke-width="3"/>
+          <text x="520" y="93" text-anchor="middle" fill="#fff" font-size="14" font-family="Inter" font-weight="700">Ubuntu 24.04</text>
+          <text x="520" y="113" text-anchor="middle" fill="#fff" opacity=".85" font-size="12" font-family="Inter">système invité</text>
+          <rect x="630" y="64" width="110" height="122" rx="10" class="svg-box"/>
+          <text x="685" y="118" text-anchor="middle" class="svg-sub" font-size="12">Chrome,</text>
+          <text x="685" y="136" text-anchor="middle" class="svg-sub" font-size="12">Word…</text>
+          <rect x="420" y="140" width="200" height="46" rx="10" fill="#0b7fb3"/>
+          <text x="520" y="169" text-anchor="middle" fill="#fff" font-size="15" font-family="Space Grotesk" font-weight="700">VirtualBox</text>
+          <rect x="420" y="198" width="320" height="46" rx="10" fill="#e95420"/>
+          <text x="580" y="227" text-anchor="middle" fill="#fff" font-size="15" font-family="Inter" font-weight="600">Windows ou macOS — système hôte</text>
+          <rect x="420" y="256" width="320" height="60" rx="10" fill="#3a4256"/>
+          <text x="580" y="291" text-anchor="middle" fill="#fff" font-size="15" font-family="Inter" font-weight="600">Ton PC</text>
+        </svg>
+      </div>
+      <figcaption>Un hyperviseur de type 1 remplace le système. Un hyperviseur de type 2, comme VirtualBox, est une application installée sur ton système.</figcaption>
+    </figure>
+
+    <div class="callout info"><span class="callout-title">Comment c'est possible sans que ce soit lent ?</span>
+      <p>Les processeurs modernes ont des instructions dédiées à la virtualisation : <strong>Intel VT-x</strong> et <strong>AMD-V</strong>.
+        Le code d'Ubuntu s'exécute directement sur ton vrai processeur ; VirtualBox n'intervient que pour les opérations sensibles.
+        Ces instructions doivent être <strong>activées dans le BIOS/UEFI</strong> de ton PC (c'est le cas par défaut sur la plupart des machines récentes).</p></div>
+
+    <h3>Bien dimensionner sa VM</h3>
+    <p>Règle d'or : <strong>ne jamais donner à la VM plus de la moitié</strong> de la RAM ou des cœurs de ton PC, sinon le système hôte étouffe et les deux deviennent lents.</p>
+    <div class="table-wrap"><table>
+      <tr><th>Réglage</th><th>Minimum Ubuntu 24.04</th><th>Recommandé pour apprendre</th><th>Pourquoi</th></tr>
+      <tr><td>Mémoire vive</td><td>4 Go</td><td><strong>4 à 8 Go</strong></td><td>GNOME et Firefox aiment la RAM</td></tr>
+      <tr><td>Processeurs</td><td>2</td><td><strong>2 à 4</strong></td><td>Interface plus fluide, installations plus rapides</td></tr>
+      <tr><td>Disque</td><td>25 Go</td><td><strong>40 à 60 Go</strong>, dynamique</td><td>Un disque « dynamique » ne prend sur Windows que la place réellement utilisée</td></tr>
+      <tr><td>Mémoire vidéo</td><td>16 Mo</td><td><strong>128 Mo</strong>, contrôleur VMSVGA</td><td>Affichage fluide, redimensionnement automatique</td></tr>
+      <tr><td>Réseau</td><td colspan="2"><strong>NAT</strong> (par défaut)</td><td>Internet fonctionne immédiatement</td></tr>
+    </table></div>
+
+    <h3>Les modes réseau de VirtualBox</h3>
+    <p>Pour l'instant, le mode <strong>NAT</strong> suffit. Mais tu croiseras les autres plus tard (notamment au module SSH), alors voici la carte complète :</p>
+    <div class="table-wrap"><table>
+      <tr><th>Mode</th><th>VM → Internet</th><th>PC → VM</th><th>VM ↔ VM</th><th>Usage typique</th></tr>
+      <tr><td><strong>NAT</strong></td><td class="yes">oui</td><td class="mid">via redirection de port</td><td class="no">non</td><td>Par défaut, le plus simple</td></tr>
+      <tr><td><strong>Réseau NAT</strong></td><td class="yes">oui</td><td class="mid">via redirection de port</td><td class="yes">oui</td><td>Plusieurs VM qui se parlent</td></tr>
+      <tr><td><strong>Accès par pont</strong></td><td class="yes">oui</td><td class="yes">oui</td><td class="yes">oui</td><td>La VM devient une vraie machine sur ta box</td></tr>
+      <tr><td><strong>Réseau privé hôte</strong></td><td class="no">non</td><td class="yes">oui</td><td class="yes">oui</td><td>Labo isolé entre ton PC et tes VM</td></tr>
+      <tr><td><strong>Réseau interne</strong></td><td class="no">non</td><td class="no">non</td><td class="yes">oui</td><td>Labo totalement isolé</td></tr>
+    </table></div>
+
+    <!-- ================================================== -->
+    <h2 id="disque" data-short="Disque &amp; démarrage">Disques, partitions et démarrage</h2>
+    <p>Pendant l'installation, Ubuntu va te parler de partitions. Même si tu choisis « Effacer le disque » (sans risque dans une VM : c'est le disque <em>virtuel</em> qui est effacé, pas celui de ton PC), il faut comprendre ce qui se passe.</p>
+
+    <h3>Firmware : BIOS ou UEFI</h3>
+    <p>Quand tu allumes un PC, le premier programme qui s'exécute est le <strong>firmware</strong>, inscrit sur la carte mère. Il en existe deux générations :</p>
+    <div class="cards">
+      <div class="card" style="--c:#6e7781"><div class="icon">👴</div><h4>BIOS (legacy)</h4><p>Depuis 1981. Lit le tout premier secteur du disque (le MBR) et exécute ce qu'il y trouve. Limité, mais encore très répandu dans les VM.</p></div>
+      <div class="card" style="--c:var(--cyan)"><div class="icon">🆕</div><h4>UEFI</h4><p>Le remplaçant moderne. Lit une petite partition dédiée (l'<strong>ESP</strong>, en FAT32) qui contient les chargeurs de démarrage. Gère le <em>Secure Boot</em>.</p></div>
+    </div>
+
+    <h3>Table de partitions : MBR ou GPT</h3>
+    <p>Un disque est découpé en <strong>partitions</strong>, des zones indépendantes. Le plan de ce découpage, c'est la <strong>table de partitions</strong> :</p>
+    <div class="table-wrap"><table>
+      <tr><th></th><th>MBR (ancien)</th><th>GPT (moderne)</th></tr>
+      <tr><td>Taille max du disque</td><td class="no">2 To</td><td class="yes">9,4 milliards de To</td></tr>
+      <tr><td>Nombre de partitions</td><td class="mid">4 principales (ou 3 + 1 étendue)</td><td class="yes">128 par défaut</td></tr>
+      <tr><td>Robustesse</td><td class="no">Une seule copie</td><td class="yes">Copie de secours en fin de disque</td></tr>
+      <tr><td>Associé à</td><td>BIOS</td><td>UEFI (fonctionne aussi avec BIOS)</td></tr>
+    </table></div>
+
+    <h3>Systèmes de fichiers</h3>
+    <p>Une partition vide est inutilisable. On la <strong>formate</strong> avec un <strong>système de fichiers</strong>, qui définit comment
+      les fichiers, les dossiers et les droits sont rangés. Sous Windows tu connais NTFS ; sous Linux :</p>
+    <div class="table-wrap"><table>
+      <tr><th>Système</th><th>Points forts</th><th>Où on le trouve</th></tr>
+      <tr><td><code>ext4</code></td><td>Robuste, éprouvé, rapide</td><td><strong>Par défaut sur Ubuntu</strong> et Debian</td></tr>
+      <tr><td><code>xfs</code></td><td>Excellent avec les gros fichiers</td><td>Par défaut sur Red Hat / Rocky</td></tr>
+      <tr><td><code>btrfs</code></td><td>Instantanés, compression</td><td>Par défaut sur Fedora et openSUSE</td></tr>
+      <tr><td><code>zfs</code></td><td>Intégrité des données, instantanés</td><td>Option avancée d'Ubuntu, serveurs de stockage</td></tr>
+      <tr><td><code>vfat</code> (FAT32)</td><td>Lisible par tous les systèmes</td><td>Partition EFI, clés USB</td></tr>
+    </table></div>
+
+    <h3>Points de montage : pas de « C: » sous Linux</h3>
+    <p>Sous Windows, chaque partition a sa lettre (<code>C:</code>, <code>D:</code>). Sous Linux, il n'y a <strong>qu'une seule arborescence</strong>
+      qui commence à la racine <code>/</code>. Chaque partition est « accrochée » (<strong>montée</strong>) dans un dossier de cette arborescence.</p>
+
+    <div class="disk">
+      <div class="disk-label">💽 Ce qu'Ubuntu crée dans une VM avec « Effacer le disque » (UEFI, disque de 40 Go, GPT)</div>
+      <div class="disk-bar">
+        <div class="part" style="flex:1.2; background:#0b7fb3"><b>/boot/efi</b>FAT32 · ~1 Go</div>
+        <div class="part" style="flex:10; background:#e95420"><b>/</b>ext4 · tout le reste — contient /home, /etc, /usr… et le fichier d'échange /swap.img</div>
+      </div>
+    </div>
+    <div class="disk">
+      <div class="disk-label">🗄️ Exemple de découpage d'un serveur (on verra ça au module 11)</div>
+      <div class="disk-bar">
+        <div class="part" style="flex:1; background:#0b7fb3"><b>/boot/efi</b>1 Go</div>
+        <div class="part" style="flex:1.4; background:#b36bd6"><b>/boot</b>2 Go</div>
+        <div class="part" style="flex:4; background:#e95420"><b>/</b>30 Go</div>
+        <div class="part" style="flex:2; background:#a87700"><b>/var</b>20 Go</div>
+        <div class="part" style="flex:4; background:#1f8a35"><b>/home</b>50 Go</div>
+        <div class="part" style="flex:1.2; background:#3a4256"><b>swap</b>4 Go</div>
+      </div>
+    </div>
+
+    <div class="callout info"><span class="callout-title">Et le « swap » ?</span>
+      <p>Le <strong>swap</strong> est un espace disque utilisé comme mémoire de secours quand la RAM est pleine (c'est l'équivalent du
+        <code>pagefile.sys</code> de Windows). Autrefois c'était une partition dédiée ; Ubuntu utilise désormais simplement un <strong>fichier</strong> <code>/swap.img</code>.</p></div>
+
+    <h3>Ce qui se passe quand tu allumes la VM</h3>
+    <div class="flow">
+      <div class="flow-step"><div class="ico">⚡</div><b>Firmware</b><span>UEFI ou BIOS teste le matériel</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="ico">🍞</div><b>GRUB</b><span>le chargeur de démarrage</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="ico">🐧</div><b>Noyau</b><span>+ initramfs, détecte le matériel</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="ico">⚙️</div><b>systemd</b><span>processus n°1, lance les services</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="ico">🔐</div><b>Connexion</b><span>écran de connexion GDM</span></div>
+    </div>
+    <p>Chacune de ces étapes sera détaillée au module 10. Pour l'instant, retiens que <strong>GRUB</strong> est le menu qui permet de choisir quel système
+      (ou quel noyau) démarrer, et que <strong>systemd</strong> est le « premier processus » dont tous les autres descendent.</p>
+
+    <!-- ================================================== -->
+    <h2 id="installation" data-short="Installation pas à pas">Installer Ubuntu 24.04 pas à pas</h2>
+
+    <h3>Étape A — Créer la VM dans VirtualBox</h3>
+    <ol class="steps">
+      <li><strong>Télécharger l'ISO</strong>
+        <p>Sur <a href="https://ubuntu.com/download/desktop" target="_blank" rel="noopener">ubuntu.com/download/desktop</a>, prendre
+          la version <strong>24.04 LTS</strong> (un fichier d'environ 6 Go, nommé par exemple <code>ubuntu-24.04.x-desktop-amd64.iso</code>).</p></li>
+      <li><strong>Nouvelle machine</strong>
+        <p>Dans VirtualBox : <kbd>Machine</kbd> › <kbd>Nouvelle</kbd>. Donner un nom (ex. <code>ubuntu</code>) et sélectionner l'image ISO.
+          VirtualBox détecte automatiquement « Linux / Ubuntu (64-bit) ».</p></li>
+      <li><strong>Installation automatique ou manuelle</strong>
+        <p>VirtualBox propose une <em>installation automatique</em> (<em>Unattended Installation</em>) : tu saisis nom d'utilisateur,
+          mot de passe et nom de machine, et il fait tout le reste. Si tu coches <strong>« Skip Unattended Installation »</strong>,
+          c'est toi qui suis l'installateur d'Ubuntu (étape B).</p></li>
+      <li><strong>Matériel</strong>
+        <p>Mémoire et processeurs selon le tableau de dimensionnement plus haut. Cocher <strong>Enable EFI</strong> est facultatif mais plus proche d'un PC moderne.</p></li>
+      <li><strong>Disque dur virtuel</strong>
+        <p>Créer un disque <strong>VDI</strong>, <strong>dynamiquement alloué</strong> (ne pas cocher « Pre-allocate Full Size »), de 40 Go ou plus.</p></li>
+      <li><strong>Finaliser les réglages</strong>
+        <p>Avant de démarrer : <kbd>Configuration</kbd> › <kbd>Affichage</kbd> › 128 Mo de mémoire vidéo, contrôleur <strong>VMSVGA</strong>.</p></li>
+    </ol>
+
+    <div class="callout warn"><span class="callout-title">La VM s'installe toute seule ? C'est l'installation automatique</span>
+      <p>Si tu vois Ubuntu s'installer sans rien te demander, VirtualBox est en train de faire une installation automatique.
+        C'est pratique, mais elle a un piège connu : <strong>le compte créé n'est parfois pas autorisé à utiliser <code>sudo</code></strong>
+        (la commande pour agir en administrateur). Si ça t'arrive, la solution est dans la section <a href="#depannage">Dépannage</a>.
+        Laisse-la finir sans l'interrompre, même si elle semble bloquée quelques minutes.</p></div>
+
+    <h3>Étape B — L'installateur d'Ubuntu (installation manuelle)</h3>
+    <p>Si tu installes toi-même (ou pour une prochaine VM), voici les écrans de l'installateur d'Ubuntu 24.04 :</p>
+    <ol class="steps">
+      <li><strong>Langue</strong><p>Choisir <em>Français</em>.</p></li>
+      <li><strong>Accessibilité</strong><p>Options de vision, d'audition, de mobilité. On peut passer.</p></li>
+      <li><strong>Clavier</strong><p><em>Français</em> › <em>Français (AZERTY)</em> ou la variante qui correspond à ton clavier. Teste dans le champ prévu.</p></li>
+      <li><strong>Connexion internet</strong><p>En NAT, la VM utilise automatiquement la connexion de ton PC (« Utiliser une connexion filaire »).</p></li>
+      <li><strong>Essayer ou installer</strong><p>« Essayer Ubuntu » lance le système en mode <em>live</em>, sans rien écrire sur le disque. Choisir <strong>Installer Ubuntu</strong>.</p></li>
+      <li><strong>Type d'installation</strong><p><em>Interactive</em> (on répond aux questions) ou <em>Automatisée</em> (à partir d'un fichier <code>autoinstall.yaml</code>, utile en entreprise). Choisir <strong>Interactive</strong>.</p></li>
+      <li><strong>Applications</strong><p><em>Sélection par défaut</em> (navigateur et utilitaires) ou <em>Sélection étendue</em> (bureautique, jeux…). La sélection par défaut suffit : on apprendra à installer le reste.</p></li>
+      <li><strong>Logiciels tiers</strong><p>Pilotes propriétaires (graphique, Wi-Fi) et codecs multimédias. Dans une VM, on peut cocher les codecs ; les pilotes ne servent pas.</p></li>
+      <li><strong>Disque</strong><p><strong>Effacer le disque et installer Ubuntu</strong>. Dans une VM, ça n'efface que le disque virtuel vide. Le bouton « Fonctionnalités avancées » propose LVM, le chiffrement et ZFS : on les étudiera plus tard.</p></li>
+      <li><strong>Compte</strong><p>Ton nom, le nom de l'ordinateur (ex. <code>ubuntu</code>), ton identifiant (en minuscules, sans espace, ex. <code>user</code>) et un mot de passe dont tu te souviens : <strong>tu le taperas très souvent</strong> avec <code>sudo</code>.</p></li>
+      <li><strong>Fuseau horaire</strong><p>Choisir ta ville.</p></li>
+      <li><strong>Récapitulatif puis installation</strong><p>Relire, cliquer sur <em>Installer</em>, patienter. À la fin : <em>Redémarrer maintenant</em>. Si on te demande de retirer le support d'installation, appuie simplement sur <kbd>Entrée</kbd> : VirtualBox éjecte l'ISO tout seul.</p></li>
+    </ol>
+
+    <div class="callout tip"><span class="callout-title">La « touche hôte »</span>
+      <p>Quand tu cliques dans la VM, elle capture la souris et le clavier. Pour les rendre à Windows, appuie sur la <strong>touche hôte</strong> :
+        par défaut <kbd>Ctrl</kbd> <strong>droit</strong>. Elle sert aussi de raccourci : <kbd>Ctrl droit</kbd> + <kbd>F</kbd> pour le plein écran,
+        <kbd>Ctrl droit</kbd> + <kbd>T</kbd> pour un instantané.</p></div>
+
+    <!-- ================================================== -->
+    <h2 id="premiers-pas" data-short="Premiers pas">Après l'installation : les premiers réflexes</h2>
+    <p>Ouvre un terminal : <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>T</kbd>. C'est le premier raccourci à retenir.
+      Tu vois une ligne comme celle-ci, qu'on appelle l'<strong>invite de commande</strong> (<em>prompt</em>) :</p>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> </pre></div>
+    <div class="table-wrap"><table>
+      <tr><th>Morceau</th><th>Signification</th></tr>
+      <tr><td><code>user</code></td><td>Ton nom d'utilisateur</td></tr>
+      <tr><td><code>ubuntu</code></td><td>Le nom de la machine</td></tr>
+      <tr><td><code>~</code></td><td>Le dossier où tu te trouves. <code>~</code> est un raccourci pour ton dossier personnel, <code>/home/user</code></td></tr>
+      <tr><td><code>$</code></td><td>Tu es un utilisateur normal. Si c'était <code>#</code>, tu serais <strong>root</strong>, l'administrateur tout-puissant</td></tr>
+    </table></div>
+
+    <h3>1. Mettre le système à jour</h3>
+    <p>C'est la toute première chose à faire après une installation, et une habitude à garder :</p>
+    <div class="terminal" data-title="user@ubuntu: ~"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> apt update
+<span class="o">[sudo] Mot de passe de user :</span>        <span class="c"># rien ne s'affiche quand tu tapes, c'est normal !</span>
+<span class="o">Atteint :1 http://archive.ubuntu.com/ubuntu noble InRelease</span>
+<span class="o">Réception de :2 http://security.ubuntu.com/ubuntu noble-security InRelease [126 kB]</span>
+<span class="o">...</span>
+<span class="o">42 paquets peuvent être mis à jour.</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> apt upgrade <span class="f">-y</span></pre></div>
+    <ul>
+      <li><code>sudo</code> : « exécuter la commande suivante en tant qu'administrateur ». Il demande <strong>ton</strong> mot de passe.</li>
+      <li><code>apt update</code> : télécharge la <strong>liste</strong> des logiciels disponibles (ça n'installe rien).</li>
+      <li><code>apt upgrade</code> : installe les nouvelles versions. L'option <code>-y</code> répond « oui » à la confirmation.</li>
+    </ul>
+
+    <div class="callout warn"><span class="callout-title">Le mot de passe invisible</span>
+      <p>Quand <code>sudo</code> demande ton mot de passe, <strong>aucun caractère ne s'affiche</strong>, pas même des étoiles.
+        Ce n'est pas un bug : tape-le et appuie sur <kbd>Entrée</kbd>.</p></div>
+
+    <h3>2. Faire connaissance avec sa machine</h3>
+    <p>La commande <code>hostnamectl</code> affiche la carte d'identité de la machine. Voici une sortie réelle, obtenue dans une VM VirtualBox :</p>
+    <div class="terminal" data-title="user@ubuntu: ~"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">hostnamectl</span>
+<span class="o"> Static hostname: ubuntu</span>
+<span class="o">       Icon name: computer-vm</span>
+<span class="o">         Chassis: vm 🖴</span>
+<span class="o">      Machine ID: 3f6c1e0a9b7d4c2e8a15f0d9c4b2e7a1</span>
+<span class="o">         Boot ID: 9d2b7c41e8f04a6b9c3e5d1f7a0b8c26</span>
+<span class="o">  Virtualization: <span class="hl">oracle</span></span>
+<span class="o">Operating System: <span class="hl">Ubuntu 24.04.4 LTS</span></span>
+<span class="o">          Kernel: <span class="hl">Linux 7.0.0-38-generic</span></span>
+<span class="o">    Architecture: x86-64</span>
+<span class="o"> Hardware Vendor: innotek GmbH</span>
+<span class="o">  Hardware Model: VirtualBox</span>
+<span class="o">Firmware Version: VirtualBox</span>
+<span class="o">   Firmware Date: Fri 2006-12-01</span>
+<span class="o">    Firmware Age: 19y 10month 3w</span>
+<span class="c"># Les numéros de version et les identifiants seront différents chez toi</span></pre></div>
+
+    <div class="table-wrap"><table>
+      <tr><th>Ligne</th><th>Ce qu'elle t'apprend</th></tr>
+      <tr><td><code>Static hostname</code></td><td>Le nom de la machine sur le réseau, celui qu'on retrouve dans l'invite après le <code>@</code>.</td></tr>
+      <tr><td><code>Icon name</code>, <code>Chassis</code></td><td>Le type de machine : <code>vm</code> pour une machine virtuelle (ce serait <code>laptop</code>, <code>desktop</code> ou <code>server</code> sur du vrai matériel).</td></tr>
+      <tr><td><code>Machine ID</code></td><td>Un identifiant unique, créé à l'installation et stocké dans <code>/etc/machine-id</code>. Il ne change jamais.</td></tr>
+      <tr><td><code>Boot ID</code></td><td>Un identifiant tiré au sort à <strong>chaque démarrage</strong>. Il sert notamment à retrouver les journaux d'un démarrage précis.</td></tr>
+      <tr><td><code>Virtualization</code></td><td>L'hyperviseur détecté : <code>oracle</code> = VirtualBox (édité par Oracle). On verrait <code>kvm</code>, <code>vmware</code>, <code>microsoft</code> (Hyper-V)… Absente sur une vraie machine.</td></tr>
+      <tr><td><code>Operating System</code></td><td>La distribution et sa version exacte. Le dernier chiffre (<code>.4</code>) est la <em>point release</em> : une image d'installation mise à jour, publiée quelques fois au cours de la vie d'une LTS.</td></tr>
+      <tr><td><code>Kernel</code></td><td>La version du noyau Linux. <code>7.0.0</code> = version du noyau, <code>38</code> = révision d'Ubuntu, <code>generic</code> = la variante standard.</td></tr>
+      <tr><td><code>Architecture</code></td><td>Le type de processeur : <code>x86-64</code> pour les PC Intel/AMD 64 bits, <code>arm64</code> pour un Raspberry Pi ou un Mac récent.</td></tr>
+      <tr><td><code>Hardware Vendor</code>, <code>Model</code></td><td>Le fabricant et le modèle de la « carte mère ». Ici, c'est celle simulée par VirtualBox : <em>innotek</em> est l'entreprise allemande qui a créé VirtualBox avant son rachat.</td></tr>
+      <tr><td><code>Firmware Date</code>, <code>Age</code></td><td>Le BIOS virtuel de VirtualBox est daté de 2006 : c'est normal, il n'a jamais besoin d'être mis à jour. D'où cet âge vénérable de près de 20 ans !</td></tr>
+    </table></div>
+
+    <div class="callout info"><span class="callout-title">Pourquoi un noyau 7.0 sur Ubuntu 24.04 ?</span>
+      <p>Ubuntu 24.04 est sortie avec le noyau 6.8. Mais les <em>point releases</em> (24.04.2, 24.04.3, 24.04.4…) installent par défaut
+        un noyau plus récent, dit <strong>HWE</strong> (<em>Hardware Enablement</em>), pour prendre en charge le matériel récent.
+        Ton numéro de noyau dépend donc de l'image d'installation que tu as utilisée et des mises à jour faites depuis.</p></div>
+
+    <p>D'autres commandes pour explorer sa machine :</p>
+    <div class="terminal" data-title="user@ubuntu: ~"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">uname</span> <span class="f">-r</span>           <span class="c"># version du noyau seule</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">cat</span> <span class="s">/etc/os-release</span>  <span class="c"># fiche d'identité de la distribution</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">free</span> <span class="f">-h</span>            <span class="c"># mémoire vive et swap</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">lsblk</span>              <span class="c"># disques et partitions</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">df</span> <span class="f">-h</span> <span class="s">/</span>            <span class="c"># place libre sur la racine</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">ip</span> <span class="s">a</span>               <span class="c"># cartes réseau et adresses IP</span></pre></div>
+    <p>Regarde en particulier la sortie de <code>lsblk</code> : tu devrais y retrouver le disque <code>sda</code> et les partitions
+      dont on a parlé (<code>/boot/efi</code> et <code>/</code>). La théorie devient concrète !</p>
+
+    <h3>3. Installer les Additions invité (Guest Additions)</h3>
+    <p>Les <strong>Additions invité</strong> sont des pilotes VirtualBox qui s'installent <em>dans</em> Ubuntu. Elles apportent :
+      l'écran qui s'adapte à la taille de la fenêtre, le <strong>copier-coller entre Windows et la VM</strong>, le glisser-déposer
+      et les dossiers partagés.</p>
+    <p>D'abord, vérifie si elles sont déjà là (l'installation automatique peut les avoir installées) :</p>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">VBoxClient</span> <span class="f">--version</span>
+<span class="o">7.1.x r16xxxx</span>                          <span class="c"># un numéro de version = installées</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">systemctl</span> status <span class="s">vboxadd-service</span>
+<span class="o">● vboxadd-service.service - VirtualBox Guest Additions service</span>
+<span class="o">     Active: <span class="ok">active (running)</span></span>       <span class="c"># le service tourne</span></pre></div>
+    <p>Si <code>VBoxClient</code> répond <code>command not found</code>, les Additions ne sont pas installées. Le test visuel marche aussi :
+      agrandis la fenêtre de la VM. Si le bureau ne s'adapte pas à la nouvelle taille, il faut les installer.</p>
+
+    <div class="callout warn"><span class="callout-title">Piège : <code>lsmod | grep vbox</code> ne suffit pas</span>
+      <p>Le pilote <code>vboxguest</code> est intégré au noyau Linux : Ubuntu le charge dès qu'il détecte VirtualBox, <strong>même sans
+        les Additions invité</strong>. Voir une ligne <code>vboxguest</code> dans <code>lsmod</code> prouve seulement que le noyau a reconnu
+        VirtualBox, pas que les Additions sont installées.</p></div>
+
+    <p>Pour les installer :</p>
+    <div class="terminal" data-title="installation des Additions invité"><pre><span class="c"># 1. Les outils nécessaires pour compiler les pilotes</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> apt install <span class="f">-y</span> build-essential dkms bzip2 linux-headers-<span class="v">$(uname -r)</span>
+
+<span class="c"># 2. Dans le menu de la fenêtre VirtualBox :</span>
+<span class="c">#    Périphériques › Insérer l'image CD des Additions invité…</span>
+
+<span class="c"># 3. Lancer l'installateur depuis le CD</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">cd</span> <span class="s">/media/</span><span class="v">$USER</span><span class="s">/VBox_GAs_*</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">/media/user/VBox_GAs_7.x</span><span class="p">$</span> <span class="k">sudo</span> ./VBoxLinuxAdditions.run
+
+<span class="c"># 4. Redémarrer</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> reboot</pre></div>
+    <div class="callout info"><span class="callout-title">Pas besoin d'un vrai CD</span>
+      <p>Le « CD des Additions invité » est un fichier image (<code>VBoxGuestAdditions.iso</code>) fourni avec VirtualBox. Le menu
+        <kbd>Périphériques</kbd> se trouve dans la barre de menus de la <strong>fenêtre VirtualBox</strong>, pas dans Ubuntu. Invisible ?
+        Tu es en plein écran ou en mode échelonné : <kbd>Ctrl droit</kbd> + <kbd>Origine</kbd> l'affiche. Une fois inséré, un disque
+        <code>VBox_GAs_…</code> apparaît dans la barre latérale d'Ubuntu.</p></div>
+    <p>Ensuite, dans le menu de VirtualBox : <kbd>Périphériques</kbd> › <kbd>Presse-papier partagé</kbd> › <strong>Bidirectionnel</strong>.
+      Le copier-coller entre l'hôte et Ubuntu fonctionne enfin.</p>
+
+    <div class="callout tip"><span class="callout-title">Copier-coller dans le terminal</span>
+      <p>Dans le terminal, <kbd>Ctrl</kbd> + <kbd>C</kbd> ne copie pas : il <strong>interrompt</strong> la commande en cours (on verra pourquoi au module 07).
+        Pour copier, c'est <kbd>Ctrl</kbd> + <kbd>Maj</kbd> + <kbd>C</kbd> ; pour coller, <kbd>Ctrl</kbd> + <kbd>Maj</kbd> + <kbd>V</kbd>.</p></div>
+
+    <h3>4. Prendre un instantané : ton bouton « annuler » géant</h3>
+    <p>Un <strong>instantané</strong> (<em>snapshot</em>) enregistre l'état complet de la VM à un instant donné. Si tu casses tout plus tard
+      (et tu vas casser des choses, c'est comme ça qu'on apprend), tu reviens à cet état en un clic.</p>
+    <p>Une fois les mises à jour et les Additions installées : <kbd>Machine</kbd> › <kbd>Prendre un instantané</kbd> (ou <kbd>Ctrl droit</kbd> + <kbd>T</kbd>),
+      et nomme-le <strong>« Installation propre »</strong>.</p>
+    <div class="callout key"><span class="callout-title">Habitude à prendre</span>
+      <p>Avant chaque manipulation risquée (modifier la configuration du démarrage, des disques, du réseau…), prends un instantané.
+        C'est l'avantage énorme de la VM sur une vraie machine.</p></div>
+
+    <!-- ================================================== -->
+    <h2 id="depannage" data-short="Dépannage">Dépannage : les problèmes fréquents</h2>
+    <div class="qa">
+      <details>
+        <summary>« user n'est pas dans le fichier sudoers »</summary>
+        <p>C'est le piège de l'installation automatique de VirtualBox : ton compte n'a pas été ajouté au groupe des administrateurs.
+          On passe par le compte <strong>root</strong> (dont le mot de passe est le même que celui choisi dans VirtualBox) pour corriger :</p>
+        <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> apt update
+<span class="o"><span class="err">user is not in the sudoers file.</span></span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">su</span> -                    <span class="c"># devenir root</span>
+<span class="o">Mot de passe :</span>
+<span class="pr">root@ubuntu:~#</span> <span class="k">usermod</span> <span class="f">-aG</span> <span class="s">sudo user</span>    <span class="c"># ajoute user au groupe sudo (mets ton identifiant)</span>
+<span class="pr">root@ubuntu:~#</span> <span class="k">exit</span>
+<span class="c"># Puis se déconnecter / reconnecter (ou redémarrer) pour que ce soit pris en compte</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> whoami
+<span class="o"><span class="ok">root</span></span></pre></div>
+        <p>Remarque l'invite qui change : <code>#</code> et le nom <code>root</code> en rouge. Quand tu vois ça, <strong>sois prudent</strong> : root peut tout faire, y compris détruire le système.</p>
+      </details>
+      <details>
+        <summary>L'écran est minuscule et ne s'adapte pas à la fenêtre</summary>
+        <p>Il manque les <a href="#premiers-pas">Additions invité</a>. Vérifie aussi que le contrôleur graphique est <strong>VMSVGA</strong>
+          et que l'option <kbd>Écran</kbd> › <kbd>Ajuster automatiquement la taille de l'écran</kbd> est cochée dans le menu de la VM.</p>
+      </details>
+      <details>
+        <summary>La VM est très lente, avec une petite tortue verte en bas de la fenêtre</summary>
+        <p>La tortue signifie que VirtualBox ne peut pas utiliser directement VT-x/AMD-V parce que <strong>Hyper-V</strong> (l'hyperviseur de Microsoft)
+          est actif sur Windows. Il est activé par WSL 2, Docker Desktop ou la fonction « Intégrité de la mémoire ». Pour le désactiver,
+          dans <em>Fonctionnalités de Windows</em>, décocher <em>Hyper-V</em>, <em>Plateforme de machine virtuelle</em> et
+          <em>Plateforme de l'hyperviseur Windows</em>, puis exécuter dans un invite de commandes administrateur sous Windows :</p>
+        <div class="terminal" data-title="Windows — Invite de commandes (admin)"><pre><span class="p">C:\&gt;</span> <span class="k">bcdedit</span> <span class="f">/set</span> <span class="s">hypervisorlaunchtype off</span></pre></div>
+        <p>Puis redémarrer Windows. <strong>Attention</strong> : WSL 2 et Docker Desktop ne fonctionneront plus tant qu'Hyper-V est désactivé.</p>
+      </details>
+      <details>
+        <summary>Erreur « VT-x is not available » ou « AMD-V is disabled in the BIOS »</summary>
+        <p>La virtualisation matérielle est désactivée dans le firmware de ton PC. Redémarre, entre dans le BIOS/UEFI (souvent <kbd>F2</kbd>, <kbd>Suppr</kbd> ou <kbd>F10</kbd>)
+          et active <em>Intel Virtualization Technology</em> ou <em>SVM Mode</em> (AMD).</p>
+      </details>
+      <details>
+        <summary>Le Terminal ne s'ouvre pas après une installation automatique</summary>
+        <p>Problème connu lié à la langue configurée par l'installation automatique. Dans <em>Paramètres</em> › <em>Système</em> › <em>Région et langue</em>,
+          choisis une langue et un format (par exemple Français), puis déconnecte-toi et reconnecte-toi. En dernier recours, passe en console texte avec
+          <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>F3</kbd>, connecte-toi, et lance :</p>
+        <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> update-locale <span class="s">LANG=fr_FR.UTF-8</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> reboot</pre></div>
+      </details>
+      <details>
+        <summary>Le clavier tape en QWERTY (A et Q inversés)</summary>
+        <p><em>Paramètres</em> › <em>Clavier</em> › <em>Sources de saisie</em> › ajouter <strong>Français (AZERTY)</strong> et le placer en premier.
+          Le raccourci <kbd>Super</kbd> + <kbd>Espace</kbd> bascule entre les dispositions (<kbd>Super</kbd> = la touche Windows).</p>
+      </details>
+    </div>
+
+    <!-- ================================================== -->
+    <h2 id="glossaire" data-short="Glossaire">Glossaire du module</h2>
+    <dl class="glossary">
+      <dt>Noyau (kernel)</dt><dd>Le cœur du système, qui gère le matériel, la mémoire et les processus. Linux est un noyau.</dd>
+      <dt>Distribution</dt><dd>Noyau + outils + gestionnaire de paquets + applications, assemblés et maintenus ensemble.</dd>
+      <dt>GNU</dt><dd>Projet de système libre lancé en 1983 ; fournit la plupart des commandes de base.</dd>
+      <dt>GPL</dt><dd>Licence libre à copyleft du noyau Linux.</dd>
+      <dt>LTS</dt><dd>Long Term Support : version maintenue pendant des années.</dd>
+      <dt>Shell</dt><dd>Programme qui lit tes commandes et les exécute. Sur Ubuntu : <code>bash</code>.</dd>
+      <dt>Hyperviseur</dt><dd>Logiciel qui fait tourner des machines virtuelles.</dd>
+      <dt>Hôte / invité</dt><dd>Le système réel / le système qui tourne dans la VM.</dd>
+      <dt>ISO</dt><dd>Fichier image d'un disque d'installation.</dd>
+      <dt>UEFI / BIOS</dt><dd>Le firmware qui démarre l'ordinateur.</dd>
+      <dt>ESP</dt><dd>Partition système EFI, en FAT32, montée sur <code>/boot/efi</code>.</dd>
+      <dt>MBR / GPT</dt><dd>Les deux formats de table de partitions.</dd>
+      <dt>ext4</dt><dd>Le système de fichiers par défaut d'Ubuntu.</dd>
+      <dt>Point de montage</dt><dd>Dossier de l'arborescence où une partition est accrochée.</dd>
+      <dt>Swap</dt><dd>Espace disque utilisé comme mémoire de secours.</dd>
+      <dt>GRUB</dt><dd>Le chargeur de démarrage qui lance le noyau.</dd>
+      <dt>systemd</dt><dd>Le premier processus lancé par le noyau ; il démarre tous les services.</dd>
+      <dt>root</dt><dd>Le super-utilisateur, qui a tous les droits.</dd>
+      <dt>sudo</dt><dd>Commande pour exécuter une action en tant que root.</dd>
+      <dt>apt</dt><dd>Le gestionnaire de paquets d'Ubuntu et Debian.</dd>
+      <dt>Instantané</dt><dd>Sauvegarde complète de l'état d'une VM, restaurable à tout moment.</dd>
+    </dl>
+
+    <!-- ================================================== -->
+    <h2 id="quiz" data-short="Quiz">🧠 Quiz : as-tu tout retenu ?</h2>
+    <div class="quiz">
+      <div class="q" data-answer="1">
+        <div class="q-text">1. Au sens strict, « Linux » désigne…</div>
+        <div class="q-opts"><button>Le système complet avec son bureau</button><button>Le noyau du système</button><button>Une distribution créée par Linus Torvalds</button></div>
+        <div class="q-explain">Linux est le <strong>noyau</strong>. Ubuntu, Fedora ou Debian sont des distributions qui l'utilisent.</div>
+      </div>
+      <div class="q" data-answer="2">
+        <div class="q-text">2. Que signifie « 24.04 » dans Ubuntu 24.04 ?</div>
+        <div class="q-opts"><button>La 24e version, 4e correctif</button><button>Le noyau Linux 24.4</button><button>Sortie en avril 2024</button></div>
+        <div class="q-explain">Le numéro est toujours <strong>année.mois</strong> de sortie.</div>
+      </div>
+      <div class="q" data-answer="0">
+        <div class="q-text">3. VirtualBox est un hyperviseur de…</div>
+        <div class="q-opts"><button>Type 2 : il s'installe comme une application sur un système existant</button><button>Type 1 : il remplace le système d'exploitation</button><button>Type 3 : il fonctionne dans le cloud</button></div>
+        <div class="q-explain">VirtualBox tourne <strong>sur</strong> Windows : c'est un hyperviseur hébergé, de type 2.</div>
+      </div>
+      <div class="q" data-answer="1">
+        <div class="q-text">4. Ton PC a 8 Go de RAM. Combien en donner à la VM au maximum ?</div>
+        <div class="q-opts"><button>8 Go, pour qu'Ubuntu soit rapide</button><button>4 Go</button><button>1 Go</button></div>
+        <div class="q-explain">Jamais plus de la moitié : Windows doit continuer à fonctionner, sinon tout devient lent.</div>
+      </div>
+      <div class="q" data-answer="2">
+        <div class="q-text">5. Sous Linux, l'équivalent du lecteur <code>C:</code> de Windows est…</div>
+        <div class="q-opts"><button><code>/home</code></button><button><code>/c</code></button><button>Il n'y en a pas : tout part de la racine <code>/</code> et les partitions y sont montées</button></div>
+        <div class="q-explain">Une seule arborescence, des partitions <strong>montées</strong> dans des dossiers.</div>
+      </div>
+      <div class="q" data-answer="0">
+        <div class="q-text">6. Que fait <code>sudo apt update</code> ?</div>
+        <div class="q-opts"><button>Il met à jour la liste des logiciels disponibles</button><button>Il installe toutes les mises à jour</button><button>Il met à jour le noyau uniquement</button></div>
+        <div class="q-explain"><code>update</code> rafraîchit la liste ; c'est <code>upgrade</code> qui installe les nouvelles versions.</div>
+      </div>
+      <div class="q" data-answer="1">
+        <div class="q-text">7. Dans l'invite <code>root@ubuntu:~#</code>, que signifie le <code>#</code> ?</div>
+        <div class="q-opts"><button>Un commentaire</button><button>Tu es connecté en tant que root, l'administrateur</button><button>Une erreur s'est produite</button></div>
+        <div class="q-explain"><code>$</code> = utilisateur normal, <code>#</code> = root. Prudence !</div>
+      </div>
+      <div class="q" data-answer="2">
+        <div class="q-text">8. Quel est le premier processus lancé par le noyau au démarrage ?</div>
+        <div class="q-opts"><button>GRUB</button><button>bash</button><button>systemd</button></div>
+        <div class="q-explain">GRUB s'exécute <em>avant</em> le noyau. Après le noyau, c'est <strong>systemd</strong> (processus n°1) qui lance tout le reste.</div>
+      </div>
+      <div class="quiz-score">Réponds aux questions pour voir ton score.</div>
+    </div>
+
+    <!-- ================================================== -->
+    <h2 id="mission" data-short="Mission pratique">🚀 Mission pratique</h2>
+    <div class="mission">
+      <h4>À faire dans la machine virtuelle</h4>
+      <p class="mission-astuce">Coche chaque étape une fois faite : sa correction s'affiche juste en dessous.</p>
+      <ul class="checklist" data-key="m00">
+        <li><label><input type="checkbox"><span>Terminer l'installation : Ubuntu démarre jusqu'à l'écran de connexion.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><p>Si la VM redémarre sur l'installateur, retire l'ISO : <kbd>Périphériques</kbd> › <kbd>Lecteurs optiques</kbd> › <em>Retirer le disque</em>, puis redémarre. L'écran de connexion affiche ton nom d'utilisateur.</p></div></li>
+        <li><label><input type="checkbox"><span>Ouvrir un terminal avec <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>T</kbd> et savoir lire l'invite de commande.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><p><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>T</kbd>. Dans <code>user@ubuntu:~$</code> : <code>user</code> = ton identifiant, <code>ubuntu</code> = la machine, <code>~</code> = ton dossier personnel (<code>/home/user</code>), <code>$</code> = utilisateur normal.</p></div></li>
+        <li><label><input type="checkbox"><span>Vérifier que <code>sudo whoami</code> répond <code>root</code> (sinon : section Dépannage).</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> sudo whoami
+<span class="o">[sudo] Mot de passe de user :</span>
+<span class="o">root</span></pre><p>Message « not in the sudoers file » ? Suis la première entrée de la section <a href="#depannage">Dépannage</a>.</p></div></li>
+        <li><label><input type="checkbox"><span>Mettre le système à jour avec <code>sudo apt update</code> puis <code>sudo apt upgrade</code>.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> sudo apt update
+<span class="p">$</span> sudo apt upgrade -y
+<span class="p">$</span> apt list --upgradable
+<span class="o">En train de lister... Fait</span></pre><p>Quand <code>apt list --upgradable</code> ne liste plus aucun paquet, le système est à jour.</p></div></li>
+        <li><label><input type="checkbox"><span>Relever sa version d'Ubuntu et de noyau avec <code>hostnamectl</code>.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> hostnamectl
+<span class="o">Operating System: Ubuntu 24.04.x LTS</span>
+<span class="o">          Kernel: Linux 6.x ou 7.x-generic</span></pre><p>Autre façon : <code>lsb_release -a</code> et <code>uname -r</code>.</p></div></li>
+        <li><label><input type="checkbox"><span>Retrouver ses partitions avec <code>lsblk</code> et <code>df -h /</code>.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> lsblk
+<span class="o">NAME   MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS</span>
+<span class="o">sda      8:0    0   40G  0 disk</span>
+<span class="o">├─sda1   8:1    0    1G  0 part /boot/efi</span>
+<span class="o">└─sda2   8:2    0   39G  0 part /</span>
+<span class="p">$</span> df -h /
+<span class="o">Sys. de fichiers Taille Utilisé Dispo Uti% Monté sur</span>
+<span class="o">/dev/sda2           39G    9,8G   27G  27% /</span></pre><p>Tu retrouves l'ESP (<code>/boot/efi</code>) et la racine (<code>/</code>). Les tailles dépendent de ta VM.</p></div></li>
+        <li><label><input type="checkbox"><span>Installer les Additions invité : l'écran s'adapte à la fenêtre.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> VBoxClient --version
+<span class="o">7.x.xr16xxxx</span></pre><p>Puis agrandis la fenêtre de la VM : le bureau doit s'adapter seul. Sinon, reprends l'étape 3 de <a href="#premiers-pas">Premiers pas</a>.</p></div></li>
+        <li><label><input type="checkbox"><span>Activer le copier-coller entre l'hôte et Ubuntu, dans les deux sens.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><p>Menu VirtualBox : <kbd>Périphériques</kbd> › <kbd>Presse-papier partagé</kbd> › <strong>Bidirectionnel</strong> (Additions invité requises). Test : copie un texte sur l'hôte avec <kbd>Ctrl</kbd> + <kbd>C</kbd>, colle-le dans le terminal avec <kbd>Ctrl</kbd> + <kbd>Maj</kbd> + <kbd>V</kbd>.</p></div></li>
+        <li><label><input type="checkbox"><span>Prendre un instantané nommé « Installation propre ».</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><p><kbd>Machine</kbd> › <kbd>Prendre un instantané</kbd> (ou <kbd>Ctrl droit</kbd> + <kbd>T</kbd>). Il apparaît dans la fenêtre principale de VirtualBox, onglet <em>Instantanés</em> de la VM. Pour revenir en arrière : VM éteinte, sélectionne l'instantané › <em>Restaurer</em>.</p></div></li>
+        <li><label><input type="checkbox"><span>Bonus : faire le tour des Paramètres d'Ubuntu (fond d'écran, thème sombre, dock).</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><p>Paramètres (menu en haut à droite) › <em>Apparence</em> pour le thème sombre et la couleur d'accent, <em>Fond d'écran</em>, et <em>Ubuntu Desktop</em> pour la position et la taille du dock.</p></div></li>
+      </ul>
+    </div>
+
+    <!-- ================================================== -->
+    <h2 id="questions" data-short="Questions fréquentes">💬 Questions fréquentes</h2>
+    <p>Les questions qui reviennent le plus souvent sur ce module, avec leurs réponses.</p>
+    <div class="qa" id="qa-list">
+      <details>
+        <summary>« Command 'ifconfig' not found » : la commande n'existe plus ?</summary>
+        <p><code>ifconfig</code> est une commande historique, issue du paquet <code>net-tools</code>, qui n'est plus maintenu depuis des années.
+          Ubuntu ne l'installe plus par défaut. Sa remplaçante moderne est la commande <code>ip</code>, toujours présente :</p>
+        <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">ifconfig</span>
+<span class="o"><span class="err">Command 'ifconfig' not found, but can be installed with:</span></span>
+<span class="o">sudo apt install net-tools</span>
+
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">ip</span> <span class="s">a</span>              <span class="c"># toutes les interfaces et leurs adresses (= ifconfig)</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">ip</span> <span class="f">-br</span> <span class="s">a</span>          <span class="c"># la même chose, en version courte et lisible</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">ip</span> <span class="s">route</span>          <span class="c"># la table de routage (= route -n)</span></pre></div>
+        <p>Dans une VM en mode NAT, l'interface s'appelle souvent <code>enp0s3</code> et a une adresse en <code>10.0.2.15</code>.
+          Tu peux installer <code>net-tools</code> si tu croises <code>ifconfig</code> dans un vieux tutoriel, mais prends l'habitude d'<code>ip</code> :
+          c'est elle qu'on utilise aujourd'hui, et on l'étudiera en détail au module 12 (Réseau).</p>
+        <p>Le message lui-même est une fonction pratique d'Ubuntu, <em>command-not-found</em> : quand une commande est inconnue, il cherche quel paquet la fournit.</p>
+      </details>
+      <details>
+        <summary><code>lsmod | grep vbox</code> affiche <code>vboxguest</code> : les Additions invité sont-elles installées ?</summary>
+        <p>Pas forcément. <code>vboxguest</code> fait partie du noyau Linux et se charge automatiquement dans toute VM VirtualBox,
+          avec ou sans les Additions invité. Le chiffre <code>0</code> en fin de ligne indique simplement qu'aucun autre module ne l'utilise.</p>
+        <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">lsmod</span> | <span class="k">grep</span> <span class="s">vbox</span>
+<span class="o">vboxguest              57344  0</span>      <span class="c"># chargé par le noyau, ne prouve rien</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">VBoxClient</span> <span class="f">--version</span>         <span class="c"># le vrai test</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">ls</span> <span class="s">/opt</span> | <span class="k">grep</span> <span class="s">VBox</span>          <span class="c"># dossier VBoxGuestAdditions-7.x.x si installées</span></pre></div>
+        <p>Avec les Additions complètes, on voit en général aussi le module <code>vboxsf</code> (dossiers partagés) et le service
+          <code>vboxadd-service</code> en fonctionnement. La méthode d'installation est dans la section <a href="#premiers-pas">Premiers pas</a>.</p>
+      </details>
+      <details>
+        <summary>« E: Unable to locate package » : apt ne trouve pas le paquet</summary>
+        <p>Dans 9 cas sur 10, c'est une <strong>faute de frappe</strong> dans le nom du paquet. apt ne devine rien : le nom doit être exact.</p>
+        <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> apt install <span class="s">bzip linux-headears-</span><span class="v">$(uname -r)</span>
+<span class="o"><span class="err">E: Unable to locate package bzip</span></span>
+<span class="o"><span class="err">E: Unable to locate package linux-headears-7.0.0-38-generic</span></span>
+<span class="c"># bzip → bzip2 ; headears → headers</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> apt install <span class="s">bzip2 linux-headers-</span><span class="v">$(uname -r)</span>    <span class="c"># correct</span></pre></div>
+        <p>Les bons réflexes :</p>
+        <ul>
+          <li>Tape le début du nom puis <kbd>Tab</kbd> : le terminal complète le nom et évite les fautes.</li>
+          <li>Cherche le nom exact : <code>apt search mot-clé</code>, ou vérifie qu'un paquet existe avec <code>apt-cache policy nom-du-paquet</code>.</li>
+          <li>Si le nom est bon mais introuvable, la liste des paquets est peut-être périmée : lance <code>sudo apt update</code> puis réessaie.</li>
+        </ul>
+        <p>Au passage, <code>$(uname -r)</code> est remplacé par la version de ton noyau avant l'exécution : c'est ainsi qu'on installe
+          les en-têtes qui correspondent <em>exactement</em> au noyau en cours. On reverra ce mécanisme (la substitution de commande) au module 05.</p>
+      </details>
+      <details>
+        <summary>Je ne trouve pas « Insérer l'image CD des Additions invité », ou le CD n'apparaît pas</summary>
+        <p>Le CD est <strong>virtuel</strong> : c'est un fichier ISO livré avec VirtualBox, aucun disque physique n'est nécessaire. Selon le problème :</p>
+        <ul>
+          <li><strong>Pas de menu « Périphériques »</strong> : la barre de menus est masquée (plein écran ou mode échelonné). Appuie sur
+            <kbd>Ctrl droit</kbd> + <kbd>Origine</kbd>, ou quitte le plein écran avec <kbd>Ctrl droit</kbd> + <kbd>F</kbd>.</li>
+          <li><strong>Commande grisée ou erreur</strong> : la VM n'a pas de lecteur optique. Éteins-la, puis dans VirtualBox :
+            <kbd>Configuration</kbd> › <kbd>Stockage</kbd> › sélectionne le contrôleur › <em>Ajouter un lecteur optique</em> (laisse-le vide). Redémarre et réessaie.</li>
+          <li><strong>Le disque n'apparaît pas dans Ubuntu</strong> : monte-le à la main.</li>
+        </ul>
+        <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> mkdir <span class="f">-p</span> <span class="s">/mnt/cdrom</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> mount <span class="s">/dev/cdrom /mnt/cdrom</span>     <span class="c"># « monter » le CD dans un dossier</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">cd</span> <span class="s">/mnt/cdrom</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> ./VBoxLinuxAdditions.run</pre></div>
+        <p>Tu viens d'utiliser <code>mount</code> : c'est exactement la notion de <a href="#disque">point de montage</a> vue plus haut.</p>
+      </details>
+      <details>
+        <summary>Mon noyau n'est pas le même que dans le cours, c'est grave ?</summary>
+        <p>Non. La version du noyau dépend de l'image d'installation (24.04.1, 24.04.4…) et des mises à jour. Toutes les commandes de ce cours
+          fonctionnent de la même façon. Pour connaître la tienne : <code>uname -r</code>. Voir aussi l'encadré
+          « Pourquoi un noyau 7.0 sur Ubuntu 24.04 ? » dans la section <a href="#premiers-pas">Premiers pas</a>.</p>
+      </details>
+    </div>
+
+    <button class="done-btn" data-module="00" type="button">🏁 Marquer ce module comme terminé</button>
+
+    <nav class="page-nav">
+      <a href="../index.html"><small>← Retour</small>Programme complet</a>
+      <a class="next" href="01-bureau-terminal.html"><small>Suivant →</small>Module 01 — Le bureau &amp; le terminal</a>
+    </nav>
+
+    <p style="margin-top:3rem; font-size:.75rem; color:var(--muted)">
+      <strong>Crédits images</strong> — Tux : Larry Ewing (lewing@isc.tamu.edu) avec The GIMP.
+      <a href="https://commons.wikimedia.org/wiki/File:Ken_Thompson_and_Dennis_Ritchie--1973.jpg" target="_blank" rel="noopener">Ken Thompson et Dennis Ritchie</a> : domaine public.
+      <a href="https://commons.wikimedia.org/wiki/File:Richard_Stallman_at_LibrePlanet_2019.jpg" target="_blank" rel="noopener">Richard Stallman</a> : Ruben Rodriguez, CC BY 4.0.
+      <a href="https://commons.wikimedia.org/wiki/File:LinuxCon_Europe_Linus_Torvalds_03_(cropped).jpg" target="_blank" rel="noopener">Linus Torvalds</a> : Krd (photo), Von Sprat (recadrage), CC BY-SA 4.0.
+    </p>
+  </article>
+</div>
+
+<footer class="site-footer">
+  <div>Carnet Linux · Module 00 · 🐧</div>
+</footer>
+
+<script src="../assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Processus Linux : ps, top, kill, jobs et tmux | Cours Linux</title>
+  <meta name="description" content="Module 07 du cours Linux : comprendre les processus et leur PID, surveiller avec ps, top et htop, arrêter avec kill et les signaux, gérer les tâches avec Ctrl+Z, fg, bg, nohup, tmux et nice.">
+  <meta name="theme-color" content="#e95420">
+  <link rel="apple-touch-icon" href="../assets/img/icone-180.png">
+  <link rel="icon" href="../assets/img/tux.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <script>try{const t=JSON.parse(localStorage.getItem("theme"));if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<div class="progress-bar"></div>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../index.html"><img src="../assets/img/tux.svg" alt=""><span><span class="dollar">$</span> carnet-linux</span></a>
+    <nav class="nav">
+      <a href="../index.html">Programme</a>
+      <a href="07-processus.html" class="active hide-sm">Module 07</a>
+      <button class="theme-toggle" type="button" aria-label="Changer de thème">☀️</button>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <span class="eyebrow">PHASE 2 · MODULE 07</span>
+      <h1>Processus &amp; <span class="grad">tâches</span></h1>
+      <p class="lead">Tout ce qui tourne sur une machine Linux est un processus. Savoir les observer, les arrêter proprement, les mettre en pause
+        ou les faire survivre à la fermeture du terminal, c'est reprendre le contrôle de son système.</p>
+      <div class="hero-meta">
+        <span class="chip">⏱️ Lecture <b>~45 min</b></span>
+        <span class="chip">🧪 Pratique <b>~1 h</b></span>
+        <span class="chip">🎚️ Niveau <b>intermédiaire</b></span>
+      </div>
+    </div>
+    <div class="hero-art"><img class="tux" src="../assets/img/tux.svg" alt="Tux"></div>
+  </div>
+</section>
+
+<div class="layout">
+  <aside class="toc">
+    <div class="toc-title">Sommaire</div>
+    <ol></ol>
+  </aside>
+
+  <article class="content">
+
+    <!-- ================================================== -->
+    <h2 id="objectifs" data-short="Objectifs">🎯 Ce que tu sauras à la fin</h2>
+    <div class="cards four">
+      <div class="card" style="--c:var(--accent)"><div class="icon">🧬</div><h4>Processus</h4><p>PID, parent, états : la carte d'identité de tout programme.</p></div>
+      <div class="card" style="--c:var(--cyan)"><div class="icon">📊</div><h4>Surveiller</h4><p><code>ps</code>, <code>top</code>, <code>htop</code> et la charge du système.</p></div>
+      <div class="card" style="--c:var(--red)"><div class="icon">🛑</div><h4>Signaux</h4><p>Arrêter proprement ou de force avec <code>kill</code>.</p></div>
+      <div class="card" style="--c:var(--green)"><div class="icon">🎛️</div><h4>Tâches</h4><p>Arrière-plan, pause, <code>nohup</code>, <code>tmux</code> et priorités.</p></div>
+    </div>
+
+    <!-- ================================================== -->
+    <h2 id="processus" data-short="Qu'est-ce qu'un processus ?">Qu'est-ce qu'un processus ?</h2>
+    <figure class="video-card">
+      <div class="video-head"><span class="video-badge">▶ Vidéo · 1 min 30</span><strong>Les processus : PID, ps et top</strong><span>la carte d'identité de tout ce qui tourne</span></div>
+      <video controls preload="none" playsinline poster="../assets/video/processus.jpg"><source src="../assets/video/processus.mp4" type="video/mp4">Ton navigateur ne lit pas la vidéo : <a href="../assets/video/processus.mp4">télécharge-la ici</a>.</video>
+      <figcaption>Animation réalisée pour ce cours. Voix off et musique générées par IA (Google Gemini et Lyria).</figcaption>
+    </figure>
+
+    <p>Un <strong>programme</strong> est un fichier sur le disque (<code>/usr/bin/ls</code>). Un <strong>processus</strong>, c'est ce programme <em>en cours d'exécution</em>,
+      avec sa mémoire, ses fichiers ouverts et son propriétaire. Le même programme peut tourner en plusieurs processus à la fois : chaque onglet de
+      navigateur, chaque terminal ouvert.</p>
+    <div class="table-wrap"><table>
+      <tr><th>Attribut</th><th>Signification</th></tr>
+      <tr><td><strong>PID</strong></td><td>Numéro unique du processus (<em>Process ID</em>)</td></tr>
+      <tr><td><strong>PPID</strong></td><td>PID de son parent : le processus qui l'a lancé</td></tr>
+      <tr><td><strong>UID</strong></td><td>L'utilisateur propriétaire : le processus a ses droits, ni plus ni moins</td></tr>
+      <tr><td><strong>État</strong></td><td>En cours, endormi, arrêté, zombie… (voir plus bas)</td></tr>
+      <tr><td><strong>Priorité</strong></td><td>Sa part de temps processeur (valeur <em>nice</em>)</td></tr>
+    </table></div>
+
+    <h3>Un arbre généalogique</h3>
+    <p>Au démarrage, le noyau lance un seul processus, le n°1 : <strong>systemd</strong>. Tous les autres en descendent. La commande <code>pstree</code> le montre :</p>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">pstree</span> <span class="f">-p</span> | <span class="k">head</span> <span class="f">-6</span>
+<span class="o">systemd(1)─┬─ModemManager(845)─┬─{ModemManager}(860)</span>
+<span class="o">           ├─NetworkManager(812)─┬─{NetworkManager}(851)</span>
+<span class="o">           ├─cron(799)</span>
+<span class="o">           ├─gdm3(1021)───gdm-session-wor(1340)───gdm-wayland-ses(1405)───gnome-session-b(1411)</span>
+<span class="o">           ...</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">echo</span> <span class="v">$$</span>                 <span class="c"># le PID de ton shell actuel</span>
+<span class="o">4127</span></pre></div>
+
+    <!-- ================================================== -->
+    <h2 id="ps" data-short="ps">Lister les processus : <code>ps</code></h2>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">ps</span>                              <span class="c"># seulement ceux du terminal courant</span>
+<span class="o">    PID TTY          TIME CMD</span>
+<span class="o">   4127 pts/0    00:00:00 bash</span>
+<span class="o">   4310 pts/0    00:00:00 ps</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">ps</span> <span class="s">aux</span> | <span class="k">head</span> <span class="f">-4</span>                  <span class="c"># tous les processus du système</span>
+<span class="o">USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND</span>
+<span class="o">root           1  0.0  0.3  23280 13940 ?        Ss   09:12   0:02 /sbin/init splash</span>
+<span class="o">root           2  0.0  0.0      0     0 ?        S    09:12   0:00 [kthreadd]</span>
+<span class="o">user        2215  4.1  9.8 3912640 402116 ?      Sl   09:14   1:55 /snap/firefox/.../firefox</span></pre></div>
+    <div class="table-wrap"><table>
+      <tr><th>Colonne</th><th>Signification</th></tr>
+      <tr><td><code>%CPU</code> / <code>%MEM</code></td><td>Part du processeur et de la mémoire utilisée</td></tr>
+      <tr><td><code>RSS</code></td><td>Mémoire réellement occupée en RAM (en Kio)</td></tr>
+      <tr><td><code>TTY</code></td><td>Le terminal rattaché (<code>?</code> = aucun : un service)</td></tr>
+      <tr><td><code>STAT</code></td><td>État : <code>R</code> en cours, <code>S</code> endormi (attend), <code>D</code> attente disque, <code>T</code> arrêté, <code>Z</code> zombie</td></tr>
+      <tr><td><code>COMMAND</code></td><td>La commande complète ; entre crochets, un fil du noyau</td></tr>
+    </table></div>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">ps</span> <span class="f">-eo</span> <span class="s">pid,ppid,user,%mem,cmd</span> <span class="f">--sort=-%mem</span> | <span class="k">head</span> <span class="f">-5</span>   <span class="c"># les 4 plus gourmands en mémoire</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">pgrep</span> <span class="f">-a</span> <span class="s">firefox</span>                                  <span class="c"># PID d'un programme par son nom</span>
+<span class="o">2215 /snap/firefox/.../firefox</span></pre></div>
+    <p>Sur Ubuntu, <code>/sbin/init</code> (PID 1) est un lien vers <code>systemd</code>. Le dossier <code>/proc/PID/</code> contient tout ce que le noyau sait d'un processus :
+      essaie <code>cat /proc/$$/status</code>.</p>
+
+    <!-- ================================================== -->
+    <h2 id="top" data-short="top &amp; htop">Surveiller en direct : <code>top</code> et <code>htop</code></h2>
+    <div class="terminal" data-title="top"><pre><span class="o">top - 10:42:11 up  1:30,  1 user,  load average: <span class="hl">0,42, 0,35, 0,30</span></span>
+<span class="o">Tâches: 231 total,   1 en cours, 230 en veille,   0 arrêté,   0 zombie</span>
+<span class="o">%Cpu(s):  3,1 ut,  1,0 sy,  0,0 ni, 95,7 id,  0,1 wa</span>
+<span class="o">MiB Mém :   3915,2 total,    812,4 libr,   1730,6 util,   1372,2 tamp/cache</span>
+
+<span class="o">    PID UTIL.     PR  NI    VIRT    RES    SHR S  %CPU  %MEM    TEMPS+ COM.</span>
+<span class="o">   2215 user      20   0 3912640 402116 151872 S   4,3   9,8   1:55.41 firefox</span>
+<span class="o">   1405 user      20   0 4733480 289660 129408 S   1,7   7,1   0:48.12 gnome-shell</span></pre></div>
+    <div class="table-wrap"><table>
+      <tr><th>Touche dans <code>top</code></th><th>Action</th></tr>
+      <tr><td><kbd>P</kbd> / <kbd>M</kbd></td><td>Trier par processeur / par mémoire</td></tr>
+      <tr><td><kbd>k</kbd></td><td>Envoyer un signal à un processus (demande son PID)</td></tr>
+      <tr><td><kbd>1</kbd></td><td>Détailler chaque cœur du processeur</td></tr>
+      <tr><td><kbd>u</kbd></td><td>Filtrer par utilisateur</td></tr>
+      <tr><td><kbd>q</kbd></td><td>Quitter</td></tr>
+    </table></div>
+
+    <div class="callout info"><span class="callout-title">Lire la charge moyenne (<em>load average</em>)</span>
+      <p>Les trois nombres sont le nombre moyen de processus qui veulent le processeur, sur <strong>1, 5 et 15 minutes</strong>. Compare-les au nombre de cœurs
+        (<code>nproc</code>) : sur 2 cœurs, une charge de 2 signifie « occupé à 100 % » ; au-delà, des processus font la queue. La tendance compte aussi :
+        si le premier nombre est bien plus haut que le dernier, la charge est en train de monter.</p></div>
+
+    <p><strong>htop</strong> (<code>sudo apt install htop</code>) fait la même chose en plus lisible : barres colorées par cœur, défilement, recherche avec <kbd>F3</kbd>,
+      arbre des processus avec <kbd>F5</kbd>, envoi de signaux avec <kbd>F9</kbd>, et même la souris.</p>
+
+    <!-- ================================================== -->
+    <h2 id="signaux" data-short="Signaux &amp; kill">Arrêter un processus : les signaux</h2>
+    <figure class="video-card">
+      <div class="video-head"><span class="video-badge">▶ Vidéo · 1 min 30</span><strong>Signaux et tâches</strong><span>kill, Ctrl+Z, fg, bg</span></div>
+      <video controls preload="none" playsinline poster="../assets/video/signaux.jpg"><source src="../assets/video/signaux.mp4" type="video/mp4">Ton navigateur ne lit pas la vidéo : <a href="../assets/video/signaux.mp4">télécharge-la ici</a>.</video>
+      <figcaption>Animation réalisée pour ce cours. Voix off et musique générées par IA (Google Gemini et Lyria).</figcaption>
+    </figure>
+
+    <p>Un <strong>signal</strong> est un court message envoyé à un processus. Le processus peut le traiter à sa façon… sauf deux, que le noyau applique de force.</p>
+    <div class="table-wrap"><table>
+      <tr><th>Signal</th><th>N°</th><th>Signification</th><th>Déclenché par</th></tr>
+      <tr><td><code>SIGHUP</code></td><td>1</td><td>Le terminal a été fermé ; beaucoup de services y relisent leur configuration</td><td>fermeture du terminal</td></tr>
+      <tr><td><code>SIGINT</code></td><td>2</td><td>Interruption demandée par l'utilisateur</td><td><kbd>Ctrl</kbd> + <kbd>C</kbd></td></tr>
+      <tr><td><code>SIGKILL</code></td><td>9</td><td><strong>Arrêt immédiat, impossible à ignorer</strong></td><td><code>kill -9</code></td></tr>
+      <tr><td><code>SIGTERM</code></td><td>15</td><td>Demande polie de se terminer (par défaut)</td><td><code>kill</code></td></tr>
+      <tr><td><code>SIGCONT</code></td><td>18</td><td>Reprendre après une pause</td><td><code>fg</code>, <code>bg</code></td></tr>
+      <tr><td><code>SIGSTOP</code></td><td>19</td><td>Pause forcée, impossible à ignorer</td><td><code>kill -STOP</code></td></tr>
+      <tr><td><code>SIGTSTP</code></td><td>20</td><td>Pause demandée depuis le terminal</td><td><kbd>Ctrl</kbd> + <kbd>Z</kbd></td></tr>
+    </table></div>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sleep</span> <span class="s">600</span> &amp;                   <span class="c"># un processus de test, en arrière-plan</span>
+<span class="o">[1] 4521</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">kill</span> <span class="s">4521</span>                    <span class="c"># SIGTERM : « termine, s'il te plaît »</span>
+<span class="o">[1]+  Complété              sleep 600</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">kill</span> <span class="f">-9</span> <span class="s">4600</span>                 <span class="c"># SIGKILL : en dernier recours seulement</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">pkill</span> <span class="s">firefox</span>                 <span class="c"># par nom (motif)</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">killall</span> <span class="s">sleep</span>                 <span class="c"># par nom exact, tous les processus</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">kill</span> <span class="f">-l</span>                       <span class="c"># la liste de tous les signaux</span></pre></div>
+    <div class="callout key"><span class="callout-title">Toujours SIGTERM d'abord</span>
+      <p><code>kill</code> (SIGTERM) laisse au programme le temps d'enregistrer, de fermer ses fichiers, de supprimer ses fichiers temporaires.
+        <code>kill -9</code> le coupe net : risque de fichiers corrompus ou de verrous qui traînent. Attends quelques secondes après un <code>kill</code> avant de passer au <code>-9</code>.</p></div>
+    <div class="callout warn"><span class="callout-title">On ne tue que ses propres processus</span>
+      <p>Un utilisateur ne peut envoyer de signaux qu'à ses processus. Ceux de root ou d'un service demandent <code>sudo</code>. Et pour un service système,
+        on préfère <code>sudo systemctl restart nom</code> (module 10) à un <code>kill</code>.</p></div>
+
+    <!-- ================================================== -->
+    <h2 id="jobs" data-short="Premier et arrière-plan">Premier plan, arrière-plan et pause</h2>
+    <div class="table-wrap"><table>
+      <tr><th>Commande</th><th>Effet</th></tr>
+      <tr><td><code>commande &amp;</code></td><td>Lance en arrière-plan : le terminal reste disponible</td></tr>
+      <tr><td><kbd>Ctrl</kbd> + <kbd>Z</kbd></td><td>Met en pause la commande au premier plan</td></tr>
+      <tr><td><code>jobs</code></td><td>Liste les tâches du terminal (numérotées <code>%1</code>, <code>%2</code>…)</td></tr>
+      <tr><td><code>fg %1</code></td><td>Ramène la tâche 1 au premier plan</td></tr>
+      <tr><td><code>bg %1</code></td><td>Relance la tâche 1 en pause, en arrière-plan</td></tr>
+      <tr><td><code>kill %1</code></td><td>Envoie SIGTERM à la tâche 1</td></tr>
+    </table></div>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">nano</span> notes.txt
+<span class="c"># Ctrl+Z pendant l'édition</span>
+<span class="o">[1]+  Stoppé                 nano notes.txt</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sleep</span> <span class="s">300</span> &amp;
+<span class="o">[2] 4702</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">jobs</span>
+<span class="o">[1]+  Stoppé                 nano notes.txt</span>
+<span class="o">[2]-  En cours d'exécution   sleep 300 &amp;</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">fg</span> <span class="s">%1</span>                        <span class="c"># retour dans nano, là où on l'avait laissé</span></pre></div>
+
+    <h3>Survivre à la fermeture du terminal : <code>nohup</code> et <code>tmux</code></h3>
+    <p>Quand un terminal se ferme (ou qu'une connexion SSH tombe), ses processus reçoivent <code>SIGHUP</code> et s'arrêtent. Deux parades :</p>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">nohup</span> ./sauvegarde.sh &amp;          <span class="c"># ignore SIGHUP ; la sortie va dans nohup.out</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> apt install <span class="s">tmux</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">tmux</span> new <span class="f">-s</span> <span class="s">travail</span>             <span class="c"># ouvre une session tmux nommée « travail »</span>
+<span class="c"># … lancer une longue tâche, puis Ctrl+B suivi de D pour se détacher</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">tmux</span> ls
+<span class="o">travail: 1 windows (created Sat Oct 24 10:58:12 2026)</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">tmux</span> attach <span class="f">-t</span> <span class="s">travail</span>          <span class="c"># on retrouve tout, même depuis une autre connexion</span></pre></div>
+    <p><strong>tmux</strong> fait bien plus : diviser le terminal en panneaux (<kbd>Ctrl</kbd> + <kbd>B</kbd> puis <kbd>%</kbd> ou <kbd>"</kbd>), plusieurs fenêtres…
+      C'est l'outil indispensable dès qu'on travaille sur un serveur distant (module 13).</p>
+
+    <!-- ================================================== -->
+    <h2 id="priorites" data-short="Priorités : nice">Les priorités : <code>nice</code> et <code>renice</code></h2>
+    <p>La valeur <strong>nice</strong> va de <code>-20</code> (prioritaire) à <code>19</code> (très « gentil », laisse passer les autres). Par défaut : <code>0</code>.
+      Un utilisateur peut rendre ses processus plus gentils ; seul root peut les rendre plus prioritaires.</p>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">nice</span> <span class="f">-n 15</span> tar czf sauvegarde.tar.gz ~/Documents   <span class="c"># compression en tâche de fond, discrète</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">renice</span> <span class="f">-n 10</span> <span class="f">-p</span> <span class="s">2215</span>                    <span class="c"># changer la priorité d'un processus existant</span>
+<span class="o">2215 (process ID) old priority 0, new priority 10</span></pre></div>
+
+    <!-- ================================================== -->
+    <h2 id="glossaire" data-short="Glossaire">Glossaire du module</h2>
+    <dl class="glossary">
+      <dt>Processus</dt><dd>Programme en cours d'exécution.</dd>
+      <dt>PID / PPID</dt><dd>Numéro du processus / de son parent.</dd>
+      <dt>systemd</dt><dd>Le processus n°1, ancêtre de tous les autres.</dd>
+      <dt>ps / top / htop</dt><dd>Lister / surveiller en direct les processus.</dd>
+      <dt>Charge moyenne</dt><dd>Nombre moyen de processus en attente de processeur, sur 1, 5 et 15 min.</dd>
+      <dt>Signal</dt><dd>Message envoyé à un processus (SIGTERM, SIGKILL…).</dd>
+      <dt>kill / pkill / killall</dt><dd>Envoyer un signal par PID / par motif / par nom.</dd>
+      <dt>Premier plan / arrière-plan</dt><dd>Tâche qui occupe le terminal / qui tourne sans le bloquer (<code>&amp;</code>).</dd>
+      <dt>jobs / fg / bg</dt><dd>Lister / ramener / relancer les tâches du terminal.</dd>
+      <dt>nohup / tmux</dt><dd>Faire survivre une tâche à la fermeture du terminal.</dd>
+      <dt>nice</dt><dd>Priorité d'un processus, de -20 à 19.</dd>
+      <dt>Zombie</dt><dd>Processus terminé dont le parent n'a pas encore lu le code de retour.</dd>
+    </dl>
+
+    <!-- ================================================== -->
+    <h2 id="quiz" data-short="Quiz">🧠 Quiz : as-tu tout retenu ?</h2>
+    <div class="quiz">
+      <div class="q" data-answer="0">
+        <div class="q-text">1. Quel est le PID de systemd ?</div>
+        <div class="q-opts"><button>1</button><button>0</button><button>1000</button></div>
+        <div class="q-explain">systemd est le premier processus lancé par le noyau, l'ancêtre de tous les autres.</div>
+      </div>
+      <div class="q" data-answer="2">
+        <div class="q-text">2. Quelle commande affiche tous les processus du système ?</div>
+        <div class="q-opts"><button><code>ps</code></button><button><code>jobs</code></button><button><code>ps aux</code></button></div>
+        <div class="q-explain"><code>ps</code> seul ne montre que le terminal courant ; <code>jobs</code>, les tâches du terminal.</div>
+      </div>
+      <div class="q" data-answer="1">
+        <div class="q-text">3. Quel signal envoie <code>kill 1234</code> par défaut ?</div>
+        <div class="q-opts"><button>SIGKILL (9)</button><button>SIGTERM (15)</button><button>SIGINT (2)</button></div>
+        <div class="q-explain">Une demande polie. SIGKILL n'est envoyé qu'avec <code>-9</code>.</div>
+      </div>
+      <div class="q" data-answer="2">
+        <div class="q-text">4. Pourquoi éviter <code>kill -9</code> en premier réflexe ?</div>
+        <div class="q-opts"><button>Il ne marche pas toujours</button><button>Il faut être root</button><button>Le programme n'a pas le temps de s'arrêter proprement</button></div>
+        <div class="q-explain">SIGKILL coupe net : fichiers mal enregistrés, verrous, fichiers temporaires oubliés.</div>
+      </div>
+      <div class="q" data-answer="0">
+        <div class="q-text">5. Tu as suspendu un programme avec <kbd>Ctrl</kbd> + <kbd>Z</kbd>. Comment le reprendre au premier plan ?</div>
+        <div class="q-opts"><button><code>fg</code></button><button><code>bg</code></button><button><code>kill -CONT</code> puis Entrée</button></div>
+        <div class="q-explain"><code>bg</code> le relancerait en arrière-plan.</div>
+      </div>
+      <div class="q" data-answer="1">
+        <div class="q-text">6. Sur une machine à 2 cœurs, la charge moyenne est de <code>4,0</code>. Cela signifie…</div>
+        <div class="q-opts"><button>Elle utilise 4 % du processeur</button><button>Elle est surchargée : des processus attendent</button><button>Tout va bien</button></div>
+        <div class="q-explain">Au-delà du nombre de cœurs, les processus font la queue.</div>
+      </div>
+      <div class="q" data-answer="2">
+        <div class="q-text">7. Comment lancer une longue tâche qui doit survivre à la déconnexion ?</div>
+        <div class="q-opts"><button><code>commande &amp;</code></button><button><code>nice commande</code></button><button><code>nohup commande &amp;</code> ou dans <code>tmux</code></button></div>
+        <div class="q-explain">Le simple <code>&amp;</code> ne protège pas du SIGHUP envoyé à la fermeture du terminal.</div>
+      </div>
+      <div class="q" data-answer="0">
+        <div class="q-text">8. Quelle valeur nice rend un processus le moins prioritaire ?</div>
+        <div class="q-opts"><button>19</button><button>-20</button><button>0</button></div>
+        <div class="q-explain">Plus la valeur est haute, plus le processus est « gentil » avec les autres.</div>
+      </div>
+      <div class="quiz-score">Réponds aux questions pour voir ton score.</div>
+    </div>
+
+    <!-- ================================================== -->
+    <h2 id="mission" data-short="Mission pratique">🚀 Mission pratique</h2>
+    <div class="mission">
+      <h4>À faire dans la machine virtuelle</h4>
+      <p class="mission-astuce">Coche chaque étape une fois faite : sa correction s'affiche juste en dessous.</p>
+      <ul class="checklist" data-key="m07">
+        <li><label><input type="checkbox"><span>Afficher le PID de ton shell, puis le retrouver dans <code>ps</code> et remonter jusqu'à systemd avec <code>pstree</code>.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> echo $$
+<span class="o">4127</span>
+<span class="p">$</span> ps -o pid,ppid,cmd -p $$
+<span class="o">    PID    PPID CMD</span>
+<span class="o">   4127    4119 bash</span>
+<span class="p">$</span> pstree -s -p $$
+<span class="o">systemd(1)───systemd(1290)───gnome-terminal-(4119)───bash(4127)───pstree(4330)</span></pre><p><code>-s</code> affiche uniquement la lignée de ton processus. Les numéros varient d'une machine à l'autre.</p></div></li>
+        <li><label><input type="checkbox"><span>Trouver les 3 processus qui consomment le plus de mémoire avec <code>ps</code>.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> ps aux --sort=-%mem | head -4
+<span class="c"># ou en n'affichant que l'essentiel :</span>
+<span class="p">$</span> ps -eo pid,%mem,cmd --sort=-%mem | head -4</pre><p>Sur un bureau Ubuntu, on trouve en général Firefox et <code>gnome-shell</code> en tête.</p></div></li>
+        <li><label><input type="checkbox"><span>Ouvrir <code>top</code>, trier par mémoire puis par processeur, noter la charge moyenne et la comparer à <code>nproc</code>.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> top
+<span class="c"># Maj+M : tri par mémoire · Maj+P : tri par processeur · q : quitter</span>
+<span class="p">$</span> nproc
+<span class="o">2</span>
+<span class="p">$</span> uptime
+<span class="o"> 10:45:02 up  1:33,  1 user,  load average: 0,38, 0,33, 0,29</span></pre><p>Ici la charge (0,38) est bien inférieure au nombre de cœurs (2) : la machine est au repos.</p></div></li>
+        <li><label><input type="checkbox"><span>Installer <code>htop</code>, afficher l'arbre des processus (<kbd>F5</kbd>) et chercher <code>bash</code> (<kbd>F3</kbd>).</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> sudo apt install htop
+<span class="p">$</span> htop
+<span class="c"># F5 : vue en arbre · F3 : recherche · F10 ou q : quitter</span></pre></div></li>
+        <li><label><input type="checkbox"><span>Lancer <code>sleep 1000 &amp;</code>, le retrouver avec <code>pgrep</code>, puis l'arrêter proprement avec <code>kill</code>.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> sleep 1000 &amp;
+<span class="o">[1] 4521</span>
+<span class="p">$</span> pgrep -a sleep
+<span class="o">4521 sleep 1000</span>
+<span class="p">$</span> kill 4521
+<span class="o">[1]+  Complété              sleep 1000</span></pre><p>Le message « Complété » s'affiche à l'invite suivante. Pour <code>sleep</code>, SIGTERM suffit toujours.</p></div></li>
+        <li><label><input type="checkbox"><span>Voir la différence entre SIGTERM et SIGKILL sur deux <code>sleep</code>, en regardant le message affiché par Bash.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> sleep 500 &amp; sleep 600 &amp;
+<span class="o">[1] 4600</span>
+<span class="o">[2] 4601</span>
+<span class="p">$</span> kill %1 ; kill -9 %2
+<span class="o">[1]-  Complété              sleep 500</span>
+<span class="o">[2]+  Processus arrêté       sleep 600</span></pre><p>Bash signale le SIGKILL par « Processus arrêté » (<em>Killed</em>). On peut viser une tâche par son numéro <code>%1</code> au lieu de son PID.</p></div></li>
+        <li><label><input type="checkbox"><span>Ouvrir un fichier dans <code>nano</code>, le suspendre avec <kbd>Ctrl</kbd> + <kbd>Z</kbd>, lister les tâches, puis y revenir.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> nano ~/labo/notes.txt
+<span class="c"># Ctrl+Z</span>
+<span class="o">[1]+  Stoppé                 nano /home/user/labo/notes.txt</span>
+<span class="p">$</span> jobs
+<span class="o">[1]+  Stoppé                 nano /home/user/labo/notes.txt</span>
+<span class="p">$</span> fg</pre><p>nano réapparaît exactement dans l'état où tu l'avais laissé.</p></div></li>
+        <li><label><input type="checkbox"><span>Lancer <code>sleep 300</code> au premier plan, le suspendre, puis le relancer en arrière-plan avec <code>bg</code>.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> sleep 300
+<span class="c"># Ctrl+Z</span>
+<span class="o">[1]+  Stoppé                 sleep 300</span>
+<span class="p">$</span> bg
+<span class="o">[1]+ sleep 300 &amp;</span>
+<span class="p">$</span> jobs
+<span class="o">[1]+  En cours d'exécution   sleep 300 &amp;</span></pre></div></li>
+        <li><label><input type="checkbox"><span>Créer une session <code>tmux</code>, y lancer <code>top</code>, se détacher, fermer le terminal, en rouvrir un autre et se rattacher.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> sudo apt install tmux
+<span class="p">$</span> tmux new -s test
+<span class="p">$</span> top
+<span class="c"># Ctrl+B puis D pour se détacher, puis fermer le terminal</span>
+<span class="c"># dans un nouveau terminal :</span>
+<span class="p">$</span> tmux ls
+<span class="o">test: 1 windows (created ...)</span>
+<span class="p">$</span> tmux attach -t test</pre><p><code>top</code> tourne toujours : la session tmux a survécu à la fermeture du terminal. Pour la fermer : <code>q</code> puis <code>exit</code>.</p></div></li>
+        <li><label><input type="checkbox"><span>Bonus : lancer <code>sleep 900 &amp;</code> avec une valeur nice de 10, puis la passer à 15 avec <code>renice</code> et vérifier dans <code>ps</code>.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> nice -n 10 sleep 900 &amp;
+<span class="o">[1] 4810</span>
+<span class="p">$</span> renice -n 15 -p 4810
+<span class="o">4810 (process ID) old priority 10, new priority 15</span>
+<span class="p">$</span> ps -o pid,ni,cmd -p 4810
+<span class="o">    PID  NI CMD</span>
+<span class="o">   4810  15 sleep 900</span></pre><p>Essaie <code>renice -n 5 -p 4810</code> : refusé sans sudo, car un utilisateur ne peut pas rendre un processus plus prioritaire.</p></div></li>
+      </ul>
+    </div>
+
+    <!-- ================================================== -->
+    <h2 id="questions" data-short="Questions fréquentes">💬 Questions fréquentes</h2>
+    <p>Les questions qui reviennent le plus souvent sur ce module, avec leurs réponses.</p>
+    <div class="qa" id="qa-list">
+      <details>
+        <summary>Une application graphique ne répond plus, que faire ?</summary>
+        <p>Ouvre un terminal (<kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>T</kbd>), trouve son nom avec <code>pgrep -a nom</code> ou <code>top</code>, puis
+          <code>pkill nom</code>. Si elle résiste après quelques secondes : <code>pkill -9 nom</code>. GNOME propose aussi « Forcer à quitter » quand une fenêtre ne répond plus.
+          Si c'est tout le bureau qui est figé, passe en console avec <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>F3</kbd> pour agir depuis là.</p>
+      </details>
+      <details>
+        <summary>Qu'est-ce qu'un processus zombie ? Faut-il s'en inquiéter ?</summary>
+        <p>Un zombie (<code>Z</code> dans <code>ps</code>) est un processus terminé dont le parent n'a pas encore récupéré le code de retour. Il n'utilise ni processeur
+          ni mémoire, seulement une ligne dans la table des processus. Quelques zombies sont sans gravité ; on ne peut pas les « tuer », car ils sont déjà morts.
+          C'est le parent qu'il faut corriger ou redémarrer.</p>
+      </details>
+      <details>
+        <summary><code>kill -9</code> ne fonctionne pas sur un processus</summary>
+        <p>Soit il appartient à un autre utilisateur (il faut <code>sudo</code>), soit il est en état <code>D</code> : bloqué dans le noyau en attente d'un disque ou
+          d'un partage réseau. Il disparaîtra quand l'opération se débloquera, sinon seul un redémarrage le libérera.</p>
+      </details>
+    </div>
+
+    <button class="done-btn" data-module="07" type="button">🏁 Marquer ce module comme terminé</button>
+
+    <nav class="page-nav">
+      <a href="06-rechercher-regex.html"><small>← Précédent</small>Module 06 — Rechercher &amp; expressions régulières</a>
+      <a class="next" href="08-logiciels.html"><small>Suivant →</small>Module 08 — Gestion des logiciels</a>
+    </nav>
+  </article>
+</div>
+
+<footer class="site-footer">
+  <div>Carnet Linux · Module 07 · 🐧</div>
+</footer>
+
+<script src="../assets/js/main.js"></script>
+</body>
+</html>

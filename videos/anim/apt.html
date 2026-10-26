@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>apt et les dépôts — vidéo</title>
+<link rel="stylesheet" href="commun.css">
+<style>
+.cote { top: 260px; width: 760px; height: 420px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 30px; }
+.cote .ico { font-family: var(--emoji); font-size: 120px; }
+.cote .t { font-family: var(--display); font-weight: 800; font-size: 50px; margin-top: 10px; }
+.cote .s { font-family: var(--texte); font-size: 32px; color: var(--gris); margin-top: 10px; }
+#cw { left: 140px; } #cl { left: 1020px; border-color: rgba(63,185,80,.6); }
+
+#paquet { left: 760px; top: 250px; width: 400px; height: 300px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+#paquet .ico { font-family: var(--emoji); font-size: 150px; }
+#paquet .t { font-family: var(--mono); font-size: 44px; }
+.dep { font-family: var(--mono); font-size: 30px; padding: 10px 22px; }
+#dp1 { left: 330px; top: 300px; } #dp2 { left: 1290px; top: 300px; } #dp3 { left: 380px; top: 480px; } #dp4 { left: 1290px; top: 480px; }
+#rayons { position: absolute; left: 260px; top: 160px; width: 1400px; height: 420px; display: grid; grid-template-columns: repeat(14, 1fr); gap: 10px; }
+#rayons span { font-family: var(--emoji); font-size: 64px; text-align: center; }
+#sceau { left: 1500px; top: 560px; font-family: var(--display); font-weight: 800; font-size: 44px; color: var(--vert); padding: 18px 30px; }
+#compteur { top: 650px; font-family: var(--display); font-weight: 800; font-size: 110px; }
+#compteur-l { top: 800px; font-family: var(--display); font-weight: 700; font-size: 44px; color: var(--gris); }
+
+#t-apt { left: 160px; top: 120px; width: 1100px; }
+#t-apt .corps { font-size: 32px; min-height: 620px; }
+.lab-apt { left: 1310px; width: 470px; font-family: var(--display); font-weight: 800; font-size: 40px; line-height: 1.2; }
+.lab-apt small { display: block; font-family: var(--texte); font-weight: 400; font-size: 28px; color: var(--gris); margin-top: 6px; }
+#la1 { top: 150px; color: var(--cyan); } #la2 { top: 380px; color: var(--vert); } #la3 { top: 590px; color: var(--jaune); }
+
+.cmdc { width: 400px; height: 220px; display: flex; flex-direction: column; justify-content: center; padding: 0 34px; }
+.cmdc .c { font-family: var(--mono); font-size: 46px; color: var(--orange-2); }
+.cmdc .t { font-family: var(--display); font-weight: 700; font-size: 32px; color: var(--gris); }
+#cc1 { left: 120px; top: 330px; } #cc2 { left: 560px; top: 330px; } #cc3 { left: 1000px; top: 330px; } #cc4 { left: 1440px; top: 330px; }
+#cc-titre { top: 150px; font-size: 80px; }
+
+.couche { left: 560px; width: 800px; height: 200px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 26px; }
+.couche b { font-family: var(--mono); font-size: 72px; } .couche span { font-family: var(--display); font-weight: 700; font-size: 34px; opacity: .9; }
+#co-apt { top: 200px; background: linear-gradient(135deg, var(--orange), #b8361a); }
+#co-dpkg { top: 520px; background: #2b3242; border: 3px solid #4a5568; }
+#fleche-d { left: 930px; top: 410px; font-size: 90px; color: var(--jaune); font-family: var(--display); font-weight: 800; }
+
+#garantie { top: 200px; font-size: 100px; }
+.gar { top: 400px; font-size: 52px; font-family: var(--display); font-weight: 800; }
+#gl { top: 400px; } #gl2 { top: 520px; }
+#conseil { top: 700px; font-family: var(--mono); font-size: 52px; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="bg" class="layer"><div id="blob1" class="blob"></div><div id="blob2" class="blob"></div><div id="blob3" class="blob"></div></div>
+  <div id="grille" class="layer"></div>
+  <div id="cam-punch"><div id="cam-drift">
+
+    <div class="scene" id="s-intro">
+      <div class="abs verre cote" id="cw"><div class="ico">🌐⬇️</div><div class="t">Windows</div><div class="s">setup.exe téléchargé sur un site… ⚠️</div></div>
+      <div class="abs verre cote" id="cl"><div class="ico">📦</div><div class="t">Linux</div><div class="s">un gestionnaire de paquets ✅</div></div>
+    </div>
+
+    <div class="scene" id="s-paquet">
+      <div class="abs verre" id="paquet"><div class="ico">📦</div><div class="t">btop</div></div>
+      <div class="abs puce dep" id="dp1">libc6</div><div class="abs puce dep" id="dp2">libstdc++6</div>
+      <div class="abs puce dep" id="dp3">dépendance</div><div class="abs puce dep" id="dp4">dépendance</div>
+      <div id="rayons"></div>
+      <div class="abs verre" id="sceau">🔏 vérifiés et signés</div>
+      <div class="ligne grad" id="compteur">0</div>
+      <div class="ligne" id="compteur-l">paquets dans les dépôts d'Ubuntu</div>
+    </div>
+
+    <div class="scene" id="s-apt">
+      <div class="abs terminal" id="t-apt"><div class="barre-t"><i></i><i></i><i></i><span>user@ubuntu: ~</span></div>
+        <div class="corps">
+          <div class="l" id="a1"><span class="p">user@ubuntu:~$</span> <span class="tape">sudo apt update</span></div>
+          <div class="l o a1o">Atteint :1 http://archive.ubuntu.com/ubuntu noble InRelease</div>
+          <div class="l o a1o">Lecture des listes de paquets... Fait</div>
+          <div class="l" id="a2"><span class="p">user@ubuntu:~$</span> <span class="tape">sudo apt install btop</span></div>
+          <div class="l o a2o">Les NOUVEAUX paquets suivants seront installés :</div>
+          <div class="l o a2o">  btop</div>
+          <div class="l ok a2o">Paramétrage de btop (1.3.0-1) ... ✓</div>
+          <div class="l" id="a3"><span class="p">user@ubuntu:~$</span> <span class="tape">sudo apt upgrade</span></div>
+          <div class="l o a3o">42 mis à jour, 0 nouvellement installés</div></div></div>
+      <div class="abs lab-apt" id="la1">📋 update<small>met le catalogue à jour, n'installe rien</small></div>
+      <div class="abs lab-apt" id="la2">📦 install<small>le logiciel et ses dépendances, en une commande</small></div>
+      <div class="abs lab-apt" id="la3">🔄 upgrade<small>tout le système, d'un seul geste</small></div>
+    </div>
+
+    <div class="scene" id="s-cmds">
+      <div class="ligne display mots" id="cc-titre">Le reste de la boîte à outils</div>
+      <div class="abs verre cmdc" id="cc1"><div class="c">search</div><div class="t">🔍 chercher</div></div>
+      <div class="abs verre cmdc" id="cc2"><div class="c">show</div><div class="t">ℹ️ en savoir plus</div></div>
+      <div class="abs verre cmdc" id="cc3"><div class="c">remove</div><div class="t">🗑️ retirer</div></div>
+      <div class="abs verre cmdc" id="cc4"><div class="c">purge</div><div class="t">🧹 + la configuration</div></div>
+    </div>
+
+    <div class="scene" id="s-dpkg">
+      <div class="abs couche" id="co-apt"><b>apt</b><span>au quotidien : dépôts, dépendances</span></div>
+      <div class="abs" id="fleche-d">⬇</div>
+      <div class="abs couche" id="co-dpkg"><b>dpkg</b><span>installe les fichiers .deb</span></div>
+    </div>
+
+    <div class="scene" id="s-garantie">
+      <div class="ligne display grad" id="garantie">Les dépôts officiels</div>
+      <div class="ligne gar" id="gl">✅ vérifiés · 🔏 signés · 🔄 mis à jour</div>
+      <div class="ligne" id="conseil"><span style="color:var(--rouge)">🌐 site inconnu ✗</span>  →  <span style="color:var(--vert)">apt search ✓</span></div>
+    </div>
+
+  </div></div>
+  <div id="vignette" class="layer"></div>
+  <div class="abs" id="badge"><img src="img/tux.svg" alt=""><div><div class="nom"><b>$</b> carnet-linux</div><div class="sous">Module 08 · apt et les dépôts</div></div></div>
+  <canvas id="particules" width="1920" height="1080"></canvas>
+  <div class="abs" id="rideau"></div>
+  <div class="abs" id="st"></div>
+  <div class="abs" id="barre"></div>
+  <div id="flash" class="layer"></div>
+</div>
+<script src="lib/gsap.min.js"></script>
+<script src="commun.js"></script>
+<script>
+(() => { document.getElementById('rayons').innerHTML = '<span>📦</span>'.repeat(56); })();
+Film.demarrer({
+  film: 'apt',
+  fin: { titre: 'apt et les dépôts', sous: 'Carnet Linux · Module 08 — Gestion des logiciels', prompt: 'sudo apt update' },
+  construire(C) {
+    // 1. Windows / Linux
+    gsap.set('#s-intro', { autoAlpha: 1 });
+    gsap.set('#cl', { opacity: 0 });
+    pop('#cw', 0.4, { depuis: 0.4 });
+    pop('#cl', C.mieux, { depuis: 0.4 });
+    tl.to('#cw', { opacity: 0.35, scale: 0.95, duration: 0.4 }, C.mieux + 0.4);
+
+    // 2. paquets, dépendances, dépôts
+    plonge(C.paquet, '#s-intro', '#s-paquet');
+    gsap.set(['.dep', '#rayons span', '#sceau', '#compteur', '#compteur-l'], { opacity: 0 });
+    pop('#paquet', C.paquet, { depuis: 0.4 });
+    pop('.dep', C.paquet + 1.8, { stagger: 0.25, depuis: 0.3 });
+    tl.to(['#paquet', '.dep'], { opacity: 0, scale: 0.6, duration: 0.4 }, C.depots - 0.2);
+    tl.fromTo('#rayons span', { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.25, stagger: { each: 0.02, from: 'random' }, immediateRender: false }, C.depots);
+    pop('#sceau', C.signes, { depuis: 0.4 });
+    tl.to('#rayons', { y: -40, opacity: 0.35, duration: 0.4 }, C.soixante - 0.2);
+    tl.fromTo(['#compteur', '#compteur-l'], { opacity: 0 }, { opacity: 1, duration: 0.3, immediateRender: false }, C.soixante);
+    compter('#compteur', C.soixante, C.soixante + 1.6, 0, 60000, (n) => Math.round(n).toLocaleString('fr-FR') + ' +');
+
+    // 3. apt update / install / upgrade
+    rideau(C.apt, '#s-paquet', '#s-apt');
+    gsap.set(['.a1o', '#a2', '.a2o', '#a3', '.a3o', '.lab-apt'], { opacity: 0 });
+    ligne('#a1', C.update, 0.6);
+    sortie('.a1o', C.catalogue, 0.4);
+    tl.fromTo('#la1', { x: 40, opacity: 0 }, { x: 0, opacity: 1, immediateRender: false }, C.rien);
+    ligne('#a2', C.install, 0.8);
+    sortie('.a2o', C.dependances, 0.6);
+    tl.fromTo('#la2', { x: 40, opacity: 0 }, { x: 0, opacity: 1, immediateRender: false }, C.une);
+    ligne('#a3', C.upgrade, 0.6);
+    sortie('.a3o', C.upgrade + 1.2);
+    tl.fromTo('#la3', { x: 40, opacity: 0 }, { x: 0, opacity: 1, immediateRender: false }, C.upgrade + 2.5);
+
+    // 4. search, show, remove, purge
+    plonge(C.search, '#s-apt', '#s-cmds');
+    gsap.set('.cmdc', { opacity: 0 });
+    motsEntrent('#cc-titre .mot', C.search);
+    pop('#cc1', C.search + 0.8, { depuis: 0.3 }); pop('#cc2', C.show + 0.6, { depuis: 0.3 });
+    pop('#cc3', C.remove + 0.6, { depuis: 0.3 }); pop('#cc4', C.purge + 1.2, { depuis: 0.3 });
+
+    // 5. apt au-dessus de dpkg
+    rideau(C.dpkg, '#s-cmds', '#s-dpkg');
+    gsap.set(['#co-apt', '#fleche-d', '#co-dpkg'], { opacity: 0 });
+    pop('#co-dpkg', C.dpkg + 1.0, { depuis: 0.4 });
+    pop('#co-apt', C.quotidien, { depuis: 0.4 });
+    pop('#fleche-d', C.quotidien + 0.6);
+
+    // 6. la garantie
+    plonge(C.garantie, '#s-dpkg', '#s-garantie');
+    gsap.set(['#gl', '#conseil'], { opacity: 0 });
+    tl.fromTo('#garantie', { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(2)', immediateRender: false }, C.garantie);
+    tl.fromTo('#gl', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.garantie + 2.0);
+    tl.fromTo('#conseil', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.conseil);
+  },
+});
+</script>
+</body>
+</html>

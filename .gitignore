@@ -1,0 +1,27 @@
+# --- Notes de travail privées : ne jamais publier ---
+PASSATION.md
+CLAUDE.md
+
+# --- Site généré (recréé par publier.py) ---
+publication/
+
+# --- Fichiers de travail vidéo volumineux (les vidéos finales sont dans assets/video/) ---
+videos/voix/
+videos/musique/
+videos/mixes/
+videos/apercu/
+videos/rendus/
+
+# --- Dépendances et caches ---
+node_modules/
+__pycache__/
+*.pyc
+deploiement/.wrangler/
+.wrangler/
+
+# --- Secrets et fichiers système ---
+.env
+.env.*
+*.key
+.DS_Store
+Thumbs.db

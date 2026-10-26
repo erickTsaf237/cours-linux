@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rechercher sous Linux : find, locate, grep et regex | Cours Linux</title>
+  <meta name="description" content="Module 06 du cours Linux : retrouver un fichier avec find et locate, localiser une commande avec which, maîtriser les expressions régulières avec grep -E, sed et awk, et enchaîner avec xargs.">
+  <meta name="theme-color" content="#e95420">
+  <link rel="apple-touch-icon" href="../assets/img/icone-180.png">
+  <link rel="icon" href="../assets/img/tux.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <script>try{const t=JSON.parse(localStorage.getItem("theme"));if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<div class="progress-bar"></div>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../index.html"><img src="../assets/img/tux.svg" alt=""><span><span class="dollar">$</span> carnet-linux</span></a>
+    <nav class="nav">
+      <a href="../index.html">Programme</a>
+      <a href="06-rechercher-regex.html" class="active hide-sm">Module 06</a>
+      <button class="theme-toggle" type="button" aria-label="Changer de thème">☀️</button>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <span class="eyebrow">PHASE 2 · MODULE 06</span>
+      <h1>Rechercher &amp; <span class="grad">expressions régulières</span></h1>
+      <p class="lead">Retrouver n'importe quel fichier en une commande, savoir où se cache un programme, et décrire du texte avec des motifs :
+        les expressions régulières, l'outil qui transforme <code>grep</code> en détecteur surpuissant.</p>
+      <div class="hero-meta">
+        <span class="chip">⏱️ Lecture <b>~50 min</b></span>
+        <span class="chip">🧪 Pratique <b>~1 h 30</b></span>
+        <span class="chip">🎚️ Niveau <b>intermédiaire</b></span>
+      </div>
+    </div>
+    <div class="hero-art"><img class="tux" src="../assets/img/tux.svg" alt="Tux"></div>
+  </div>
+</section>
+
+<div class="layout">
+  <aside class="toc">
+    <div class="toc-title">Sommaire</div>
+    <ol></ol>
+  </aside>
+
+  <article class="content">
+
+    <!-- ================================================== -->
+    <h2 id="objectifs" data-short="Objectifs">🎯 Ce que tu sauras à la fin</h2>
+    <div class="cards four">
+      <div class="card" style="--c:var(--accent)"><div class="icon">🔦</div><h4>find</h4><p>Chercher par nom, type, taille, date, propriétaire… et agir.</p></div>
+      <div class="card" style="--c:var(--cyan)"><div class="icon">⚡</div><h4>locate &amp; which</h4><p>Trouver instantanément un fichier ou une commande.</p></div>
+      <div class="card" style="--c:var(--violet)"><div class="icon">🧩</div><h4>Regex</h4><p>Lire et écrire des expressions régulières.</p></div>
+      <div class="card" style="--c:var(--green)"><div class="icon">🔗</div><h4>xargs</h4><p>Passer une liste de résultats à n'importe quelle commande.</p></div>
+    </div>
+
+    <!-- ================================================== -->
+    <h2 id="find" data-short="find">Retrouver un fichier avec <code>find</code></h2>
+    <figure class="video-card">
+      <div class="video-head"><span class="video-badge">▶ Vidéo · 1 min 30</span><strong>find : retrouver n'importe quel fichier</strong><span>où chercher, quoi chercher, quoi en faire</span></div>
+      <video controls preload="none" playsinline poster="../assets/video/find.jpg"><source src="../assets/video/find.mp4" type="video/mp4">Ton navigateur ne lit pas la vidéo : <a href="../assets/video/find.mp4">télécharge-la ici</a>.</video>
+      <figcaption>Animation réalisée pour ce cours. Voix off et musique générées par IA (Google Gemini et Lyria).</figcaption>
+    </figure>
+
+    <p><code>find</code> parcourt réellement l'arborescence, dossier par dossier. Sa grammaire répond à trois questions :</p>
+    <div class="anatomy">
+      <div class="seg" style="--c:#ffa657"><code>find</code><span>la commande</span></div>
+      <div class="seg" style="--c:#79c0ff"><code>/etc</code><span>où chercher</span><small>dossier de départ</small></div>
+      <div class="seg" style="--c:#d2a8ff"><code>-name "*.conf"</code><span>quoi chercher</span><small>critères</small></div>
+      <div class="seg" style="--c:#7ee787"><code>-ls</code><span>quoi en faire</span><small>action (affiche par défaut)</small></div>
+    </div>
+
+    <h3>Les critères</h3>
+    <div class="table-wrap"><table>
+      <tr><th>Critère</th><th>Trouve</th><th>Exemple</th></tr>
+      <tr><td><code>-name</code> / <code>-iname</code></td><td>Par nom (jokers permis), <code>-iname</code> ignore la casse</td><td><code>-name "*.log"</code></td></tr>
+      <tr><td><code>-type f</code> / <code>d</code> / <code>l</code></td><td>Fichiers / dossiers / liens symboliques</td><td><code>-type d</code></td></tr>
+      <tr><td><code>-size</code></td><td>Par taille : <code>+</code> plus de, <code>-</code> moins de (<code>k</code>, <code>M</code>, <code>G</code>)</td><td><code>-size +100M</code></td></tr>
+      <tr><td><code>-mtime</code> / <code>-mmin</code></td><td>Modifiés il y a moins (<code>-</code>) ou plus (<code>+</code>) de N jours / minutes</td><td><code>-mtime -7</code></td></tr>
+      <tr><td><code>-user</code> / <code>-group</code></td><td>Par propriétaire / groupe</td><td><code>-user www-data</code></td></tr>
+      <tr><td><code>-perm</code></td><td>Par droits</td><td><code>-perm -4000</code> (bit SUID)</td></tr>
+      <tr><td><code>-empty</code></td><td>Fichiers ou dossiers vides</td><td><code>-type d -empty</code></td></tr>
+      <tr><td><code>-maxdepth N</code></td><td>Ne descend pas à plus de N niveaux (à placer en premier)</td><td><code>-maxdepth 1</code></td></tr>
+    </table></div>
+    <p>Plusieurs critères se combinent par un <strong>ET</strong> implicite. Pour un <strong>OU</strong> : <code>-o</code> ; pour une négation : <code>!</code> (ou <code>-not</code>),
+      avec des parenthèses échappées pour grouper : <code>\( … \)</code>.</p>
+
+    <div class="terminal" data-title="user@ubuntu: ~"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">find</span> <span class="s">/etc</span> <span class="f">-name</span> <span class="s">"*.conf"</span> 2&gt;/dev/null | <span class="k">head</span> <span class="f">-3</span>
+<span class="o">/etc/adduser.conf</span>
+<span class="o">/etc/ca-certificates.conf</span>
+<span class="o">/etc/debconf.conf</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> find <span class="s">/</span> <span class="f">-type f -size +100M</span> 2&gt;/dev/null      <span class="c"># les gros fichiers du disque</span>
+<span class="o">/swap.img</span>
+<span class="o">/var/lib/snapd/snaps/gnome-42-2204_202.snap</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">find</span> <span class="s">~</span> <span class="f">-type f -mtime -1</span>                        <span class="c"># modifiés depuis 24 h</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">find</span> <span class="s">~/labo</span> \( <span class="f">-name</span> <span class="s">"*.log"</span> <span class="f">-o -name</span> <span class="s">"*.txt"</span> \)     <span class="c"># .log OU .txt</span></pre></div>
+
+    <div class="callout warn"><span class="callout-title">Guillemets obligatoires autour des jokers</span>
+      <p>Sans guillemets, le shell remplace <code>*.conf</code> par les fichiers du <em>dossier courant</em> avant même que <code>find</code> ne démarre.
+        Avec <code>"*.conf"</code>, c'est <code>find</code> qui reçoit le motif et l'applique dans chaque dossier. Écris toujours <code>-name "…"</code>.</p></div>
+
+    <h3>Les actions</h3>
+    <div class="table-wrap"><table>
+      <tr><th>Action</th><th>Effet</th></tr>
+      <tr><td><code>-print</code></td><td>Affiche le chemin (action par défaut)</td></tr>
+      <tr><td><code>-ls</code></td><td>Affiche les détails, comme <code>ls -l</code></td></tr>
+      <tr><td><code>-exec cmd {} \;</code></td><td>Lance <code>cmd</code> une fois par résultat (<code>{}</code> = le chemin trouvé)</td></tr>
+      <tr><td><code>-exec cmd {} +</code></td><td>Lance <code>cmd</code> une seule fois avec tous les résultats : beaucoup plus rapide</td></tr>
+      <tr><td><code>-ok cmd {} \;</code></td><td>Comme <code>-exec</code>, mais demande confirmation à chaque fois</td></tr>
+      <tr><td><code>-delete</code></td><td>Supprime les résultats. <strong>Sans corbeille.</strong></td></tr>
+    </table></div>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">find</span> <span class="s">~/labo</span> <span class="f">-name</span> <span class="s">"*.sh"</span> <span class="f">-exec</span> <span class="k">chmod</span> u+x {} +       <span class="c"># rendre tous les scripts exécutables</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">find</span> <span class="s">/tmp</span> <span class="f">-user</span> <span class="s">$USER</span> <span class="f">-name</span> <span class="s">"*.tmp"</span> <span class="f">-mtime +7</span>        <span class="c"># 1. vérifier la liste…</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">find</span> <span class="s">/tmp</span> <span class="f">-user</span> <span class="s">$USER</span> <span class="f">-name</span> <span class="s">"*.tmp"</span> <span class="f">-mtime +7 -delete</span>  <span class="c"># 2. …puis supprimer</span></pre></div>
+    <div class="callout danger"><span class="callout-title">Toujours lister avant <code>-delete</code></span>
+      <p>Lance la recherche une première fois sans action, lis la liste, puis seulement ajoute <code>-delete</code> à la fin.
+        Placé avant les critères, <code>-delete</code> s'appliquerait à <em>tout</em> ce que <code>find</code> rencontre.</p></div>
+
+    <!-- ================================================== -->
+    <h2 id="locate" data-short="locate, which, whereis">Plus rapide : <code>locate</code>, <code>which</code> et compagnie</h2>
+    <p><code>find</code> lit le disque à chaque fois. <code>locate</code>, lui, interroge une <strong>base de données</strong> de tous les noms de fichiers,
+      mise à jour une fois par jour : la réponse est instantanée, mais les fichiers créés depuis la dernière mise à jour n'y figurent pas.</p>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> apt install <span class="s">plocate</span>          <span class="c"># la version moderne de locate</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">locate</span> <span class="s">sshd_config</span>
+<span class="o">/etc/ssh/sshd_config</span>
+<span class="o">/usr/share/man/man5/sshd_config.5.gz</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> updatedb                     <span class="c"># mettre la base à jour tout de suite</span></pre></div>
+
+    <div class="table-wrap"><table>
+      <tr><th>Commande</th><th>Répond à</th><th>Exemple</th></tr>
+      <tr><td><code>which</code></td><td>Quel programme sera lancé si je tape ce nom ?</td><td><code>which python3</code> → <code>/usr/bin/python3</code></td></tr>
+      <tr><td><code>type -a</code></td><td>Est-ce un alias, une primitive, un programme ? Tous les emplacements</td><td><code>type -a ls</code></td></tr>
+      <tr><td><code>whereis</code></td><td>Où sont le programme, ses sources et sa page de manuel ?</td><td><code>whereis bash</code></td></tr>
+      <tr><td><code>command -v</code></td><td>Comme <code>which</code>, en version portable pour les scripts</td><td><code>command -v git || echo "absent"</code></td></tr>
+    </table></div>
+    <div class="callout tip"><span class="callout-title">Quel outil choisir ?</span>
+      <p>Un fichier dont tu connais à peu près le nom : <code>locate</code>. Des critères précis (taille, date, droits) ou des fichiers tout récents :
+        <code>find</code>. Une commande : <code>which</code> ou <code>type</code>. Un mot <em>à l'intérieur</em> des fichiers : <code>grep -r</code>.</p></div>
+
+    <!-- ================================================== -->
+    <h2 id="regex" data-short="Expressions régulières">Les expressions régulières</h2>
+    <figure class="video-card">
+      <div class="video-head"><span class="video-badge">▶ Vidéo · 1 min 30</span><strong>Les expressions régulières en 90 secondes</strong><span>ancres, classes, quantificateurs</span></div>
+      <video controls preload="none" playsinline poster="../assets/video/regex.jpg"><source src="../assets/video/regex.mp4" type="video/mp4">Ton navigateur ne lit pas la vidéo : <a href="../assets/video/regex.mp4">télécharge-la ici</a>.</video>
+      <figcaption>Animation réalisée pour ce cours. Voix off et musique générées par IA (Google Gemini et Lyria).</figcaption>
+    </figure>
+
+    <p>Une <strong>expression régulière</strong> (<em>regex</em>) décrit une <strong>forme</strong> de texte plutôt qu'un mot précis :
+      « une ligne qui commence par un chiffre », « une adresse e-mail », « un code postal de 5 chiffres ». On les utilise avec <code>grep</code>,
+      <code>sed</code>, <code>awk</code>, les éditeurs et presque tous les langages.</p>
+
+    <h3>Les briques de base</h3>
+    <div class="table-wrap"><table>
+      <tr><th>Symbole</th><th>Signifie</th><th>Exemple</th><th>Correspond à</th></tr>
+      <tr><td><code>^</code></td><td>Début de ligne</td><td><code>^root</code></td><td>« root » en tout début de ligne</td></tr>
+      <tr><td><code>$</code></td><td>Fin de ligne</td><td><code>bash$</code></td><td>lignes qui finissent par « bash »</td></tr>
+      <tr><td><code>.</code></td><td>N'importe quel caractère (un seul)</td><td><code>c.t</code></td><td>cat, cot, c-t, c4t…</td></tr>
+      <tr><td><code>*</code></td><td>L'élément précédent, 0 fois ou plus</td><td><code>ab*c</code></td><td>ac, abc, abbbc…</td></tr>
+      <tr><td><code>[abc]</code></td><td>Un caractère de la liste</td><td><code>[Ll]inux</code></td><td>Linux, linux</td></tr>
+      <tr><td><code>[a-z]</code>, <code>[0-9]</code></td><td>Un caractère de l'intervalle</td><td><code>[0-9][0-9]</code></td><td>deux chiffres consécutifs</td></tr>
+      <tr><td><code>[^…]</code></td><td>Un caractère <strong>absent</strong> de la liste</td><td><code>[^0-9]</code></td><td>tout sauf un chiffre</td></tr>
+      <tr><td><code>\</code></td><td>Annule le sens spécial</td><td><code>\.</code></td><td>un vrai point</td></tr>
+    </table></div>
+
+    <h3>Le mode étendu : <code>grep -E</code></h3>
+    <div class="table-wrap"><table>
+      <tr><th>Symbole</th><th>Signifie</th><th>Exemple</th></tr>
+      <tr><td><code>+</code></td><td>1 fois ou plus</td><td><code>[0-9]+</code> : un nombre</td></tr>
+      <tr><td><code>?</code></td><td>0 ou 1 fois (facultatif)</td><td><code>https?</code> : http ou https</td></tr>
+      <tr><td><code>{n}</code>, <code>{n,m}</code></td><td>Exactement n fois, entre n et m fois</td><td><code>[0-9]{5}</code> : code postal</td></tr>
+      <tr><td><code>a|b</code></td><td>a OU b</td><td><code>error|fail</code></td></tr>
+      <tr><td><code>( )</code></td><td>Grouper</td><td><code>(ab)+</code> : ab, abab…</td></tr>
+    </table></div>
+    <p>Classes prédéfinies, valables dans toutes les langues (accents compris) : <code>[[:digit:]]</code> (chiffre), <code>[[:alpha:]]</code> (lettre),
+      <code>[[:alnum:]]</code> (lettre ou chiffre), <code>[[:space:]]</code> (espace, tabulation), <code>[[:upper:]]</code>, <code>[[:lower:]]</code>.</p>
+
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">grep</span> <span class="s">'^root'</span> /etc/passwd                     <span class="c"># commence par root</span>
+<span class="o">root:x:0:0:root:/root:/bin/bash</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">grep</span> <span class="f">-c</span> <span class="s">'nologin$'</span> /etc/passwd              <span class="c"># combien de comptes sans shell ?</span>
+<span class="o">33</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">grep</span> <span class="f">-v</span> <span class="s">'^#'</span> /etc/adduser.conf | <span class="k">grep</span> <span class="f">-v</span> <span class="s">'^$'</span>   <span class="c"># config sans commentaires ni lignes vides</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~/labo</span><span class="p">$</span> <span class="k">grep</span> <span class="f">-Eo</span> <span class="s">'^([0-9]{1,3}\.){3}[0-9]{1,3}'</span> acces.log | <span class="k">sort</span> <span class="f">-u</span>
+<span class="o">10.0.0.5</span>
+<span class="o">172.16.0.8</span>
+<span class="o">192.168.1.10</span>
+<span class="o">192.168.1.22</span></pre></div>
+    <p>L'option <code>-o</code> n'affiche que la partie qui correspond, pas toute la ligne : idéal pour <em>extraire</em> des informations.</p>
+
+    <div class="callout danger"><span class="callout-title">Jokers du shell ≠ expressions régulières</span>
+      <p>Les deux utilisent <code>*</code>, <code>?</code> et <code>[ ]</code>, mais pas avec le même sens :</p>
+      <div class="table-wrap"><table>
+        <tr><th></th><th>Joker du shell (<code>ls *.txt</code>)</th><th>Regex (<code>grep</code>)</th></tr>
+        <tr><td><code>*</code></td><td>n'importe quelle suite de caractères</td><td>l'élément précédent, répété</td></tr>
+        <tr><td><code>?</code></td><td>un caractère</td><td>l'élément précédent, facultatif (en <code>-E</code>)</td></tr>
+        <tr><td><code>.</code></td><td>un vrai point</td><td>n'importe quel caractère</td></tr>
+      </table></div>
+      <p>« N'importe quoi » s'écrit <code>*</code> en joker, mais <code>.*</code> en regex. Et entoure toujours un motif de regex d'apostrophes <code>'…'</code>
+        pour que le shell n'y touche pas.</p></div>
+
+    <h3>Les regex dans <code>sed</code> et <code>awk</code></h3>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">echo</span> <span class="s">"Tel : 06 12 34 56 78"</span> | <span class="k">sed</span> <span class="f">-E</span> <span class="s">'s/[0-9]{2} [0-9]{2}$/XX XX/'</span>
+<span class="o">Tel : 06 12 34 XX XX</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">echo</span> <span class="s">"2026-10-24"</span> | <span class="k">sed</span> <span class="f">-E</span> <span class="s">'s/([0-9]{4})-([0-9]{2})-([0-9]{2})/\3\/\2\/\1/'</span>
+<span class="o">24/10/2026</span>                                         <span class="c"># \1 \2 \3 : les groupes capturés</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~/labo</span><span class="p">$</span> <span class="k">awk</span> <span class="s">'/POST/ {print $1}'</span> acces.log | <span class="k">sort</span> <span class="f">-u</span>      <span class="c"># awk filtre aussi par regex</span>
+<span class="o">10.0.0.5</span></pre></div>
+
+    <!-- ================================================== -->
+    <h2 id="grep-r" data-short="Chercher dans les fichiers">Chercher <em>dans</em> les fichiers : <code>grep -r</code></h2>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">grep</span> <span class="f">-rn</span> <span class="s">"PermitRootLogin"</span> /etc/ssh/ 2&gt;/dev/null
+<span class="o">/etc/ssh/sshd_config:33:#PermitRootLogin prohibit-password</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">grep</span> <span class="f">-rl</span> <span class="s">"TODO"</span> ~/projet <span class="f">--include=</span><span class="s">"*.sh"</span>       <span class="c"># -l : seulement les noms de fichiers</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">grep</span> <span class="f">-rw</span> <span class="s">"listen"</span> /etc <span class="f">--exclude-dir=</span><span class="s">ssl</span> 2&gt;/dev/null</pre></div>
+
+    <!-- ================================================== -->
+    <h2 id="xargs" data-short="xargs">Passer des résultats à une commande : <code>xargs</code></h2>
+    <p>Certaines commandes ne lisent pas leur entrée standard : <code>rm</code>, <code>cp</code>, <code>chmod</code> attendent des <em>arguments</em>.
+      <code>xargs</code> fait le pont : il lit une liste sur stdin et la transforme en arguments.</p>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~/labo</span><span class="p">$</span> <span class="k">find</span> . <span class="f">-name</span> <span class="s">"*.log"</span> | <span class="k">xargs</span> <span class="k">wc</span> <span class="f">-l</span>          <span class="c"># compter les lignes de tous les .log</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~/labo</span><span class="p">$</span> <span class="k">find</span> . <span class="f">-name</span> <span class="s">"*.tmp"</span> <span class="f">-print0</span> | <span class="k">xargs</span> <span class="f">-0</span> <span class="k">rm</span>     <span class="c"># sûr même avec des espaces dans les noms</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">echo</span> <span class="s">"un deux trois"</span> | <span class="k">xargs</span> <span class="f">-n1</span>                  <span class="c"># un argument par commande</span>
+<span class="o">un</span>
+<span class="o">deux</span>
+<span class="o">trois</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">ls</span> *.txt | <span class="k">xargs</span> <span class="f">-I{}</span> <span class="k">cp</span> {} {}.bak               <span class="c"># -I{} : placer l'argument où l'on veut</span></pre></div>
+    <div class="callout info"><span class="callout-title">Les noms avec des espaces</span>
+      <p>Par défaut, <code>xargs</code> découpe aux espaces : « Mes Documents » deviendrait deux arguments. Le duo <code>find -print0 | xargs -0</code>
+        sépare les noms par un caractère nul, impossible dans un nom de fichier : c'est la version robuste. <code>find -exec … {} +</code> fait souvent le même travail plus simplement.</p></div>
+
+    <!-- ================================================== -->
+    <h2 id="glossaire" data-short="Glossaire">Glossaire du module</h2>
+    <dl class="glossary">
+      <dt>find</dt><dd>Recherche de fichiers par critères, en parcourant le disque.</dd>
+      <dt>locate / updatedb</dt><dd>Recherche instantanée dans une base de noms, mise à jour par <code>updatedb</code>.</dd>
+      <dt>which / type</dt><dd>Indiquent quel programme correspond à une commande.</dd>
+      <dt>Expression régulière</dt><dd>Motif qui décrit une forme de texte.</dd>
+      <dt>Ancre</dt><dd><code>^</code> (début) et <code>$</code> (fin de ligne).</dd>
+      <dt>Classe</dt><dd>Ensemble de caractères entre crochets : <code>[0-9]</code>, <code>[[:alpha:]]</code>.</dd>
+      <dt>Quantificateur</dt><dd>Nombre de répétitions : <code>*</code>, <code>+</code>, <code>?</code>, <code>{n,m}</code>.</dd>
+      <dt>BRE / ERE</dt><dd>Regex de base (<code>grep</code>) / étendues (<code>grep -E</code>, <code>sed -E</code>).</dd>
+      <dt>Groupe capturé</dt><dd>Partie entre parenthèses, réutilisable avec <code>\1</code>, <code>\2</code>…</dd>
+      <dt>xargs</dt><dd>Transforme une liste reçue sur stdin en arguments de commande.</dd>
+    </dl>
+
+    <!-- ================================================== -->
+    <h2 id="quiz" data-short="Quiz">🧠 Quiz : as-tu tout retenu ?</h2>
+    <div class="quiz">
+      <div class="q" data-answer="1">
+        <div class="q-text">1. Quelle commande trouve les dossiers vides sous <code>~/labo</code> ?</div>
+        <div class="q-opts"><button><code>find ~/labo -empty</code></button><button><code>find ~/labo -type d -empty</code></button><button><code>locate -empty ~/labo</code></button></div>
+        <div class="q-explain">Sans <code>-type d</code>, on obtiendrait aussi les fichiers vides.</div>
+      </div>
+      <div class="q" data-answer="2">
+        <div class="q-text">2. Pourquoi mettre <code>"*.conf"</code> entre guillemets dans <code>find -name</code> ?</div>
+        <div class="q-opts"><button>Par convention, sans effet</button><button>Pour ignorer la casse</button><button>Pour que le shell ne remplace pas le joker avant que find ne le reçoive</button></div>
+        <div class="q-explain">Sans guillemets, le shell développe <code>*.conf</code> dans le dossier courant.</div>
+      </div>
+      <div class="q" data-answer="0">
+        <div class="q-text">3. <code>locate</code> ne trouve pas un fichier créé il y a une minute. Pourquoi ?</div>
+        <div class="q-opts"><button>Sa base de données n'est pas encore à jour</button><button>locate ne cherche que dans /etc</button><button>Il faut être root</button></div>
+        <div class="q-explain"><code>sudo updatedb</code> met la base à jour immédiatement.</div>
+      </div>
+      <div class="q" data-answer="1">
+        <div class="q-text">4. Que trouve la regex <code>^[0-9]</code> ?</div>
+        <div class="q-opts"><button>Les lignes qui finissent par un chiffre</button><button>Les lignes qui commencent par un chiffre</button><button>Les lignes sans chiffre</button></div>
+        <div class="q-explain"><code>^</code> ancre au début de ligne (attention : à l'intérieur des crochets, <code>[^0-9]</code> signifie « pas un chiffre »).</div>
+      </div>
+      <div class="q" data-answer="2">
+        <div class="q-text">5. En regex, comment écrire « n'importe quoi » ?</div>
+        <div class="q-opts"><button><code>*</code></button><button><code>?</code></button><button><code>.*</code></button></div>
+        <div class="q-explain"><code>.</code> = un caractère quelconque, <code>*</code> = répété. Le <code>*</code> seul est le joker du shell.</div>
+      </div>
+      <div class="q" data-answer="0">
+        <div class="q-text">6. Avec <code>grep -E</code>, que reconnaît <code>[0-9]{5}</code> ?</div>
+        <div class="q-opts"><button>Exactement 5 chiffres consécutifs</button><button>Le chiffre 5</button><button>Entre 0 et 5 chiffres</button></div>
+        <div class="q-explain"><code>{5}</code> répète l'élément précédent exactement 5 fois : parfait pour un code postal.</div>
+      </div>
+      <div class="q" data-answer="1">
+        <div class="q-text">7. Que fait l'option <code>-o</code> de grep ?</div>
+        <div class="q-opts"><button>Elle ouvre le fichier trouvé</button><button>Elle n'affiche que la partie qui correspond au motif</button><button>Elle inverse la recherche</button></div>
+        <div class="q-explain">C'est <code>-v</code> qui inverse. <code>-o</code> sert à extraire.</div>
+      </div>
+      <div class="q" data-answer="2">
+        <div class="q-text">8. Pourquoi <code>find … -print0 | xargs -0</code> plutôt que <code>find … | xargs</code> ?</div>
+        <div class="q-opts"><button>C'est plus rapide</button><button>Pour trier les résultats</button><button>Pour gérer les noms de fichiers qui contiennent des espaces</button></div>
+        <div class="q-explain">Le caractère nul sépare les noms sans ambiguïté.</div>
+      </div>
+      <div class="quiz-score">Réponds aux questions pour voir ton score.</div>
+    </div>
+
+    <!-- ================================================== -->
+    <h2 id="mission" data-short="Mission pratique">🚀 Mission pratique</h2>
+    <p>Pour les exercices sur les expressions régulières, crée d'abord ce fichier de contacts (fictifs) :</p>
+    <div class="terminal" data-title="création de contacts.txt"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">mkdir</span> <span class="f">-p</span> ~/labo &amp;&amp; <span class="k">cat</span> &gt; ~/labo/contacts.txt &lt;&lt; <span class="s">'FIN'</span>
+Alice Martin;alice.martin@exemple.fr;06 12 34 56 78;Paris
+Bob Durand;bob@mail.com;07 98 76 54 32;Lyon
+Chloé Petit;chloe.petit@exemple.fr;01 23 45 67 89;Paris
+David Leroy;david.leroy(at)mail.com;0612345678;Marseille
+Emma Roux;emma.roux@exemple.org;06-11-22-33-44;Lille
+FIN</pre></div>
+    <div class="mission">
+      <h4>À faire dans la machine virtuelle</h4>
+      <p class="mission-astuce">Coche chaque étape une fois faite : sa correction s'affiche juste en dessous.</p>
+      <ul class="checklist" data-key="m06">
+        <li><label><input type="checkbox"><span>Lister tous les fichiers <code>*.conf</code> directement dans <code>/etc</code> (sans descendre dans les sous-dossiers), et les compter.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> find /etc -maxdepth 1 -name "*.conf" | wc -l
+<span class="o">31</span></pre><p>Le nombre exact dépend des paquets installés. <code>-maxdepth 1</code> doit être placé avant les autres critères.</p></div></li>
+        <li><label><input type="checkbox"><span>Trouver les 5 plus gros fichiers de <code>/var</code> (indice : <code>-size</code>, puis <code>du</code> ou <code>ls -lS</code>).</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> sudo find /var -type f -size +10M -exec ls -lhS {} + 2&gt;/dev/null | head -5
+<span class="c"># ou, avec du et sort :</span>
+<span class="p">$</span> sudo find /var -type f -exec du -h {} + 2&gt;/dev/null | sort -hr | head -5</pre><p>On y trouve en général les paquets en cache (<code>/var/cache/apt</code>), les snaps et les journaux.</p></div></li>
+        <li><label><input type="checkbox"><span>Trouver tous les fichiers de ton dossier personnel modifiés depuis moins de 60 minutes.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> find ~ -type f -mmin -60 2&gt;/dev/null</pre><p>Tu y verras les fichiers que tu viens de créer, et ceux que GNOME ou le navigateur modifient en permanence (dans <code>~/.cache</code>, <code>~/.config</code>).</p></div></li>
+        <li><label><input type="checkbox"><span>Trouver tous les programmes avec le bit SUID dans <code>/usr/bin</code>.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> find /usr/bin -perm -4000
+<span class="o">/usr/bin/passwd</span>
+<span class="o">/usr/bin/sudo</span>
+<span class="o">/usr/bin/su</span>
+<span class="o">/usr/bin/mount</span>
+<span class="o">...</span></pre><p>Ce sont les programmes qui s'exécutent avec les droits de root : les auditeurs de sécurité vérifient toujours cette liste.</p></div></li>
+        <li><label><input type="checkbox"><span>Installer <code>plocate</code>, créer un fichier <code>~/labo/introuvable.txt</code>, constater que <code>locate</code> ne le trouve pas, puis corriger.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> sudo apt install plocate
+<span class="p">$</span> touch ~/labo/introuvable.txt
+<span class="p">$</span> locate introuvable.txt
+<span class="c"># aucun résultat : la base date d'avant la création</span>
+<span class="p">$</span> sudo updatedb
+<span class="p">$</span> locate introuvable.txt
+<span class="o">/home/user/labo/introuvable.txt</span></pre></div></li>
+        <li><label><input type="checkbox"><span>Comparer <code>which ls</code>, <code>type -a ls</code> et <code>whereis ls</code>.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> which ls
+<span class="o">/usr/bin/ls</span>
+<span class="p">$</span> type -a ls
+<span class="o">ls est un alias vers « ls --color=auto »</span>
+<span class="o">ls est /usr/bin/ls</span>
+<span class="o">ls est /bin/ls</span>
+<span class="p">$</span> whereis ls
+<span class="o">ls: /usr/bin/ls /usr/share/man/man1/ls.1.gz</span></pre><p><code>which</code> ne voit pas l'alias ; <code>type -a</code> montre tout, y compris <code>/bin/ls</code> qui est le même fichier via le lien <code>/bin → usr/bin</code>.</p></div></li>
+        <li><label><input type="checkbox"><span>Dans <code>contacts.txt</code> : afficher les contacts parisiens, puis ceux dont l'adresse est en <code>exemple.fr</code>.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> cd ~/labo
+<span class="p">$</span> grep 'Paris$' contacts.txt
+<span class="o">Alice Martin;alice.martin@exemple.fr;06 12 34 56 78;Paris</span>
+<span class="o">Chloé Petit;chloe.petit@exemple.fr;01 23 45 67 89;Paris</span>
+<span class="p">$</span> grep 'exemple\.fr' contacts.txt | cut -d';' -f1
+<span class="o">Alice Martin</span>
+<span class="o">Chloé Petit</span></pre><p>Le <code>\.</code> désigne un vrai point : sans l'antislash, <code>.</code> accepterait n'importe quel caractère.</p></div></li>
+        <li><label><input type="checkbox"><span>Extraire uniquement les adresses e-mail valides de <code>contacts.txt</code> avec <code>grep -Eo</code>.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> grep -Eo '[[:alnum:]._-]+@[[:alnum:].-]+\.[a-z]{2,}' contacts.txt
+<span class="o">alice.martin@exemple.fr</span>
+<span class="o">bob@mail.com</span>
+<span class="o">chloe.petit@exemple.fr</span>
+<span class="o">emma.roux@exemple.org</span></pre><p>L'adresse de David, écrite avec <code>(at)</code>, n'est pas reconnue : c'est voulu.</p></div></li>
+        <li><label><input type="checkbox"><span>Trouver les numéros de portable bien formatés : 06 ou 07 suivi de 4 groupes de 2 chiffres séparés par des espaces.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> grep -E ';0[67]( [0-9]{2}){4};' contacts.txt | cut -d';' -f1,3
+<span class="o">Alice Martin;06 12 34 56 78</span>
+<span class="o">Bob Durand;07 98 76 54 32</span></pre><p>Le numéro de David (sans espaces) et celui d'Emma (avec des tirets) ne respectent pas le format demandé.</p></div></li>
+        <li><label><input type="checkbox"><span>Bonus : avec <code>sed -E</code>, masquer les deux derniers groupes de chiffres des numéros bien formatés (<code>06 12 34 XX XX</code>).</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> sed -E 's/( [0-9]{2}){2};/ XX XX;/' contacts.txt
+<span class="o">Alice Martin;alice.martin@exemple.fr;06 12 34 XX XX;Paris</span>
+<span class="o">Bob Durand;bob@mail.com;07 98 76 XX XX;Lyon</span>
+<span class="o">Chloé Petit;chloe.petit@exemple.fr;01 23 45 XX XX;Paris</span>
+<span class="o">David Leroy;david.leroy(at)mail.com;0612345678;Marseille</span>
+<span class="o">Emma Roux;emma.roux@exemple.org;06-11-22-33-44;Lille</span></pre><p>Le fichier n'est pas modifié ; ajoute <code>-i.bak</code> pour l'écrire réellement (avec une copie de sauvegarde).</p></div></li>
+      </ul>
+    </div>
+
+    <!-- ================================================== -->
+    <h2 id="questions" data-short="Questions fréquentes">💬 Questions fréquentes</h2>
+    <p>Les questions qui reviennent le plus souvent sur ce module, avec leurs réponses.</p>
+    <div class="qa" id="qa-list">
+      <details>
+        <summary><code>find</code> affiche des dizaines de « Permission non accordée »</summary>
+        <p>C'est normal : en tant qu'utilisateur, tu n'as pas le droit d'entrer dans tous les dossiers. Masque ces messages avec <code>2&gt;/dev/null</code>
+          (module 05), ou lance la recherche avec <code>sudo</code> si tu as vraiment besoin de tout parcourir.</p>
+      </details>
+      <details>
+        <summary>Ma regex fonctionne sur un site de test, mais pas avec grep</summary>
+        <p>Trois causes fréquentes : il manque <code>-E</code> (sans lui, <code>+</code>, <code>?</code>, <code>{}</code> et <code>|</code> sont des caractères ordinaires) ;
+          le motif n'est pas entre apostrophes ; ou il utilise une syntaxe d'un autre langage, comme <code>\d</code> pour un chiffre. grep ne la connaît pas :
+          écris <code>[0-9]</code> ou <code>[[:digit:]]</code> (ou utilise <code>grep -P</code>, compatible Perl).</p>
+      </details>
+      <details>
+        <summary>Quelle différence entre <code>-exec … \;</code> et <code>-exec … +</code> ?</summary>
+        <p>Avec <code>\;</code>, la commande est lancée une fois <em>par fichier</em> (1 000 fichiers = 1 000 lancements). Avec <code>+</code>, les fichiers sont
+          regroupés et la commande est lancée le moins de fois possible : bien plus rapide. Utilise <code>\;</code> seulement si la commande n'accepte qu'un fichier à la fois.</p>
+      </details>
+    </div>
+
+    <button class="done-btn" data-module="06" type="button">🏁 Marquer ce module comme terminé</button>
+
+    <nav class="page-nav">
+      <a href="05-redirections-pipes.html"><small>← Précédent</small>Module 05 — Redirections, pipes &amp; filtres</a>
+      <a class="next" href="07-processus.html"><small>Suivant →</small>Module 07 — Processus &amp; tâches</a>
+    </nav>
+  </article>
+</div>
+
+<footer class="site-footer">
+  <div>Carnet Linux · Module 06 · 🐧</div>
+</footer>
+
+<script src="../assets/js/main.js"></script>
+</body>
+</html>

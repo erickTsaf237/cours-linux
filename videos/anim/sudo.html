@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>root, sudo et le moindre privilège — vidéo</title>
+<link rel="stylesheet" href="commun.css">
+<style>
+#couronne { left: 810px; top: 90px; font-size: 220px; }
+#root-nom { top: 360px; font-family: var(--mono); font-size: 150px; color: var(--rouge); }
+#uid { top: 540px; font-family: var(--mono); font-size: 60px; color: var(--jaune); }
+.pouv { top: 660px; font-family: var(--display); font-weight: 700; font-size: 40px; padding: 14px 30px; }
+#pv1 { left: 220px; } #pv2 { left: 620px; } #pv3 { left: 990px; } #pv4 { left: 1380px; }
+#boom { top: 790px; font-family: var(--mono); font-size: 64px; color: var(--rouge); }
+#teinte-rouge { background: radial-gradient(90% 80% at 50% 50%, #3b1218 0%, #1b0b10 70%, #110609 100%); opacity: 0; }
+
+#jamais { top: 100px; font-size: 84px; }
+#user-carte { left: 260px; top: 300px; width: 560px; height: 320px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+#user-carte .ico { font-family: var(--emoji); font-size: 130px; }
+#user-carte .nom { font-family: var(--mono); font-size: 56px; color: var(--vert); }
+#user-carte .t { font-family: var(--display); font-weight: 700; font-size: 34px; color: var(--gris); }
+#principe { left: 900px; top: 300px; width: 780px; font-family: var(--display); font-weight: 800; font-size: 64px; line-height: 1.1; }
+#principe small { display: block; font-family: var(--texte); font-weight: 400; font-size: 36px; color: var(--gris); margin-top: 18px; }
+#bouclier { left: 1040px; top: 560px; width: 520px; height: 260px; border-radius: 50%; border: 6px solid var(--vert); display: grid; place-items: center;
+  font-family: var(--mono); font-size: 40px; color: var(--vert); box-shadow: 0 0 60px rgba(63,185,80,.35); }
+.menace { position: absolute; font-family: var(--emoji); font-size: 80px; }
+
+#sudo-geant { top: 140px; font-family: var(--mono); font-size: 220px; }
+#sudo-def { top: 400px; font-size: 54px; font-family: var(--display); font-weight: 700; color: var(--gris); }
+#t-sudo { left: 310px; top: 260px; width: 1300px; }
+#t-sudo .corps { font-size: 40px; min-height: 380px; }
+#journal { left: 1180px; top: 730px; font-family: var(--mono); font-size: 36px; color: var(--jaune); padding: 14px 26px; }
+
+#qui-titre { top: 110px; font-size: 90px; }
+.grp { width: 300px; height: 300px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  font-family: var(--mono); font-size: 48px; border: 5px solid; }
+.grp .m { font-family: var(--emoji); font-size: 60px; }
+#g-sudo { left: 810px; top: 300px; border-color: var(--orange); background: rgba(233,84,32,.12); color: var(--orange-2); }
+#g-audio { left: 300px; top: 330px; border-color: var(--cyan); color: var(--cyan); }
+#g-adm { left: 1320px; top: 330px; border-color: var(--violet); color: #d2a8ff; }
+#nouveau { left: 1000px; top: 120px; font-size: 90px; }
+
+#t-id { left: 310px; top: 180px; width: 1300px; }
+#t-id .corps { font-size: 36px; min-height: 480px; }
+
+#regle-titre { top: 140px; font-size: 100px; }
+.ok-l { left: 440px; font-family: var(--display); font-weight: 700; font-size: 56px; }
+#ok1 { top: 360px; } #ok2 { top: 470px; }
+#pouvoir { top: 650px; font-size: 64px; font-family: var(--display); font-weight: 800; color: var(--jaune); }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="bg" class="layer"><div id="blob1" class="blob"></div><div id="blob2" class="blob"></div><div id="blob3" class="blob"></div></div>
+  <div id="teinte-rouge" class="layer"></div>
+  <div id="grille" class="layer"></div>
+  <div id="cam-punch"><div id="cam-drift">
+
+    <div class="scene" id="s-root">
+      <div class="abs emoji" id="couronne">👑</div>
+      <div class="ligne" id="root-nom">root</div>
+      <div class="ligne" id="uid">UID 0 · tous les droits</div>
+      <div class="abs puce pouv" id="pv1">📖 tout lire</div><div class="abs puce pouv" id="pv2">📦 installer</div>
+      <div class="abs puce pouv" id="pv3">🗑️ supprimer</div><div class="abs puce pouv" id="pv4">✏️ tout modifier</div>
+      <div class="ligne" id="boom">💥 rm -rf /</div>
+    </div>
+
+    <div class="scene" id="s-moindre">
+      <div class="ligne display mots" id="jamais">Jamais en root au quotidien</div>
+      <div class="abs verre" id="user-carte"><div class="ico">🧑‍💻</div><div class="nom">user</div><div class="t">un compte aux droits limités</div></div>
+      <div class="abs" id="principe">Le principe du moindre privilège<small>chacun n'a que les droits dont il a besoin</small></div>
+      <div class="abs" id="bouclier">/home/user</div>
+      <div class="menace" id="m1" style="left:900px;top:560px">🐛</div><div class="menace" id="m2" style="left:1700px;top:600px">🦠</div><div class="menace" id="m3" style="left:1250px;top:840px">📜</div>
+    </div>
+
+    <div class="scene" id="s-sudo">
+      <div class="ligne grad" id="sudo-geant">sudo</div>
+      <div class="ligne" id="sudo-def">une seule commande, avec les droits de root</div>
+      <div class="abs terminal" id="t-sudo"><div class="barre-t"><i></i><i></i><i></i><span>user@ubuntu: ~</span></div>
+        <div class="corps"><div class="l" id="s1"><span class="p">user@ubuntu:~$</span> <span class="tape">sudo apt update</span></div>
+          <div class="l o" id="s2">[sudo] Mot de passe de user : ••••••••</div>
+          <div class="l ok" id="s3">✓ user est dans le groupe sudo : autorisé</div>
+          <div class="l o s4">Atteint :1 http://archive.ubuntu.com/ubuntu noble InRelease</div>
+          <div class="l o s4">Lecture des listes de paquets... Fait</div></div></div>
+      <div class="abs verre" id="journal">📓 noté dans /var/log/auth.log</div>
+    </div>
+
+    <div class="scene" id="s-qui">
+      <div class="ligne display mots" id="qui-titre">Qui a droit à sudo ?</div>
+      <div class="abs grp" id="g-audio"><span class="m">🎧</span>audio</div>
+      <div class="abs grp" id="g-sudo"><span class="m">🧑‍💻</span>sudo</div>
+      <div class="abs grp" id="g-adm"><span class="m">📜</span>adm</div>
+      <div class="abs emoji" id="nouveau">🧑</div>
+    </div>
+
+    <div class="scene" id="s-id">
+      <div class="abs terminal" id="t-id"><div class="barre-t"><i></i><i></i><i></i><span>user@ubuntu: ~</span></div>
+        <div class="corps"><div class="l" id="d1"><span class="p">user@ubuntu:~$</span> <span class="tape">whoami</span></div>
+          <div class="l o" id="d2">user</div>
+          <div class="l" id="d3"><span class="p">user@ubuntu:~$</span> <span class="tape">id</span></div>
+          <div class="l o" id="d4">uid=1000(user) gid=1000(user) groupes=...,<span style="color:var(--orange-2)">27(sudo)</span>,...</div>
+          <div class="l" id="d5"><span class="p">user@ubuntu:~$</span> <span class="tape">head -3 /etc/passwd</span></div>
+          <div class="l o d6">root:x:0:0:root:/root:/bin/bash</div>
+          <div class="l o d6">daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin</div>
+          <div class="l o d6">bin:x:2:2:bin:/bin:/usr/sbin/nologin</div></div></div>
+    </div>
+
+    <div class="scene" id="s-regle">
+      <div class="ligne display grad" id="regle-titre">La règle d'or</div>
+      <div class="abs ok-l" id="ok1">✅ sudo seulement quand c'est nécessaire</div>
+      <div class="abs ok-l" id="ok2">✅ et seulement si tu comprends la commande</div>
+      <div class="ligne" id="pouvoir">🕸️ Un grand pouvoir… une grande responsabilité</div>
+    </div>
+
+  </div></div>
+  <div id="vignette" class="layer"></div>
+  <div class="abs" id="badge"><img src="img/tux.svg" alt=""><div><div class="nom"><b>$</b> carnet-linux</div><div class="sous">Module 04 · root et sudo</div></div></div>
+  <canvas id="particules" width="1920" height="1080"></canvas>
+  <div class="abs" id="rideau"></div>
+  <div class="abs" id="st"></div>
+  <div class="abs" id="barre"></div>
+  <div id="flash" class="layer"></div>
+</div>
+<script src="lib/gsap.min.js"></script>
+<script src="commun.js"></script>
+<script>
+Film.demarrer({
+  film: 'sudo',
+  fin: { titre: 'root et sudo', sous: 'Carnet Linux · Module 04 — Utilisateurs, groupes &amp; permissions', prompt: 'sudo -l' },
+  construire(C) {
+    // 1. root
+    gsap.set('#s-root', { autoAlpha: 1 });
+    gsap.set(['#uid', '.pouv', '#boom'], { opacity: 0 });
+    tl.fromTo('#couronne', { y: -400, rotation: -30 }, { y: 0, rotation: 0, duration: 0.9, ease: 'bounce.out' }, 0.3);
+    tl.fromTo('#root-nom', { scale: 2, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: 'power4.in' }, C.pasautres);
+    tl.fromTo('#uid', { y: 20, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.zero);
+    pop('#pv1', C.lire, { depuis: 0.3 }); pop('#pv2', C.lire + 1.0, { depuis: 0.3 }); pop('#pv3', C.lire + 1.6, { depuis: 0.3 }); pop('#pv4', C.lire + 2.3, { depuis: 0.3 });
+    tl.to('#teinte-rouge', { opacity: 1, duration: 0.4 }, C.detruire);
+    tl.fromTo('#boom', { scale: 2.5, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.3, ease: 'power4.in', immediateRender: false }, C.detruire + 0.6);
+    secousse(C.detruire + 0.9, 20);
+
+    // 2. moindre privilège
+    rideau(C.jamais, '#s-root', '#s-moindre');
+    tl.to('#teinte-rouge', { opacity: 0, duration: 0.5 }, C.jamais);
+    gsap.set(['#user-carte', '#principe', '#bouclier', '.menace'], { opacity: 0 });
+    motsEntrent('#jamais .mot', C.jamais);
+    pop('#user-carte', C.normal, { depuis: 0.4 });
+    tl.fromTo('#principe', { x: 60, opacity: 0 }, { x: 0, opacity: 1, immediateRender: false }, C.moindre);
+    tl.to('#principe', { opacity: 0, duration: 0.3 }, C.erreur - 0.3);
+    pop('#bouclier', C.erreur - 0.2, { depuis: 0.4 });
+    ['#m1', '#m2', '#m3'].forEach((m, i) => {
+      tl.fromTo(m, { opacity: 0, scale: 0 }, { opacity: 1, scale: 1, duration: 0.3, immediateRender: false }, C.erreur + i * 0.5);
+      tl.to(m, { x: i === 1 ? 160 : -120, y: i === 2 ? 120 : -80, rotation: 40, opacity: 0, duration: 0.6, ease: 'power2.in' }, C.limites + 0.4 + i * 0.15);
+    });
+    tl.to('#bouclier', { scale: 1.08, duration: 0.15, yoyo: true, repeat: 3 }, C.limites + 0.4);
+
+    // 3. sudo
+    plonge(C.installer + 1.6, '#s-moindre', '#s-sudo');
+    gsap.set(['#sudo-def', '#t-sudo', '#s2', '#s3', '.s4', '#journal'], { opacity: 0 });
+    tl.fromTo('#sudo-geant', { scale: 2.5, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: 'power4.in', immediateRender: false }, C.sudo);
+    coup(C.sudo + 0.4, 1.06);
+    tl.fromTo('#sudo-def', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.une);
+    tl.to(['#sudo-geant', '#sudo-def'], { opacity: 0, y: -60, duration: 0.3 }, C.apt - 0.4);
+    tl.fromTo('#t-sudo', { y: 60, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.apt - 0.3);
+    ligne('#s1', C.apt, 0.7);
+    sortie('#s2', C.mdp);
+    sortie('#s3', C.verifie + 0.3);
+    sortie('.s4', C.execute + 0.3, 0.3);
+    pop('#journal', C.journal + 0.6, { depuis: 0.4 });
+
+    // 4. les groupes
+    rideau(C.qui, '#s-sudo', '#s-qui');
+    gsap.set(['.grp', '#nouveau'], { opacity: 0 });
+    motsEntrent('#qui-titre .mot', C.qui);
+    pop('#g-sudo', C.groupesudo, { depuis: 0.3 });
+    pop('#g-audio', C.admins, { depuis: 0.3 }); pop('#g-adm', C.admins + 0.6, { depuis: 0.3 });
+    tl.fromTo('#nouveau', { opacity: 0, x: 300, y: -60 }, { opacity: 1, x: 0, y: 0, duration: 0.5, immediateRender: false }, C.ajouter);
+    tl.to('#nouveau', { x: -40, y: 260, scale: 0.6, duration: 0.6, ease: 'power2.in' }, C.ajouter + 1.2);
+    tl.to('#g-sudo', { boxShadow: '0 0 80px rgba(233,84,32,.6)', scale: 1.08, duration: 0.3 }, C.ajouter + 1.8);
+    salve(C.ajouter + 1.8, 960, 450, 30, ['#e95420', '#f5c542'], 'etincelles', 0.6);
+
+    // 5. whoami, id, passwd
+    plonge(C.whoami, '#s-qui', '#s-id');
+    gsap.set(['#d2', '#d3', '#d4', '#d5', '.d6'], { opacity: 0 });
+    ligne('#d1', C.whoami + 0.3, 0.4); sortie('#d2', C.whoami + 1.0);
+    ligne('#d3', C.id + 0.3, 0.2); sortie('#d4', C.id + 0.9);
+    ligne('#d5', C.passwd + 0.3, 0.7); sortie('.d6', C.passwd + 1.3, 0.2);
+
+    // 6. la règle
+    rideau(C.regle, '#s-id', '#s-regle');
+    gsap.set(['#ok1', '#ok2', '#pouvoir'], { opacity: 0 });
+    tl.fromTo('#regle-titre', { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(2)', immediateRender: false }, C.regle);
+    tl.fromTo('#ok1', { x: -60, opacity: 0 }, { x: 0, opacity: 1, immediateRender: false }, C.necessaire);
+    tl.fromTo('#ok2', { x: -60, opacity: 0 }, { x: 0, opacity: 1, immediateRender: false }, C.comprends);
+    tl.fromTo('#pouvoir', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.pouvoir);
+  },
+});
+</script>
+</body>
+</html>

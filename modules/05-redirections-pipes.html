@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Redirections et pipes Linux : grep, sed, awk | Cours Linux</title>
+  <meta name="description" content="Module 05 du cours Linux : stdin, stdout, stderr, redirections (> >> 2>), /dev/null, le pipe et les filtres grep, sort, uniq, cut, sed et awk, avec un atelier d'analyse de logs. Vidéos, quiz et exercices corrigés.">
+  <meta name="theme-color" content="#e95420">
+  <link rel="apple-touch-icon" href="../assets/img/icone-180.png">
+  <link rel="icon" href="../assets/img/tux.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <script>try{const t=JSON.parse(localStorage.getItem("theme"));if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<div class="progress-bar"></div>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../index.html"><img src="../assets/img/tux.svg" alt=""><span><span class="dollar">$</span> carnet-linux</span></a>
+    <nav class="nav">
+      <a href="../index.html">Programme</a>
+      <a href="05-redirections-pipes.html" class="active hide-sm">Module 05</a>
+      <button class="theme-toggle" type="button" aria-label="Changer de thème">☀️</button>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <span class="eyebrow">PHASE 2 · MODULE 05</span>
+      <h1>Redirections, pipes &amp; <span class="grad">filtres</span></h1>
+      <p class="lead">Le cœur de la philosophie Unix : des petits outils qui font une chose, et des tuyaux pour les assembler. À la fin de ce module,
+        tu analyseras un journal de serveur web en une seule ligne de commande.</p>
+      <div class="hero-meta">
+        <span class="chip">⏱️ Lecture <b>~55 min</b></span>
+        <span class="chip">🧪 Pratique <b>~1 h 30</b></span>
+        <span class="chip">🎚️ Niveau <b>intermédiaire</b></span>
+      </div>
+    </div>
+    <div class="hero-art"><img class="tux" src="../assets/img/tux.svg" alt="Tux"></div>
+  </div>
+</section>
+
+<div class="layout">
+  <aside class="toc">
+    <div class="toc-title">Sommaire</div>
+    <ol></ol>
+  </aside>
+
+  <article class="content">
+
+    <!-- ================================================== -->
+    <h2 id="objectifs" data-short="Objectifs">🎯 Ce que tu sauras à la fin</h2>
+    <div class="cards four">
+      <div class="card" style="--c:var(--accent)"><div class="icon">🚰</div><h4>Les flux</h4><p>stdin, stdout, stderr et leurs numéros.</p></div>
+      <div class="card" style="--c:var(--violet)"><div class="icon">↪️</div><h4>Rediriger</h4><p><code>&gt;</code>, <code>&gt;&gt;</code>, <code>2&gt;</code>, <code>/dev/null</code>…</p></div>
+      <div class="card" style="--c:var(--cyan)"><div class="icon">🔗</div><h4>Combiner</h4><p>Construire des pipelines avec <code>|</code>.</p></div>
+      <div class="card" style="--c:var(--green)"><div class="icon">🧰</div><h4>Filtrer</h4><p><code>grep</code>, <code>sort</code>, <code>uniq</code>, <code>cut</code>, <code>sed</code>, <code>awk</code>.</p></div>
+    </div>
+
+    <!-- ================================================== -->
+    <h2 id="flux" data-short="Les trois flux">Les trois flux standard</h2>
+    <figure class="video-card">
+      <div class="video-head"><span class="video-badge">▶ Vidéo · 1 min 30</span><strong>Les trois flux et les redirections</strong><span>0, 1, 2 et les chevrons</span></div>
+      <video controls preload="none" playsinline poster="../assets/video/flux.jpg"><source src="../assets/video/flux.mp4" type="video/mp4">Ton navigateur ne lit pas la vidéo : <a href="../assets/video/flux.mp4">télécharge-la ici</a>.</video>
+      <figcaption>Animation réalisée pour ce cours. Voix off et musique générées par IA (Google Gemini et Lyria).</figcaption>
+    </figure>
+
+    <p>Tout programme démarre avec trois canaux ouverts, numérotés :</p>
+    <figure>
+      <div class="diagram">
+        <svg viewBox="0 0 720 230" role="img" aria-label="Les trois flux standard d'un programme">
+          <rect x="260" y="70" width="200" height="90" rx="14" fill="#e95420"/>
+          <text x="360" y="110" text-anchor="middle" fill="#fff" font-family="Space Grotesk" font-weight="700" font-size="20">programme</text>
+          <text x="360" y="134" text-anchor="middle" fill="#fff" opacity=".85" font-family="JetBrains Mono" font-size="13">ex. ls</text>
+          <text x="60" y="108" class="svg-text" font-size="15" font-weight="700">⌨️ clavier</text>
+          <line x1="150" y1="115" x2="255" y2="115" stroke="#38bdf8" stroke-width="4"/><polygon points="255,108 268,115 255,122" fill="#38bdf8"/>
+          <text x="160" y="100" fill="#38bdf8" font-family="JetBrains Mono" font-size="13">0 · stdin</text>
+          <line x1="460" y1="95" x2="590" y2="60" stroke="#3fb950" stroke-width="4"/><polygon points="586,52 600,57 590,68" fill="#3fb950"/>
+          <text x="480" y="62" fill="#3fb950" font-family="JetBrains Mono" font-size="13">1 · stdout</text>
+          <line x1="460" y1="135" x2="590" y2="170" stroke="#f87171" stroke-width="4"/><polygon points="590,162 600,173 586,178" fill="#f87171"/>
+          <text x="480" y="182" fill="#f87171" font-family="JetBrains Mono" font-size="13">2 · stderr</text>
+          <text x="610" y="70" class="svg-text" font-size="15" font-weight="700">🖥️ écran</text>
+          <text x="610" y="182" class="svg-text" font-size="15" font-weight="700">🖥️ écran</text>
+        </svg>
+      </div>
+      <figcaption>Par défaut, stdin vient du clavier, stdout et stderr vont à l'écran. Mais ce sont deux canaux distincts.</figcaption>
+    </figure>
+    <div class="table-wrap"><table>
+      <tr><th>N°</th><th>Nom</th><th>Rôle</th><th>Par défaut</th></tr>
+      <tr><td><code>0</code></td><td><strong>stdin</strong></td><td>Entrée standard : ce que le programme lit</td><td>Le clavier</td></tr>
+      <tr><td><code>1</code></td><td><strong>stdout</strong></td><td>Sortie standard : les résultats</td><td>L'écran</td></tr>
+      <tr><td><code>2</code></td><td><strong>stderr</strong></td><td>Sortie d'erreur : les messages d'erreur</td><td>L'écran</td></tr>
+    </table></div>
+
+    <!-- ================================================== -->
+    <h2 id="redirections" data-short="Les redirections">Les redirections</h2>
+    <div class="table-wrap"><table>
+      <tr><th>Syntaxe</th><th>Effet</th></tr>
+      <tr><td><code>cmd &gt; fichier</code></td><td>stdout dans un fichier, <strong>écrasé</strong> s'il existe</td></tr>
+      <tr><td><code>cmd &gt;&gt; fichier</code></td><td>stdout <strong>ajouté</strong> à la fin du fichier</td></tr>
+      <tr><td><code>cmd 2&gt; erreurs.txt</code></td><td>stderr dans un fichier</td></tr>
+      <tr><td><code>cmd &gt; tout.txt 2&gt;&amp;1</code></td><td>stdout dans le fichier, puis stderr envoyé au même endroit que stdout</td></tr>
+      <tr><td><code>cmd &amp;&gt; tout.txt</code></td><td>Raccourci Bash pour la ligne précédente</td></tr>
+      <tr><td><code>cmd &lt; fichier</code></td><td>stdin lu depuis un fichier</td></tr>
+      <tr><td><code>cmd 2&gt; /dev/null</code></td><td>Faire disparaître les erreurs dans le « trou noir »</td></tr>
+    </table></div>
+
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">ls</span> <span class="s">/etc /nexistepas</span> &gt; sortie.txt
+<span class="o"><span class="err">ls: impossible d'accéder à '/nexistepas': Aucun fichier ou dossier de ce nom</span></span>   <span class="c"># stderr reste à l'écran</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">ls</span> <span class="s">/etc /nexistepas</span> &gt; sortie.txt 2&gt; erreurs.txt   <span class="c"># chacun dans son fichier</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">find</span> <span class="s">/</span> <span class="f">-name</span> <span class="s">"*.conf"</span> 2&gt; /dev/null     <span class="c"># sans les centaines de « Permission non accordée »</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">echo</span> <span class="s">"$(date) : sauvegarde OK"</span> &gt;&gt; journal.txt   <span class="c"># tenir un journal</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">wc</span> <span class="f">-l</span> &lt; /etc/passwd                       <span class="c"># wc lit stdin : pas de nom de fichier affiché</span>
+<span class="o">37</span></pre></div>
+
+    <div class="callout danger"><span class="callout-title"><code>&gt;</code> écrase sans prévenir</span>
+      <p><code>sort notes.txt &gt; notes.txt</code> <strong>vide</strong> le fichier : le shell le tronque avant même que <code>sort</code> ne le lise.
+        On écrit toujours dans un autre fichier, puis on renomme. Pour se protéger, <code>set -o noclobber</code> fait refuser à Bash l'écrasement avec <code>&gt;</code>.</p></div>
+    <div class="callout info"><span class="callout-title">L'ordre compte : <code>2&gt;&amp;1</code></span>
+      <p><code>2&gt;&amp;1</code> signifie « envoie stderr là où va stdout <em>en ce moment</em> ». Dans <code>cmd &gt; f 2&gt;&amp;1</code>, stdout va déjà dans <code>f</code> : tout y va.
+        Dans <code>cmd 2&gt;&amp;1 &gt; f</code>, stderr a été branché sur l'écran avant que stdout ne soit redirigé : les erreurs restent à l'écran.</p></div>
+
+    <h3>Écrire plusieurs lignes : le « here-document »</h3>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">cat</span> &gt; courses.txt &lt;&lt; <span class="s">'FIN'</span>
+<span class="o">&gt; pommes</span>
+<span class="o">&gt; pain</span>
+<span class="o">&gt; café</span>
+<span class="o">&gt; FIN</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">cat</span> courses.txt
+<span class="o">pommes</span>
+<span class="o">pain</span>
+<span class="o">café</span></pre></div>
+    <p>Tout ce qui est tapé jusqu'au mot <code>FIN</code> (seul sur sa ligne) est envoyé sur stdin. Très utilisé dans les scripts pour créer des fichiers de configuration.</p>
+
+    <!-- ================================================== -->
+    <h2 id="pipe" data-short="Le pipe">Le pipe : l'art de combiner</h2>
+    <figure class="video-card">
+      <div class="video-head"><span class="video-badge">▶ Vidéo · 1 min 30</span><strong>Le pipe : l'art de combiner</strong><span>un vrai problème résolu en une ligne</span></div>
+      <video controls preload="none" playsinline poster="../assets/video/pipes.jpg"><source src="../assets/video/pipes.mp4" type="video/mp4">Ton navigateur ne lit pas la vidéo : <a href="../assets/video/pipes.mp4">télécharge-la ici</a>.</video>
+      <figcaption>Animation réalisée pour ce cours. Voix off et musique générées par IA (Google Gemini et Lyria).</figcaption>
+    </figure>
+
+    <p>Le <strong>pipe</strong> <code>|</code> (<kbd>AltGr</kbd> + <kbd>6</kbd> sur un clavier AZERTY) branche le stdout d'une commande sur le stdin de la suivante.
+      Les données coulent d'un programme à l'autre, sans fichier intermédiaire, et tous les programmes tournent en même temps.</p>
+
+    <div class="flow">
+      <div class="flow-step"><div class="ico">📜</div><b>cat acces.log</b><span>toutes les lignes</span></div>
+      <div class="flow-arrow">|</div>
+      <div class="flow-step"><div class="ico">✂️</div><b>cut -d' ' -f1</b><span>garde l'adresse IP</span></div>
+      <div class="flow-arrow">|</div>
+      <div class="flow-step"><div class="ico">🔤</div><b>sort</b><span>regroupe les identiques</span></div>
+      <div class="flow-arrow">|</div>
+      <div class="flow-step"><div class="ico">🔢</div><b>uniq -c</b><span>compte</span></div>
+      <div class="flow-arrow">|</div>
+      <div class="flow-step"><div class="ico">🏆</div><b>sort -nr | head</b><span>le top</span></div>
+    </div>
+
+    <div class="callout story"><span class="callout-title">Une idée de 1973</span>
+      <p>Le pipe a été proposé par Doug McIlroy aux Bell Labs et ajouté à Unix par Ken Thompson en 1973, en une nuit selon la légende.
+        McIlroy a résumé la philosophie qui en découle : « Écrivez des programmes qui font une seule chose et la font bien. Écrivez des programmes qui
+        travaillent ensemble. Écrivez des programmes qui manipulent des flux de texte. »</p></div>
+
+    <h3>Préparer un fichier d'exemple pour tout le module</h3>
+    <p>Pour s'entraîner, voici un petit journal de serveur web. Copie ce bloc dans ton terminal : il crée <code>~/labo/acces.log</code>.</p>
+    <div class="terminal" data-title="création de acces.log"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">mkdir</span> <span class="f">-p</span> ~/labo &amp;&amp; <span class="k">cat</span> &gt; ~/labo/acces.log &lt;&lt; <span class="s">'FIN'</span>
+192.168.1.10 - - [23/Oct/2026:10:01:12] "GET /index.html" 200 5120
+192.168.1.22 - - [23/Oct/2026:10:01:15] "GET /contact.html" 200 2048
+10.0.0.5 - - [23/Oct/2026:10:02:01] "GET /admin" 403 512
+192.168.1.10 - - [23/Oct/2026:10:02:30] "GET /images/logo.png" 200 15360
+192.168.1.10 - - [23/Oct/2026:10:03:12] "GET /blog.html" 200 8192
+10.0.0.5 - - [23/Oct/2026:10:03:45] "GET /admin" 403 512
+172.16.0.8 - - [23/Oct/2026:10:04:02] "GET /index.html" 200 5120
+192.168.1.22 - - [23/Oct/2026:10:04:59] "GET /page-perdue.html" 404 256
+10.0.0.5 - - [23/Oct/2026:10:05:30] "POST /login" 401 128
+192.168.1.10 - - [23/Oct/2026:10:06:10] "GET /index.html" 200 5120
+172.16.0.8 - - [23/Oct/2026:10:06:44] "GET /blog.html" 200 8192
+10.0.0.5 - - [23/Oct/2026:10:07:02] "POST /login" 401 128
+FIN</pre></div>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~/labo</span><span class="p">$</span> <span class="k">cut</span> <span class="f">-d' ' -f1</span> acces.log | <span class="k">sort</span> | <span class="k">uniq</span> <span class="f">-c</span> | <span class="k">sort</span> <span class="f">-nr</span> | <span class="k">head</span> <span class="f">-3</span>
+<span class="o">      4 192.168.1.10</span>
+<span class="o">      4 10.0.0.5</span>
+<span class="o">      2 192.168.1.22</span></pre></div>
+    <div class="callout tip"><span class="callout-title">Construire un pipeline pas à pas</span>
+      <p>Ne tape jamais un long pipeline d'un coup. Ajoute une commande à la fois, regarde le résultat, puis rappelle la ligne avec <kbd>↑</kbd> et ajoute
+        le maillon suivant. C'est comme ça que les pros procèdent.</p></div>
+
+    <!-- ================================================== -->
+    <h2 id="filtres" data-short="La boîte à filtres">La boîte à filtres</h2>
+    <h3><code>grep</code> : garder les lignes qui correspondent</h3>
+    <div class="table-wrap"><table>
+      <tr><th>Option</th><th>Effet</th><th>Exemple</th></tr>
+      <tr><td></td><td>Lignes contenant le motif</td><td><code>grep 404 acces.log</code></td></tr>
+      <tr><td><code>-i</code></td><td>Ignorer majuscules/minuscules</td><td><code>grep -i error /var/log/syslog</code></td></tr>
+      <tr><td><code>-v</code></td><td>Inverser : lignes qui ne correspondent <em>pas</em></td><td><code>grep -v '^#' fichier.conf</code></td></tr>
+      <tr><td><code>-c</code></td><td>Compter les lignes</td><td><code>grep -c 403 acces.log</code></td></tr>
+      <tr><td><code>-n</code></td><td>Afficher les numéros de ligne</td><td><code>grep -n root /etc/passwd</code></td></tr>
+      <tr><td><code>-r</code></td><td>Chercher dans tous les fichiers d'un dossier</td><td><code>grep -r "Port" /etc/ssh/</code></td></tr>
+      <tr><td><code>-w</code></td><td>Mot entier seulement</td><td><code>grep -w log fichier</code></td></tr>
+      <tr><td><code>-E</code></td><td>Expressions régulières étendues</td><td><code>grep -E '40[134]' acces.log</code></td></tr>
+    </table></div>
+    <p>Les expressions régulières (<code>^</code> début de ligne, <code>$</code> fin, <code>.</code> n'importe quel caractère…) seront approfondies au module 06.</p>
+
+    <h3>Trier, dédoublonner, compter, découper</h3>
+    <div class="table-wrap"><table>
+      <tr><th>Commande</th><th>Rôle</th><th>Options clés</th></tr>
+      <tr><td><code>sort</code></td><td>Trier les lignes</td><td><code>-n</code> numérique · <code>-r</code> inverse · <code>-h</code> tailles (2K, 1G) · <code>-k2</code> sur la 2e colonne · <code>-t:</code> séparateur · <code>-u</code> sans doublons</td></tr>
+      <tr><td><code>uniq</code></td><td>Fusionner les lignes identiques <strong>consécutives</strong></td><td><code>-c</code> compter · <code>-d</code> seulement les doublons. Toujours après <code>sort</code> !</td></tr>
+      <tr><td><code>wc</code></td><td>Compter</td><td><code>-l</code> lignes · <code>-w</code> mots · <code>-c</code> octets</td></tr>
+      <tr><td><code>cut</code></td><td>Extraire des colonnes</td><td><code>-d:</code> séparateur · <code>-f1,3</code> champs · <code>-c1-10</code> caractères</td></tr>
+      <tr><td><code>tr</code></td><td>Remplacer ou supprimer des caractères</td><td><code>tr a-z A-Z</code> majuscules · <code>tr -d '\r'</code> supprimer · <code>tr -s ' '</code> compresser</td></tr>
+      <tr><td><code>head</code> / <code>tail</code></td><td>Garder le début / la fin</td><td><code>-n 5</code></td></tr>
+      <tr><td><code>tee</code></td><td>Écrire dans un fichier <em>et</em> laisser passer</td><td><code>-a</code> ajouter. Ex. <code>cmd | tee resultat.txt</code></td></tr>
+    </table></div>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">cut</span> <span class="f">-d: -f1,7</span> /etc/passwd | <span class="k">head</span> <span class="f">-3</span>          <span class="c"># identifiant et shell</span>
+<span class="o">root:/bin/bash</span>
+<span class="o">daemon:/usr/sbin/nologin</span>
+<span class="o">bin:/usr/sbin/nologin</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">cut</span> <span class="f">-d: -f7</span> /etc/passwd | <span class="k">sort</span> | <span class="k">uniq</span> <span class="f">-c</span>     <span class="c"># combien de comptes par shell ?</span>
+<span class="o">      1 /bin/false</span>
+<span class="o">      2 /bin/bash</span>
+<span class="o">      1 /bin/sync</span>
+<span class="o">     33 /usr/sbin/nologin</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">du</span> <span class="f">-sh</span> /var/* 2&gt;/dev/null | <span class="k">sort</span> <span class="f">-hr</span> | <span class="k">head</span> <span class="f">-3</span>   <span class="c"># les plus gros dossiers de /var</span>
+<span class="o">2,1G	/var/lib</span>
+<span class="o">410M	/var/cache</span>
+<span class="o">95M	/var/log</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">echo</span> <span class="s">"bonjour linux"</span> | <span class="k">tr</span> <span class="s">a-z A-Z</span>
+<span class="o">BONJOUR LINUX</span></pre></div>
+
+    <!-- ================================================== -->
+    <h2 id="sed-awk" data-short="sed &amp; awk">Aperçu de <code>sed</code> et <code>awk</code></h2>
+    <p>Deux outils plus puissants, presque des langages à eux seuls. L'essentiel suffit pour 90 % des usages.</p>
+    <h3><code>sed</code> : rechercher et remplacer dans un flux</h3>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~/labo</span><span class="p">$</span> <span class="k">sed</span> <span class="s">'s/GET/LECTURE/'</span> acces.log | <span class="k">head</span> <span class="f">-2</span>       <span class="c"># s/ancien/nouveau/ : 1re occurrence par ligne</span>
+<span class="o">192.168.1.10 - - [23/Oct/2026:10:01:12] "LECTURE /index.html" 200 5120</span>
+<span class="o">192.168.1.22 - - [23/Oct/2026:10:01:15] "LECTURE /contact.html" 200 2048</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~/labo</span><span class="p">$</span> <span class="k">sed</span> <span class="s">'s/a/A/g'</span> courses.txt                 <span class="c"># g : toutes les occurrences</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~/labo</span><span class="p">$</span> <span class="k">sed</span> <span class="f">-n</span> <span class="s">'3,5p'</span> acces.log                   <span class="c"># afficher les lignes 3 à 5</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~/labo</span><span class="p">$</span> <span class="k">sed</span> <span class="s">'/403/d'</span> acces.log                     <span class="c"># supprimer les lignes contenant 403</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~/labo</span><span class="p">$</span> <span class="k">sed</span> <span class="f">-i.bak</span> <span class="s">'s/pain/baguette/'</span> courses.txt   <span class="c"># -i : modifie le fichier (copie .bak)</span></pre></div>
+
+    <h3><code>awk</code> : travailler par colonnes</h3>
+    <p><code>awk</code> découpe chaque ligne en champs <code>$1</code>, <code>$2</code>… (séparés par des espaces, ou par ce que précise <code>-F</code>) et permet des conditions et des calculs.</p>
+    <p>Dans notre journal, la méthode <code>"GET</code> forme un champ à elle seule : l'IP est <code>$1</code>, la page <code>$6</code>, le code HTTP <code>$7</code> et la taille <code>$8</code>.</p>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~/labo</span><span class="p">$</span> <span class="k">awk</span> <span class="s">'{print $1, $7}'</span> acces.log | <span class="k">head</span> <span class="f">-2</span>      <span class="c"># IP et code HTTP</span>
+<span class="o">192.168.1.10 200</span>
+<span class="o">192.168.1.22 200</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~/labo</span><span class="p">$</span> <span class="k">awk</span> <span class="s">'$7 &gt;= 400'</span> acces.log | <span class="k">wc</span> <span class="f">-l</span>          <span class="c"># nombre de requêtes en erreur</span>
+<span class="o">5</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~/labo</span><span class="p">$</span> <span class="k">awk</span> <span class="s">'{total += $8} END {print total " octets"}'</span> acces.log
+<span class="o">50688 octets</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">awk</span> <span class="f">-F:</span> <span class="s">'$3 &gt;= 1000 {print $1}'</span> /etc/passwd       <span class="c"># les comptes humains</span>
+<span class="o">user</span>
+<span class="o">nobody</span></pre></div>
+
+    <!-- ================================================== -->
+    <h2 id="enchainer" data-short="Enchaîner des commandes">Enchaîner des commandes : <code>;</code> <code>&amp;&amp;</code> <code>||</code> et <code>$( )</code></h2>
+    <div class="table-wrap"><table>
+      <tr><th>Syntaxe</th><th>Signification</th><th>Exemple</th></tr>
+      <tr><td><code>a ; b</code></td><td>b s'exécute après a, quoi qu'il arrive</td><td><code>cd /tmp ; ls</code></td></tr>
+      <tr><td><code>a &amp;&amp; b</code></td><td>b seulement si a a <strong>réussi</strong> (code 0)</td><td><code>sudo apt update &amp;&amp; sudo apt upgrade</code></td></tr>
+      <tr><td><code>a || b</code></td><td>b seulement si a a <strong>échoué</strong></td><td><code>ping -c1 serveur || echo "injoignable"</code></td></tr>
+      <tr><td><code>$(commande)</code></td><td>Remplacé par la sortie de la commande</td><td><code>echo "Noyau : $(uname -r)"</code></td></tr>
+    </table></div>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">mkdir</span> sauvegarde &amp;&amp; <span class="k">cp</span> <span class="f">-r</span> labo sauvegarde/ &amp;&amp; <span class="k">echo</span> <span class="s">"OK"</span> || <span class="k">echo</span> <span class="s">"ÉCHEC"</span>
+<span class="o">OK</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">cp</span> labo/acces.log <span class="s">"acces-$(date +%F).log"</span> &amp;&amp; <span class="k">ls</span> acces-*
+<span class="o">acces-2026-10-23.log</span></pre></div>
+
+    <!-- ================================================== -->
+    <h2 id="glossaire" data-short="Glossaire">Glossaire du module</h2>
+    <dl class="glossary">
+      <dt>stdin / stdout / stderr</dt><dd>Entrée standard (0), sortie standard (1), sortie d'erreur (2).</dd>
+      <dt>Redirection</dt><dd>Changer la destination ou la source d'un flux : <code>&gt;</code>, <code>&gt;&gt;</code>, <code>2&gt;</code>, <code>&lt;</code>.</dd>
+      <dt>/dev/null</dt><dd>Fichier spécial qui avale tout ce qu'on lui envoie.</dd>
+      <dt>Here-document</dt><dd>Bloc de texte envoyé sur stdin avec <code>&lt;&lt; MOT</code>.</dd>
+      <dt>Pipe</dt><dd><code>|</code> : relie le stdout d'une commande au stdin de la suivante.</dd>
+      <dt>Pipeline</dt><dd>Chaîne de commandes reliées par des pipes.</dd>
+      <dt>Filtre</dt><dd>Programme qui lit stdin, transforme, et écrit sur stdout.</dd>
+      <dt>grep</dt><dd>Garde les lignes qui correspondent à un motif.</dd>
+      <dt>sed</dt><dd>Éditeur de flux : remplacements, suppressions de lignes.</dd>
+      <dt>awk</dt><dd>Traitement par colonnes, conditions et calculs.</dd>
+      <dt><code>&amp;&amp;</code> / <code>||</code></dt><dd>Exécuter la suite si succès / si échec.</dd>
+      <dt>Substitution de commande</dt><dd><code>$(cmd)</code> est remplacé par la sortie de <code>cmd</code>.</dd>
+    </dl>
+
+    <!-- ================================================== -->
+    <h2 id="quiz" data-short="Quiz">🧠 Quiz : as-tu tout retenu ?</h2>
+    <div class="quiz">
+      <div class="q" data-answer="2">
+        <div class="q-text">1. Quel est le numéro de la sortie d'erreur ?</div>
+        <div class="q-opts"><button>0</button><button>1</button><button>2</button></div>
+        <div class="q-explain">0 = stdin, 1 = stdout, 2 = stderr.</div>
+      </div>
+      <div class="q" data-answer="1">
+        <div class="q-text">2. Quelle différence entre <code>&gt;</code> et <code>&gt;&gt;</code> ?</div>
+        <div class="q-opts"><button>Aucune</button><button><code>&gt;</code> écrase, <code>&gt;&gt;</code> ajoute à la fin</button><button><code>&gt;&gt;</code> redirige aussi les erreurs</button></div>
+        <div class="q-explain"><code>&gt;</code> remplace le contenu, <code>&gt;&gt;</code> l'allonge.</div>
+      </div>
+      <div class="q" data-answer="0">
+        <div class="q-text">3. Comment masquer uniquement les messages d'erreur d'une commande ?</div>
+        <div class="q-opts"><button><code>cmd 2&gt; /dev/null</code></button><button><code>cmd &gt; /dev/null</code></button><button><code>cmd | /dev/null</code></button></div>
+        <div class="q-explain"><code>&gt; /dev/null</code> masquerait au contraire les résultats et garderait les erreurs.</div>
+      </div>
+      <div class="q" data-answer="2">
+        <div class="q-text">4. Pourquoi met-on <code>sort</code> avant <code>uniq -c</code> ?</div>
+        <div class="q-opts"><button>Pour aller plus vite</button><button>Par convention, sans effet réel</button><button>Parce que <code>uniq</code> ne fusionne que les lignes identiques consécutives</button></div>
+        <div class="q-explain">Sans tri, deux lignes identiques séparées seraient comptées séparément.</div>
+      </div>
+      <div class="q" data-answer="1">
+        <div class="q-text">5. Que fait <code>grep -v '^#' fichier.conf</code> ?</div>
+        <div class="q-opts"><button>Affiche seulement les commentaires</button><button>Affiche les lignes qui ne commencent pas par #</button><button>Supprime les commentaires du fichier</button></div>
+        <div class="q-explain"><code>-v</code> inverse la sélection ; <code>^#</code> = « commence par # ». Le fichier n'est pas modifié.</div>
+      </div>
+      <div class="q" data-answer="0">
+        <div class="q-text">6. Dans <code>awk '{print $3}'</code>, que représente <code>$3</code> ?</div>
+        <div class="q-opts"><button>Le 3e champ de la ligne</button><button>Une variable du shell</button><button>La 3e ligne</button></div>
+        <div class="q-explain">awk découpe chaque ligne en champs numérotés. Les apostrophes empêchent le shell d'interpréter <code>$3</code>.</div>
+      </div>
+      <div class="q" data-answer="2">
+        <div class="q-text">7. <code>sudo apt update &amp;&amp; sudo apt upgrade</code> : quand <code>upgrade</code> est-il lancé ?</div>
+        <div class="q-opts"><button>Toujours</button><button>Seulement si <code>update</code> échoue</button><button>Seulement si <code>update</code> réussit</button></div>
+        <div class="q-explain"><code>&amp;&amp;</code> enchaîne en cas de succès (code de retour 0).</div>
+      </div>
+      <div class="q" data-answer="1">
+        <div class="q-text">8. Que contient <code>notes.txt</code> après <code>sort notes.txt &gt; notes.txt</code> ?</div>
+        <div class="q-opts"><button>Les lignes triées</button><button>Rien : le fichier est vidé</button><button>Les lignes en double</button></div>
+        <div class="q-explain">Le shell ouvre (et vide) <code>notes.txt</code> pour la redirection avant que <code>sort</code> ne le lise.</div>
+      </div>
+      <div class="quiz-score">Réponds aux questions pour voir ton score.</div>
+    </div>
+
+    <!-- ================================================== -->
+    <h2 id="mission" data-short="Mission pratique">🚀 Mission pratique</h2>
+    <div class="mission">
+      <h4>À faire dans la machine virtuelle</h4>
+      <p class="mission-astuce">Coche chaque étape une fois faite : sa correction s'affiche juste en dessous.</p>
+      <ul class="checklist" data-key="m05">
+        <li><label><input type="checkbox"><span>Créer <code>~/labo/acces.log</code> avec le bloc de la section « Le pipe », et vérifier qu'il contient 12 lignes.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> wc -l ~/labo/acces.log
+<span class="o">12 /home/user/labo/acces.log</span></pre><p>Si le compte n'est pas bon, vérifie que <code>FIN</code> était bien seul sur sa dernière ligne.</p></div></li>
+        <li><label><input type="checkbox"><span>Enregistrer la liste de <code>/etc</code> dans <code>liste.txt</code>, puis y ajouter celle de <code>/var</code> sans rien écraser.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> cd ~/labo
+<span class="p">$</span> ls /etc &gt; liste.txt
+<span class="p">$</span> ls /var &gt;&gt; liste.txt
+<span class="p">$</span> wc -l liste.txt
+<span class="o">215 liste.txt</span></pre></div></li>
+        <li><label><input type="checkbox"><span>Avec <code>ls /etc /nexistepas</code>, envoyer les résultats dans un fichier et les erreurs dans un autre ; puis tout dans un seul fichier.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> ls /etc /nexistepas &gt; ok.txt 2&gt; ko.txt
+<span class="p">$</span> cat ko.txt
+<span class="o">ls: impossible d'accéder à '/nexistepas': Aucun fichier ou dossier de ce nom</span>
+<span class="p">$</span> ls /etc /nexistepas &gt; tout.txt 2&gt;&amp;1
+<span class="p">$</span> head -1 tout.txt
+<span class="o">ls: impossible d'accéder à '/nexistepas': Aucun fichier ou dossier de ce nom</span></pre></div></li>
+        <li><label><input type="checkbox"><span>Chercher tous les fichiers <code>*.conf</code> de <code>/etc</code> avec <code>find</code>, sans afficher les erreurs, et les compter.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> find /etc -name "*.conf" 2&gt; /dev/null | wc -l
+<span class="o">118</span></pre><p>Le nombre exact varie. Sans <code>2&gt; /dev/null</code>, les dossiers interdits produisent des messages « Permission non accordée ».</p></div></li>
+        <li><label><input type="checkbox"><span>Afficher uniquement les requêtes en erreur 403 de <code>acces.log</code>, puis les compter avec <code>grep -c</code>.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> grep ' 403 ' acces.log
+<span class="o">10.0.0.5 - - [23/Oct/2026:10:02:01] "GET /admin" 403 512</span>
+<span class="o">10.0.0.5 - - [23/Oct/2026:10:03:45] "GET /admin" 403 512</span>
+<span class="p">$</span> grep -c ' 403 ' acces.log
+<span class="o">2</span></pre><p>Les espaces autour de <code>403</code> évitent de trouver ce nombre ailleurs dans la ligne (une taille, une heure).</p></div></li>
+        <li><label><input type="checkbox"><span>Trouver les 3 adresses IP qui ont fait le plus de requêtes (pipeline <code>cut | sort | uniq -c | sort -nr | head</code>).</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> cut -d' ' -f1 acces.log | sort | uniq -c | sort -nr | head -3
+<span class="o">      4 192.168.1.10</span>
+<span class="o">      4 10.0.0.5</span>
+<span class="o">      2 192.168.1.22</span></pre><p>Il y a deux égalités : <code>192.168.1.10</code> et <code>10.0.0.5</code> (4 requêtes chacune), puis <code>192.168.1.22</code> et <code>172.16.0.8</code> (2 chacune). L'ordre des ex æquo peut varier.</p></div></li>
+        <li><label><input type="checkbox"><span>Lister les pages demandées (sans doublons) avec <code>awk</code> et <code>sort -u</code>.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> awk '{print $6}' acces.log | sort -u
+<span class="o">/admin"</span>
+<span class="o">/blog.html"</span>
+<span class="o">/contact.html"</span>
+<span class="o">/images/logo.png"</span>
+<span class="o">/index.html"</span>
+<span class="o">/login"</span>
+<span class="o">/page-perdue.html"</span>
+<span class="p">$</span> awk '{print $6}' acces.log | tr -d '"' | sort -u   <span class="c"># sans le guillemet</span></pre></div></li>
+        <li><label><input type="checkbox"><span>Calculer le total d'octets envoyés, puis le nombre de requêtes en erreur (code ≥ 400) avec <code>awk</code>.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> awk '{total += $8} END {print total}' acces.log
+<span class="o">50688</span>
+<span class="p">$</span> awk '$7 &gt;= 400' acces.log | wc -l
+<span class="o">5</span></pre></div></li>
+        <li><label><input type="checkbox"><span>Créer une copie de <code>acces.log</code> où <code>GET</code> devient <code>LECTURE</code>, avec <code>sed</code>, sans modifier l'original.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> sed 's/GET/LECTURE/' acces.log &gt; acces-fr.log
+<span class="p">$</span> grep -c LECTURE acces-fr.log
+<span class="o">10</span>
+<span class="p">$</span> grep -c GET acces.log
+<span class="o">10</span></pre></div></li>
+        <li><label><input type="checkbox"><span>Bonus : en une ligne, créer <code>rapport-DATE.txt</code> contenant le top des IP, l'afficher en même temps avec <code>tee</code>, et afficher « Rapport prêt » si tout a réussi.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> cut -d' ' -f1 acces.log | sort | uniq -c | sort -nr | tee "rapport-$(date +%F).txt" &amp;&amp; echo "Rapport prêt"
+<span class="o">      4 192.168.1.10</span>
+<span class="o">      4 10.0.0.5</span>
+<span class="o">      2 192.168.1.22</span>
+<span class="o">      1 ...</span>
+<span class="o">Rapport prêt</span></pre></div></li>
+      </ul>
+    </div>
+
+    <!-- ================================================== -->
+    <h2 id="questions" data-short="Questions fréquentes">💬 Questions fréquentes</h2>
+    <p>Les questions qui reviennent le plus souvent sur ce module, avec leurs réponses.</p>
+    <div class="qa" id="qa-list">
+      <details>
+        <summary>Comment taper le caractère <code>|</code> sur un clavier AZERTY ?</summary>
+        <p><kbd>AltGr</kbd> + <kbd>6</kbd> (la touche du tiret). Sur un Mac : <kbd>Alt</kbd> + <kbd>Maj</kbd> + <kbd>L</kbd>. Pour les autres symboles utiles :
+          <code>~</code> = <kbd>AltGr</kbd> + <kbd>2</kbd> puis <kbd>Espace</kbd>, <code>{ }</code> = <kbd>AltGr</kbd> + <kbd>4</kbd> / <kbd>+</kbd>, <code>[ ]</code> = <kbd>AltGr</kbd> + <kbd>5</kbd> / <kbd>°</kbd>.</p>
+      </details>
+      <details>
+        <summary><code>sudo echo "texte" &gt; /etc/fichier</code> donne « Permission non accordée »</summary>
+        <p>La redirection <code>&gt;</code> est faite par <strong>ton</strong> shell, sans droits root ; seul <code>echo</code> tourne avec sudo. La solution :
+          <code>echo "texte" | sudo tee /etc/fichier</code> (ou <code>sudo tee -a</code> pour ajouter). Ici, c'est <code>tee</code> qui écrit, avec les droits de root.</p>
+      </details>
+      <details>
+        <summary>Mon pipeline ne renvoie rien</summary>
+        <p>Démonte-le : exécute la première commande seule, puis ajoute les maillons un par un avec <kbd>↑</kbd>. Le coupable est souvent un séparateur
+          mal choisi dans <code>cut</code> (espace contre tabulation) ou un <code>grep</code> sensible aux majuscules (essaie <code>-i</code>).</p>
+      </details>
+    </div>
+
+    <button class="done-btn" data-module="05" type="button">🏁 Marquer ce module comme terminé</button>
+
+    <nav class="page-nav">
+      <a href="04-utilisateurs-permissions.html"><small>← Précédent</small>Module 04 — Utilisateurs, groupes &amp; permissions</a>
+      <a class="next" href="06-rechercher-regex.html"><small>Suivant →</small>Module 06 — Rechercher &amp; expressions régulières</a>
+    </nav>
+  </article>
+</div>
+
+<footer class="site-footer">
+  <div>Carnet Linux · Module 05 · 🐧</div>
+</footer>
+
+<script src="../assets/js/main.js"></script>
+</body>
+</html>

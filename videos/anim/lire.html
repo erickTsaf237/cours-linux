@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Lire un fichier — vidéo</title>
+<link rel="stylesheet" href="commun.css">
+<style>
+#titre { top: 120px; font-size: 110px; }
+.fic { top: 330px; }
+#f1 { left: 330px; } #f2 { left: 810px; } #f3 { left: 1290px; }
+#outil-titre { top: 640px; font-size: 52px; color: var(--gris); font-family: var(--display); font-weight: 700; }
+#puces { top: 740px; }
+#puces span { display: inline-block; font-family: var(--mono); font-size: 44px; color: var(--orange-2); padding: 10px 26px; margin: 0 10px;
+  border-radius: 16px; border: 2px solid rgba(233,84,32,.5); background: rgba(233,84,32,.1); }
+
+.t-centre { left: 310px; top: 150px; width: 1300px; }
+.t-centre .corps { font-size: 40px; min-height: 520px; overflow: hidden; }
+#defile { height: 420px; overflow: hidden; position: relative; }
+#defile-int { position: absolute; left: 0; right: 0; top: 0; color: #8b949e; font-size: 30px; line-height: 1.5; }
+#vertige { left: 1500px; top: 640px; font-size: 140px; }
+
+#less { left: 310px; top: 150px; width: 1300px; height: 560px; background: #0d1117; border: 2px solid #2a3342; border-radius: 22px; padding: 30px 40px;
+  font-family: var(--mono); font-size: 32px; color: #d6deeb; overflow: hidden; box-shadow: 0 40px 100px rgba(0,0,0,.6); }
+#less .barre { position: absolute; left: 0; right: 0; bottom: 0; padding: 8px 40px; background: #d6deeb; color: #0d1117; font-size: 26px; }
+#less-touches { top: 760px; }
+#less-touches .touche { height: 100px; min-width: 100px; font-size: 40px; margin: 0 8px; border-bottom-width: 9px; }
+#less-touches .lab { font-family: var(--display); font-weight: 700; font-size: 30px; color: var(--gris); margin: 0 22px 0 4px; }
+#comme-man { left: 1460px; top: 110px; color: var(--jaune); font-size: 48px; transform: rotate(6deg); }
+
+#doc { left: 560px; top: 120px; width: 800px; padding: 20px 30px; border-radius: 22px; background: #0d1117; border: 2px solid #2a3342;
+  font-family: var(--mono); font-size: 30px; color: #8b949e; box-shadow: 0 40px 100px rgba(0,0,0,.6); }
+#doc div { height: 46px; line-height: 46px; padding-left: 10px; border-radius: 8px; }
+#doc div b { display: inline-block; width: 60px; color: #4b5563; font-weight: 500; }
+#sel { left: 576px; width: 768px; border-radius: 10px; border: 4px solid var(--orange); background: rgba(233,84,32,.12); }
+.cmd-lab { left: 1400px; font-family: var(--mono); font-size: 52px; color: var(--orange-2); }
+#lab-head { top: 260px; } #lab-tail { top: 600px; }
+#recents { left: 120px; top: 600px; width: 400px; font-family: var(--display); font-weight: 700; font-size: 38px; color: var(--cyan); text-align: right; }
+
+#t-f .corps { min-height: 520px; }
+#live { left: 1430px; top: 170px; font-family: var(--mono); font-size: 32px; color: #fff; background: #c53030; padding: 6px 18px; border-radius: 10px; }
+#surv { top: 760px; font-size: 46px; font-family: var(--display); font-weight: 700; color: var(--cyan); }
+#kc { left: 1450px; top: 600px; }
+
+#wc-nums { top: 470px; font-family: var(--mono); font-size: 120px; }
+#wc-nums span { display: inline-block; width: 340px; text-align: center; }
+.wc-lab { top: 620px; width: 340px; text-align: center; font-family: var(--display); font-weight: 700; font-size: 40px; color: var(--gris); }
+
+.rc { top: 230px; width: 520px; height: 230px; display: flex; align-items: center; gap: 30px; padding: 0 36px; }
+.rc .ico { font-family: var(--emoji); font-size: 90px; }
+.rc .c { font-family: var(--mono); font-size: 50px; color: var(--orange-2); }
+.rc .t { font-family: var(--display); font-weight: 700; font-size: 32px; color: var(--gris); }
+#rc1 { left: 120px; } #rc2 { left: 700px; } #rc3 { left: 1280px; }
+#rc4 { left: 120px; top: 500px; } #rc5 { left: 700px; top: 500px; } #rc6 { left: 1280px; top: 500px; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="bg" class="layer"><div id="blob1" class="blob"></div><div id="blob2" class="blob"></div><div id="blob3" class="blob"></div></div>
+  <div id="grille" class="layer"></div>
+  <div id="cam-punch"><div id="cam-drift">
+
+    <div class="scene" id="s-intro">
+      <div class="ligne display grad" id="titre">Tout est texte</div>
+      <div class="abs verre station fic" id="f1"><div class="ico">⚙️</div><div class="nom">configuration</div></div>
+      <div class="abs verre station fic" id="f2"><div class="ico">📜</div><div class="nom">journaux</div></div>
+      <div class="abs verre station fic" id="f3"><div class="ico">🧾</div><div class="nom">scripts</div></div>
+      <div class="ligne" id="outil-titre">un outil pour chaque situation</div>
+      <div class="ligne" id="puces"><span>cat</span><span>less</span><span>head</span><span>tail</span><span>tail -f</span><span>wc</span></div>
+    </div>
+
+    <div class="scene" id="s-cat">
+      <div class="abs terminal t-centre" id="t-cat"><div class="barre-t"><i></i><i></i><i></i><span>user@ubuntu: ~</span></div>
+        <div class="corps"><div class="l" id="c1"><span class="p">user@ubuntu:~$</span> <span class="tape">cat /etc/hostname</span></div>
+          <div class="l o" id="c2">ubuntu</div>
+          <div class="l" id="c3"><span class="p">user@ubuntu:~$</span> <span class="tape">cat /var/log/syslog</span></div>
+          <div id="defile"><div id="defile-int"></div></div></div></div>
+      <div class="abs emoji" id="vertige">😵‍💫</div>
+    </div>
+
+    <div class="scene" id="s-less">
+      <div class="abs" id="less">
+        <div>2026-10-23T10:01:12 ubuntu systemd[1]: Starting ...</div><div>2026-10-23T10:01:13 ubuntu kernel: usb 1-1: new device</div>
+        <div>2026-10-23T10:01:15 ubuntu NetworkManager: <span style="background:#f5c542;color:#0d1117">connected</span></div>
+        <div>2026-10-23T10:01:20 ubuntu gnome-shell: ...</div><div>2026-10-23T10:01:22 ubuntu systemd[1]: Started ...</div>
+        <div>2026-10-23T10:01:30 ubuntu cron[812]: ...</div><div>2026-10-23T10:01:41 ubuntu kernel: audit ...</div>
+        <div class="barre">/var/log/syslog (ligne 1 sur 10 482)</div>
+      </div>
+      <div class="ligne" id="less-touches"><span class="touche" id="lt1">Espace</span><span class="lab" id="ll1">avancer</span><span class="touche" id="lt2">B</span><span class="lab" id="ll2">reculer</span><span class="touche" id="lt3">/</span><span class="lab" id="ll3">chercher</span><span class="touche" id="lt4">Q</span><span class="lab" id="ll4">quitter</span></div>
+      <div class="abs tampon" id="comme-man">comme man !</div>
+    </div>
+
+    <div class="scene" id="s-ht">
+      <div class="abs" id="doc"></div>
+      <div class="abs" id="sel"></div>
+      <div class="abs cmd-lab" id="lab-head">head</div>
+      <div class="abs cmd-lab" id="lab-n3">head -n 3</div>
+      <div class="abs cmd-lab" id="lab-tail">tail</div>
+      <div class="abs" id="recents">les plus récents sont en bas ⬇</div>
+    </div>
+
+    <div class="scene" id="s-tailf">
+      <div class="abs terminal t-centre" id="t-f"><div class="barre-t"><i></i><i></i><i></i><span>user@ubuntu: ~</span></div>
+        <div class="corps"><div class="l" id="tf0"><span class="p">user@ubuntu:~$</span> <span class="tape">tail -f /var/log/syslog</span></div><div id="tf-lignes"></div>
+          <div class="l err" id="tf-c">^C</div></div></div>
+      <div class="abs" id="live">● EN DIRECT</div>
+      <div class="ligne" id="surv">📡 surveiller un serveur en temps réel</div>
+      <div class="abs touche" id="kc">Ctrl C</div>
+    </div>
+
+    <div class="scene" id="s-wc">
+      <div class="abs terminal t-centre" id="t-wc" style="top:130px"><div class="barre-t"><i></i><i></i><i></i><span>user@ubuntu: ~</span></div>
+        <div class="corps" style="min-height:120px"><div class="l" id="w0"><span class="p">user@ubuntu:~$</span> <span class="tape">wc /etc/passwd</span></div></div></div>
+      <div class="ligne" id="wc-nums"><span id="n1" style="color:#ffa657">37</span><span id="n2" style="color:#d2a8ff">64</span><span id="n3" style="color:#79c0ff">2072</span></div>
+      <div class="abs wc-lab" id="wl1" style="left:450px">lignes</div><div class="abs wc-lab" id="wl2" style="left:790px">mots</div><div class="abs wc-lab" id="wl3" style="left:1130px">caractères</div>
+    </div>
+
+    <div class="scene" id="s-recap">
+      <div class="abs verre rc" id="rc1"><span class="ico">👀</span><div><div class="c">cat</div><div class="t">tout voir</div></div></div>
+      <div class="abs verre rc" id="rc2"><span class="ico">📖</span><div><div class="c">less</div><div class="t">lire tranquillement</div></div></div>
+      <div class="abs verre rc" id="rc3"><span class="ico">⬆️</span><div><div class="c">head</div><div class="t">le début</div></div></div>
+      <div class="abs verre rc" id="rc4"><span class="ico">⬇️</span><div><div class="c">tail</div><div class="t">la fin</div></div></div>
+      <div class="abs verre rc" id="rc5"><span class="ico">📡</span><div><div class="c">tail -f</div><div class="t">le direct</div></div></div>
+      <div class="abs verre rc" id="rc6"><span class="ico">🔢</span><div><div class="c">wc</div><div class="t">compter</div></div></div>
+    </div>
+
+  </div></div>
+  <div id="vignette" class="layer"></div>
+  <div class="abs" id="badge"><img src="img/tux.svg" alt=""><div><div class="nom"><b>$</b> carnet-linux</div><div class="sous">Module 03 · Lire un fichier</div></div></div>
+  <canvas id="particules" width="1920" height="1080"></canvas>
+  <div class="abs" id="rideau"></div>
+  <div class="abs" id="st"></div>
+  <div class="abs" id="barre"></div>
+  <div id="flash" class="layer"></div>
+</div>
+<script src="lib/gsap.min.js"></script>
+<script src="commun.js"></script>
+<script>
+// Contenus générés : défilement de syslog, document de 15 lignes, lignes du direct.
+(() => {
+  const r = hasard(11), mots = ['systemd[1]: Started', 'kernel: audit', 'NetworkManager: dhcp', 'gnome-shell: ok', 'cron: job', 'snapd: refresh', 'kernel: usb'];
+  let h = '';
+  for (let i = 0; i < 160; i++) h += `<div>10:${String(10 + (i >> 2)).padStart(2, '0')}:${String((i * 7) % 60).padStart(2, '0')} ubuntu ${mots[Math.floor(r() * mots.length)]} ${Math.floor(r() * 9000)}</div>`;
+  document.getElementById('defile-int').innerHTML = h;
+  let d = '';
+  for (let i = 1; i <= 15; i++) d += `<div><b>${i}</b>ligne ${i} du fichier…</div>`;
+  document.getElementById('doc').innerHTML = d;
+  let f = '';
+  ['user: connexion SSH depuis 10.0.0.5', 'sshd: mot de passe refusé', 'kernel: usb 1-1: clé USB détectée', 'systemd: démarrage de cron', 'user: sauvegarde terminée', 'sshd: connexion acceptée']
+    .forEach((t, i) => { f += `<div class="l o tfl" id="tfl${i}">10:2${i}:0${i} ubuntu ${t}</div>`; });
+  document.getElementById('tf-lignes').innerHTML = f;
+})();
+
+Film.demarrer({
+  film: 'lire',
+  fin: { titre: 'Lire un fichier', sous: 'Carnet Linux · Module 03 — Lire &amp; éditer des fichiers', prompt: 'less /etc/services' },
+  construire(C) {
+    // 1. intro
+    gsap.set('#s-intro', { autoAlpha: 1 });
+    gsap.set(['.fic', '#outil-titre', '#puces span'], { opacity: 0 });
+    tl.fromTo('#titre', { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: 'back.out(2)' }, 0.3);
+    pop('#f1', C.texte + 1.8, { depuis: 0.3 }); pop('#f2', C.texte + 2.6, { depuis: 0.3 }); pop('#f3', C.texte + 3.6, { depuis: 0.3 });
+    tl.fromTo('#outil-titre', { y: 20, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.outil);
+    pop('#puces span', C.outil + 0.6, { stagger: 0.12, depuis: 0.3 });
+
+    // 2. cat
+    plonge(C.cat, '#s-intro', '#s-cat');
+    gsap.set(['#c1', '#c2', '#c3', '#defile', '#vertige'], { opacity: 0 });
+    ligne('#c1', C.cat + 0.3, 0.6);
+    sortie('#c2', C.hostname + 1.0);
+    ligne('#c3', C.dixmille + 0.2, 0.6);
+    tl.set('#defile', { opacity: 1 }, C.defile - 0.3);
+    tl.fromTo('#defile-int', { y: 0 }, { y: -6500, duration: 2.2, ease: 'power1.in', immediateRender: false }, C.defile - 0.3);
+    pop('#vertige', C.defile + 1.2, { rot: -20 });
+
+    // 3. less
+    rideau(C.less, '#s-cat', '#s-less');
+    gsap.set(['#less', '#less-touches .touche', '#less-touches .lab', '#comme-man'], { opacity: 0 });
+    tl.fromTo('#less', { y: 60, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.page);
+    pop(['#lt1', '#ll1'], C.espace, { depuis: 0.4 }); pop(['#lt2', '#ll2'], C.b, { depuis: 0.4 });
+    pop(['#lt3', '#ll3'], C.slash, { depuis: 0.4 }); pop(['#lt4', '#ll4'], C.q, { depuis: 0.4 });
+    tl.fromTo('#comme-man', { scale: 3, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.3, ease: 'power4.in', immediateRender: false }, C.man + 0.3);
+
+    // 4-5. head et tail
+    rideau(C.head, '#s-less', '#s-ht');
+    gsap.set(['#sel', '.cmd-lab', '#recents'], { opacity: 0 });
+    tl.fromTo('#doc', { y: 40, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.head);
+    const haut = (n) => ({ top: 140, height: n * 46 + 8 });
+    tl.set('#sel', { top: 136, height: 10 * 46 + 8 }, C.dix);
+    tl.fromTo('#sel', { opacity: 0, scaleY: 0, transformOrigin: '50% 0%' }, { opacity: 1, scaleY: 1, duration: 0.4, immediateRender: false }, C.dix);
+    tl.fromTo('#lab-head', { x: 40, opacity: 0 }, { x: 0, opacity: 1, immediateRender: false }, C.dix);
+    tl.to('#sel', { height: 3 * 46 + 8, duration: 0.4 }, C.n3 + 0.6);
+    tl.to('#lab-head', { opacity: 0, duration: 0.2 }, C.n3 + 0.4);
+    tl.fromTo('#lab-n3', { x: 40, opacity: 0 }, { x: 0, opacity: 1, immediateRender: false }, C.n3 + 0.5);
+    tl.to('#lab-n3', { opacity: 0, duration: 0.2 }, C.tail);
+    tl.to('#sel', { top: 136 + 5 * 46, height: 10 * 46 + 8, duration: 0.5 }, C.tail + 0.3);
+    tl.fromTo('#lab-tail', { x: 40, opacity: 0 }, { x: 0, opacity: 1, immediateRender: false }, C.tail + 0.4);
+    tl.fromTo('#recents', { x: -40, opacity: 0 }, { x: 0, opacity: 1, immediateRender: false }, C.journaux + 1.0);
+
+    // 6. tail -f
+    plonge(C.tailf, '#s-ht', '#s-tailf');
+    gsap.set(['#tf0', '.tfl', '#tf-c', '#live', '#surv', '#kc'], { opacity: 0 });
+    ligne('#tf0', C.tailf + 0.3, 0.8);
+    tl.fromTo('#live', { opacity: 0 }, { opacity: 1, duration: 0.2, immediateRender: false }, C.follow + 0.5);
+    tl.to('#live', { opacity: 0.35, duration: 0.45, yoyo: true, repeat: 15, ease: 'steps(1)' }, C.follow + 0.8);
+    document.querySelectorAll('.tfl').forEach((el, i) => sortie('#' + el.id, C.direct + i * 1.05));
+    tl.fromTo('#surv', { y: 20, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.admins);
+    pop('#kc', C.ctrlc, { depuis: 0.4 });
+    sortie('#tf-c', C.ctrlc + 0.6);
+    tl.to('#live', { opacity: 0, duration: 0.2 }, C.ctrlc + 0.6);
+
+    // 7. wc
+    rideau(C.wc, '#s-tailf', '#s-wc');
+    gsap.set(['#wc-nums span', '.wc-lab'], { opacity: 0 });
+    ligne('#w0', C.wc + 0.3, 0.6);
+    pop('#wc-nums span', C.wc + 1.3, { stagger: 0.15, depuis: 0.4 });
+    tl.fromTo('#wl1', { y: 20, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.lignes + 0.4);
+    tl.fromTo('#wl2', { y: 20, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.lignes + 1.0);
+    tl.fromTo('#wl3', { y: 20, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.lignes + 1.5);
+
+    // 8. récap
+    plonge(C.recap, '#s-wc', '#s-recap');
+    gsap.set('.rc', { opacity: 0 });
+    pop('#rc1', C.r_cat, { depuis: 0.3 }); pop('#rc2', C.r_less, { depuis: 0.3 }); pop('#rc3', C.r_head, { depuis: 0.3 });
+    pop('#rc4', C.r_tail, { depuis: 0.3 }); pop('#rc5', C.r_tailf, { depuis: 0.3 }); pop('#rc6', C.r_wc, { depuis: 0.3 });
+    salve(C.final + 0.3, 960, 500, 60, ['#e95420', '#b36bd6', '#f5c542', '#ffffff'], 'confetti', 1);
+  },
+});
+</script>
+</body>
+</html>

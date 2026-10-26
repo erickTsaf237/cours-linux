@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Installer des logiciels sous Linux : apt, dpkg, snap, flatpak | Cours Linux</title>
+  <meta name="description" content="Module 08 du cours Linux : paquets et dépôts, apt update, install, upgrade et remove, dpkg, PPA et dépôts tiers, snap et flatpak, compiler depuis les sources et mises à jour automatiques.">
+  <meta name="theme-color" content="#e95420">
+  <link rel="apple-touch-icon" href="../assets/img/icone-180.png">
+  <link rel="icon" href="../assets/img/tux.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <script>try{const t=JSON.parse(localStorage.getItem("theme"));if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<div class="progress-bar"></div>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../index.html"><img src="../assets/img/tux.svg" alt=""><span><span class="dollar">$</span> carnet-linux</span></a>
+    <nav class="nav">
+      <a href="../index.html">Programme</a>
+      <a href="08-logiciels.html" class="active hide-sm">Module 08</a>
+      <button class="theme-toggle" type="button" aria-label="Changer de thème">☀️</button>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <span class="eyebrow">PHASE 2 · MODULE 08</span>
+      <h1>Gestion des <span class="grad">logiciels</span></h1>
+      <p class="lead">Fini les installateurs téléchargés au hasard sur Internet : sous Linux, un gestionnaire de paquets installe, met à jour et
+        désinstalle des dizaines de milliers de logiciels vérifiés, en une commande. Et quand il ne suffit pas, snap et flatpak prennent le relais.</p>
+      <div class="hero-meta">
+        <span class="chip">⏱️ Lecture <b>~45 min</b></span>
+        <span class="chip">🧪 Pratique <b>~1 h</b></span>
+        <span class="chip">🎚️ Niveau <b>débutant → intermédiaire</b></span>
+      </div>
+    </div>
+    <div class="hero-art"><img class="tux" src="../assets/img/tux.svg" alt="Tux"></div>
+  </div>
+</section>
+
+<div class="layout">
+  <aside class="toc">
+    <div class="toc-title">Sommaire</div>
+    <ol></ol>
+  </aside>
+
+  <article class="content">
+
+    <!-- ================================================== -->
+    <h2 id="objectifs" data-short="Objectifs">🎯 Ce que tu sauras à la fin</h2>
+    <div class="cards four">
+      <div class="card" style="--c:var(--accent)"><div class="icon">📦</div><h4>Paquets</h4><p>Comprendre paquets, dépôts et dépendances.</p></div>
+      <div class="card" style="--c:var(--cyan)"><div class="icon">⚙️</div><h4>apt</h4><p>Installer, mettre à jour, chercher, désinstaller.</p></div>
+      <div class="card" style="--c:var(--violet)"><div class="icon">🧩</div><h4>snap &amp; flatpak</h4><p>Choisir le bon format selon le logiciel.</p></div>
+      <div class="card" style="--c:var(--green)"><div class="icon">🛡️</div><h4>Sécurité</h4><p>Dépôts de confiance, PPA et mises à jour automatiques.</p></div>
+    </div>
+
+    <!-- ================================================== -->
+    <h2 id="paquets" data-short="Paquets &amp; dépôts">Paquets et dépôts</h2>
+    <figure class="video-card">
+      <div class="video-head"><span class="video-badge">▶ Vidéo · 1 min 30</span><strong>Installer un logiciel : apt et les dépôts</strong><span>le gestionnaire de paquets d'Ubuntu</span></div>
+      <video controls preload="none" playsinline poster="../assets/video/apt.jpg"><source src="../assets/video/apt.mp4" type="video/mp4">Ton navigateur ne lit pas la vidéo : <a href="../assets/video/apt.mp4">télécharge-la ici</a>.</video>
+      <figcaption>Animation réalisée pour ce cours. Voix off et musique générées par IA (Google Gemini et Lyria).</figcaption>
+    </figure>
+
+    <dl class="glossary">
+      <dt>Paquet</dt><dd>Une archive (<code>.deb</code> sur Ubuntu) qui contient un logiciel, ses fichiers de configuration et la liste de ses <strong>dépendances</strong>.</dd>
+      <dt>Dépendance</dt><dd>Un autre paquet indispensable au fonctionnement (une bibliothèque, par exemple). Le gestionnaire les installe automatiquement.</dd>
+      <dt>Dépôt</dt><dd>Un serveur qui héberge des milliers de paquets, signés numériquement par la distribution.</dd>
+      <dt>Gestionnaire de paquets</dt><dd>L'outil qui télécharge, vérifie, installe et met à jour : <code>apt</code> sur Debian et Ubuntu, <code>dnf</code> sur Fedora, <code>pacman</code> sur Arch.</dd>
+    </dl>
+
+    <h3>Les dépôts d'Ubuntu</h3>
+    <div class="table-wrap"><table>
+      <tr><th>Composant</th><th>Contenu</th><th>Maintenu par</th></tr>
+      <tr><td><code>main</code></td><td>Logiciels libres essentiels, supportés officiellement</td><td>Canonical</td></tr>
+      <tr><td><code>universe</code></td><td>Le reste des logiciels libres : des dizaines de milliers de paquets</td><td>La communauté</td></tr>
+      <tr><td><code>restricted</code></td><td>Pilotes propriétaires indispensables (cartes graphiques…)</td><td>Canonical</td></tr>
+      <tr><td><code>multiverse</code></td><td>Logiciels non libres ou soumis à des restrictions (codecs…)</td><td>La communauté</td></tr>
+    </table></div>
+    <p>Sur Ubuntu 24.04, la liste des dépôts est dans <code>/etc/apt/sources.list.d/ubuntu.sources</code> :</p>
+    <div class="terminal" data-title="/etc/apt/sources.list.d/ubuntu.sources"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">cat</span> <span class="s">/etc/apt/sources.list.d/ubuntu.sources</span>
+<span class="o">Types: deb</span>
+<span class="o">URIs: http://fr.archive.ubuntu.com/ubuntu/</span>
+<span class="o">Suites: noble noble-updates noble-backports</span>
+<span class="o">Components: main restricted universe multiverse</span>
+<span class="o">Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg</span>
+
+<span class="o">Types: deb</span>
+<span class="o">URIs: http://security.ubuntu.com/ubuntu/</span>
+<span class="o">Suites: noble-security</span>
+<span class="o">...</span></pre></div>
+    <p><code>Signed-By</code> indique la clé qui garantit l'authenticité des paquets : si un paquet a été modifié en route, apt refuse de l'installer.</p>
+
+    <!-- ================================================== -->
+    <h2 id="apt" data-short="apt au quotidien">apt au quotidien</h2>
+    <div class="table-wrap"><table>
+      <tr><th>Commande</th><th>Effet</th></tr>
+      <tr><td><code>sudo apt update</code></td><td>Télécharge la liste à jour des paquets disponibles. N'installe rien.</td></tr>
+      <tr><td><code>sudo apt upgrade</code></td><td>Met à jour tous les paquets installés</td></tr>
+      <tr><td><code>sudo apt full-upgrade</code></td><td>Idem, en acceptant d'ajouter ou retirer des paquets si nécessaire (changement de noyau…)</td></tr>
+      <tr><td><code>sudo apt install paquet</code></td><td>Installe un paquet et ses dépendances</td></tr>
+      <tr><td><code>sudo apt remove paquet</code></td><td>Désinstalle, en gardant les fichiers de configuration</td></tr>
+      <tr><td><code>sudo apt purge paquet</code></td><td>Désinstalle et supprime la configuration système</td></tr>
+      <tr><td><code>sudo apt autoremove</code></td><td>Supprime les dépendances devenues inutiles</td></tr>
+      <tr><td><code>apt search mot</code></td><td>Cherche dans les noms et descriptions</td></tr>
+      <tr><td><code>apt show paquet</code></td><td>Description, version, taille, dépendances</td></tr>
+      <tr><td><code>apt list --installed</code> / <code>--upgradable</code></td><td>Paquets installés / à mettre à jour</td></tr>
+    </table></div>
+    <div class="terminal" data-title="user@ubuntu: ~"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">apt</span> search <span class="s">"system monitor"</span> 2&gt;/dev/null | <span class="k">head</span> <span class="f">-4</span>
+<span class="o">btop/noble 1.3.0-1 amd64</span>
+<span class="o">  Modern and colorful command line resource monitor that shows usage and stats</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> apt install <span class="s">btop</span>
+<span class="o">Les NOUVEAUX paquets suivants seront installés :</span>
+<span class="o">  btop</span>
+<span class="o">0 mis à jour, 1 nouvellement installés, 0 à enlever et 0 non mis à jour.</span>
+<span class="o">Après cette opération, 1 237 ko d'espace disque supplémentaires seront utilisés.</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">apt</span> show <span class="s">btop</span> 2&gt;/dev/null | <span class="k">grep</span> <span class="f">-E</span> <span class="s">'^(Version|Depends|Installed-Size)'</span></pre></div>
+
+    <div class="callout tip"><span class="callout-title"><code>apt</code> ou <code>apt-get</code> ?</span>
+      <p><code>apt</code> est la version moderne et conviviale (barre de progression, couleurs) : idéale au terminal. <code>apt-get</code> et <code>apt-cache</code>,
+        plus anciens, ont une sortie stable : on les préfère dans les scripts. Les deux utilisent les mêmes dépôts et la même base.</p></div>
+
+    <!-- ================================================== -->
+    <h2 id="dpkg" data-short="dpkg">Sous le capot : <code>dpkg</code></h2>
+    <p><code>apt</code> télécharge et résout les dépendances ; c'est <code>dpkg</code> qui installe réellement les fichiers <code>.deb</code>. Il reste très utile pour interroger le système :</p>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">dpkg</span> <span class="f">-l</span> | <span class="k">grep</span> <span class="s">openssh</span>              <span class="c"># le paquet est-il installé ?</span>
+<span class="o">ii  openssh-client  1:9.6p1-3ubuntu13  amd64  secure shell (SSH) client</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">dpkg</span> <span class="f">-L</span> <span class="s">btop</span> | <span class="k">head</span> <span class="f">-3</span>              <span class="c"># quels fichiers a-t-il installés ?</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">dpkg</span> <span class="f">-S</span> <span class="s">/usr/bin/ls</span>                    <span class="c"># à quel paquet appartient ce fichier ?</span>
+<span class="o">coreutils: /usr/bin/ls</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> apt install <span class="s">./logiciel.deb</span>       <span class="c"># installer un .deb téléchargé (avec ses dépendances)</span></pre></div>
+    <p>Dans <code>dpkg -l</code>, les deux lettres <code>ii</code> signifient « souhaité : installé, état : installé ». <code>rc</code> désigne un paquet supprimé dont il reste la configuration (à nettoyer avec <code>purge</code>).</p>
+
+    <!-- ================================================== -->
+    <h2 id="ppa" data-short="PPA &amp; dépôts tiers">PPA et dépôts tiers</h2>
+    <p>Certains logiciels ne sont pas dans les dépôts officiels, ou dans une version trop ancienne. Deux solutions :</p>
+    <div class="cards">
+      <div class="card" style="--c:var(--violet)"><div class="icon">🧑‍🔧</div><h4>Un PPA</h4>
+        <p><em>Personal Package Archive</em> : un dépôt hébergé sur Launchpad par un développeur ou une équipe.</p>
+        <div class="tags"><span class="tag">sudo add-apt-repository ppa:auteur/nom</span></div></div>
+      <div class="card" style="--c:var(--cyan)"><div class="icon">🏢</div><h4>Le dépôt de l'éditeur</h4>
+        <p>Docker, Google Chrome, VS Code… publient leur propre dépôt, avec leur clé de signature.</p>
+        <div class="tags"><span class="tag">/etc/apt/sources.list.d/</span></div></div>
+    </div>
+    <div class="callout danger"><span class="callout-title">Un dépôt tiers = une confiance totale</span>
+      <p>Les paquets s'installent avec les droits de root : ajouter un dépôt, c'est autoriser son auteur à exécuter n'importe quoi sur ta machine,
+        à chaque mise à jour. N'ajoute que des dépôts d'éditeurs reconnus, et retire ceux qui ne servent plus : <code>sudo add-apt-repository --remove ppa:auteur/nom</code>.</p></div>
+
+    <!-- ================================================== -->
+    <h2 id="snap" data-short="snap &amp; flatpak">deb, snap ou flatpak ?</h2>
+    <figure class="video-card">
+      <div class="video-head"><span class="video-badge">▶ Vidéo · 1 min 30</span><strong>deb, snap ou flatpak ?</strong><span>trois façons d'installer, trois philosophies</span></div>
+      <video controls preload="none" playsinline poster="../assets/video/snap.jpg"><source src="../assets/video/snap.mp4" type="video/mp4">Ton navigateur ne lit pas la vidéo : <a href="../assets/video/snap.mp4">télécharge-la ici</a>.</video>
+      <figcaption>Animation réalisée pour ce cours. Voix off et musique générées par IA (Google Gemini et Lyria).</figcaption>
+    </figure>
+    <div class="table-wrap"><table>
+      <tr><th></th><th>deb (apt)</th><th>snap</th><th>flatpak</th></tr>
+      <tr><td>Porté par</td><td>Debian / Ubuntu</td><td>Canonical</td><td>La communauté (Flathub)</td></tr>
+      <tr><td>Dépendances</td><td>Partagées avec le système</td><td>Embarquées</td><td>Embarquées (environnements partagés)</td></tr>
+      <tr><td>Isolation</td><td class="no">Non</td><td class="yes">Oui (confinement)</td><td class="yes">Oui (bac à sable)</td></tr>
+      <tr><td>Mises à jour</td><td>Avec <code>apt upgrade</code></td><td class="yes">Automatiques</td><td><code>flatpak update</code></td></tr>
+      <tr><td>Versions</td><td class="mid">Figées pendant la vie de la distribution</td><td class="yes">Récentes</td><td class="yes">Récentes</td></tr>
+      <tr><td>Place, démarrage</td><td class="yes">Léger, rapide</td><td class="mid">Plus lourd, 1er démarrage plus lent</td><td class="mid">Plus lourd</td></tr>
+      <tr><td>Idéal pour</td><td>Outils système, ligne de commande, serveurs</td><td>Applications de bureau, outils de développement</td><td>Applications de bureau, toutes distributions</td></tr>
+    </table></div>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">snap</span> list                              <span class="c"># les snaps installés (firefox en fait partie)</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">snap</span> find <span class="s">"video editor"</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> snap install <span class="s">vlc</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> snap refresh                      <span class="c"># forcer la mise à jour maintenant</span>
+
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> apt install <span class="s">flatpak</span>               <span class="c"># flatpak n'est pas installé par défaut sur Ubuntu</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">flatpak</span> remote-add <span class="f">--if-not-exists</span> <span class="s">flathub https://dl.flathub.org/repo/flathub.flatpakrepo</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">flatpak</span> install <span class="s">flathub org.gimp.GIMP</span></pre></div>
+    <p>La logithèque graphique d'Ubuntu (<em>App Center</em>) propose à la fois des snaps et des paquets deb : regarde la source indiquée sur la fiche de chaque logiciel.</p>
+
+    <!-- ================================================== -->
+    <h2 id="sources" data-short="Compiler depuis les sources">Dernier recours : compiler depuis les sources</h2>
+    <p>Quand un logiciel n'existe dans aucun format, on peut le construire à partir de son code source. La recette classique :</p>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> apt install <span class="s">build-essential</span>        <span class="c"># compilateur gcc, make…</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">tar</span> xf logiciel-1.2.tar.gz &amp;&amp; <span class="k">cd</span> logiciel-1.2
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~/logiciel-1.2</span><span class="p">$</span> ./configure                   <span class="c"># vérifie l'environnement, prépare la compilation</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~/logiciel-1.2</span><span class="p">$</span> <span class="k">make</span>                          <span class="c"># compile</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~/logiciel-1.2</span><span class="p">$</span> <span class="k">sudo</span> make install              <span class="c"># installe, en général dans /usr/local</span></pre></div>
+    <div class="callout warn"><span class="callout-title">Ce que tu perds</span>
+      <p>Un logiciel compilé à la main échappe au gestionnaire de paquets : pas de mises à jour automatiques (donc pas de correctifs de sécurité),
+        et une désinstallation parfois difficile. Lis toujours le fichier <code>README</code> ou <code>INSTALL</code> du projet, et garde ce choix pour les vrais cas particuliers.</p></div>
+
+    <!-- ================================================== -->
+    <h2 id="maj" data-short="Mises à jour automatiques">Les mises à jour automatiques</h2>
+    <p>Ubuntu installe les <strong>correctifs de sécurité</strong> tout seul, chaque jour, grâce au service <code>unattended-upgrades</code>. Pour vérifier ce qui a été fait :</p>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">systemctl</span> status <span class="s">unattended-upgrades</span> | <span class="k">head</span> <span class="f">-3</span>
+<span class="o">● unattended-upgrades.service - Unattended Upgrades Shutdown</span>
+<span class="o">     Loaded: loaded (/usr/lib/systemd/system/unattended-upgrades.service; enabled; preset: enabled)</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">less</span> <span class="s">/var/log/apt/history.log</span>            <span class="c"># l'historique de toutes les installations</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">ls</span> <span class="s">/var/run/reboot-required</span> 2&gt;/dev/null &amp;&amp; <span class="k">echo</span> <span class="s">"Redémarrage nécessaire"</span></pre></div>
+    <p>Une mise à jour du noyau ne prend effet qu'au redémarrage : le fichier <code>/var/run/reboot-required</code> apparaît alors.</p>
+
+    <!-- ================================================== -->
+    <h2 id="glossaire" data-short="Glossaire">Glossaire du module</h2>
+    <dl class="glossary">
+      <dt>Paquet (.deb)</dt><dd>Archive d'un logiciel prête à installer, avec ses dépendances déclarées.</dd>
+      <dt>Dépôt</dt><dd>Serveur de paquets signés.</dd>
+      <dt>apt</dt><dd>Gestionnaire de paquets de Debian et Ubuntu.</dd>
+      <dt>dpkg</dt><dd>L'outil bas niveau qui installe les fichiers .deb.</dd>
+      <dt>PPA</dt><dd>Dépôt personnel hébergé sur Launchpad.</dd>
+      <dt>snap</dt><dd>Format de Canonical : autonome, isolé, mis à jour automatiquement.</dd>
+      <dt>flatpak</dt><dd>Format communautaire équivalent, multi-distributions, catalogue Flathub.</dd>
+      <dt>Compilation</dt><dd>Transformer un code source en programme exécutable.</dd>
+      <dt>unattended-upgrades</dt><dd>Service qui installe automatiquement les correctifs de sécurité.</dd>
+    </dl>
+
+    <!-- ================================================== -->
+    <h2 id="quiz" data-short="Quiz">🧠 Quiz : as-tu tout retenu ?</h2>
+    <div class="quiz">
+      <div class="q" data-answer="1">
+        <div class="q-text">1. Que fait <code>sudo apt update</code> ?</div>
+        <div class="q-opts"><button>Il met à jour tous les logiciels</button><button>Il télécharge la liste à jour des paquets disponibles</button><button>Il met à jour Ubuntu vers la version suivante</button></div>
+        <div class="q-explain">C'est <code>apt upgrade</code> qui installe les nouvelles versions.</div>
+      </div>
+      <div class="q" data-answer="2">
+        <div class="q-text">2. Différence entre <code>remove</code> et <code>purge</code> ?</div>
+        <div class="q-opts"><button>Aucune</button><button><code>purge</code> supprime aussi les fichiers personnels</button><button><code>purge</code> supprime aussi les fichiers de configuration système</button></div>
+        <div class="q-explain">Les fichiers de ton dossier personnel ne sont jamais touchés par apt.</div>
+      </div>
+      <div class="q" data-answer="0">
+        <div class="q-text">3. Comment savoir à quel paquet appartient <code>/usr/bin/ls</code> ?</div>
+        <div class="q-opts"><button><code>dpkg -S /usr/bin/ls</code></button><button><code>apt show ls</code></button><button><code>which ls</code></button></div>
+        <div class="q-explain"><code>dpkg -S</code> cherche le paquet propriétaire d'un fichier (ici <code>coreutils</code>).</div>
+      </div>
+      <div class="q" data-answer="1">
+        <div class="q-text">4. Quel format se met à jour automatiquement en arrière-plan ?</div>
+        <div class="q-opts"><button>deb</button><button>snap</button><button>Un logiciel compilé</button></div>
+        <div class="q-explain">snapd vérifie et applique les mises à jour plusieurs fois par jour.</div>
+      </div>
+      <div class="q" data-answer="2">
+        <div class="q-text">5. Pourquoi être prudent avec les PPA ?</div>
+        <div class="q-opts"><button>Ils sont payants</button><button>Ils ralentissent apt</button><button>Leurs paquets s'installent avec les droits de root : il faut faire confiance à leur auteur</button></div>
+        <div class="q-explain">Ajouter un dépôt, c'est autoriser son auteur à modifier ton système à chaque mise à jour.</div>
+      </div>
+      <div class="q" data-answer="0">
+        <div class="q-text">6. Comment installer proprement un fichier <code>logiciel.deb</code> téléchargé ?</div>
+        <div class="q-opts"><button><code>sudo apt install ./logiciel.deb</code></button><button><code>sudo apt install logiciel.deb</code></button><button><code>chmod +x logiciel.deb</code></button></div>
+        <div class="q-explain">Le <code>./</code> indique un fichier local ; apt installe aussi ses dépendances.</div>
+      </div>
+      <div class="q" data-answer="1">
+        <div class="q-text">7. Que fait <code>sudo apt autoremove</code> ?</div>
+        <div class="q-opts"><button>Désinstalle les logiciels peu utilisés</button><button>Supprime les dépendances qui ne servent plus à aucun paquet</button><button>Supprime le cache des téléchargements</button></div>
+        <div class="q-explain">Le cache se vide avec <code>sudo apt clean</code>.</div>
+      </div>
+      <div class="q" data-answer="2">
+        <div class="q-text">8. Inconvénient principal d'un logiciel compilé depuis les sources ?</div>
+        <div class="q-opts"><button>Il est plus lent</button><button>Il ne fonctionne qu'en root</button><button>Il ne reçoit pas les mises à jour du gestionnaire de paquets</button></div>
+        <div class="q-explain">C'est à toi de surveiller et d'appliquer les correctifs.</div>
+      </div>
+      <div class="quiz-score">Réponds aux questions pour voir ton score.</div>
+    </div>
+
+    <!-- ================================================== -->
+    <h2 id="mission" data-short="Mission pratique">🚀 Mission pratique</h2>
+    <div class="mission">
+      <h4>À faire dans la machine virtuelle</h4>
+      <p class="mission-astuce">Coche chaque étape une fois faite : sa correction s'affiche juste en dessous.</p>
+      <ul class="checklist" data-key="m08">
+        <li><label><input type="checkbox"><span>Afficher la liste des dépôts configurés et repérer les quatre composants.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> cat /etc/apt/sources.list.d/ubuntu.sources
+<span class="o">Components: main restricted universe multiverse</span></pre><p>Sur une installation mise à jour depuis une ancienne version, la liste peut aussi se trouver dans <code>/etc/apt/sources.list</code>.</p></div></li>
+        <li><label><input type="checkbox"><span>Mettre à jour la liste des paquets, puis afficher ceux qui peuvent être mis à jour.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> sudo apt update
+<span class="o">...</span>
+<span class="o">12 paquets peuvent être mis à jour. Exécutez « apt list --upgradable » pour les voir.</span>
+<span class="p">$</span> apt list --upgradable</pre></div></li>
+        <li><label><input type="checkbox"><span>Chercher un moniteur système en ligne de commande, lire sa fiche, puis installer <code>btop</code>.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> apt search monitor | grep -i btop
+<span class="p">$</span> apt show btop
+<span class="p">$</span> sudo apt install btop
+<span class="p">$</span> btop          <span class="c"># q pour quitter</span></pre></div></li>
+        <li><label><input type="checkbox"><span>Retrouver, avec <code>dpkg</code>, les fichiers installés par <code>btop</code> et le paquet qui fournit <code>/usr/bin/ls</code>.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> dpkg -L btop | grep bin
+<span class="o">/usr/bin/btop</span>
+<span class="p">$</span> dpkg -S /usr/bin/ls
+<span class="o">coreutils: /usr/bin/ls</span></pre></div></li>
+        <li><label><input type="checkbox"><span>Désinstaller <code>btop</code> avec <code>remove</code>, constater l'état <code>rc</code>, puis nettoyer avec <code>purge</code>.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> sudo apt remove btop
+<span class="p">$</span> dpkg -l btop | tail -1
+<span class="o">rc  btop  1.3.0-1  amd64  Modern and colorful command line resource monitor...</span>
+<span class="p">$</span> sudo apt purge btop
+<span class="p">$</span> dpkg -l btop
+<span class="o">dpkg-query: aucun paquet ne correspond à btop</span></pre><p>Si btop n'avait pas de fichier de configuration système, il peut disparaître dès le <code>remove</code> : c'est normal.</p></div></li>
+        <li><label><input type="checkbox"><span>Lister les snaps installés et identifier ceux que tu n'as pas installés toi-même.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> snap list
+<span class="o">Nom                        Version   Révision  Suivi             Éditeur      Notes</span>
+<span class="o">bare                       1.0       5         latest/stable     canonical✓   base</span>
+<span class="o">core22                     2024…     …         latest/stable     canonical✓   base</span>
+<span class="o">firefox                    13x.0     …         latest/stable/…   mozilla✓     -</span>
+<span class="o">gnome-42-2204              0+git…    …         latest/stable     canonical✓   -</span>
+<span class="o">snapd                      2.6x      …         latest/stable     canonical✓   snapd</span>
+<span class="o">...</span></pre><p>Firefox, le magasin d'applications et les environnements d'exécution (<code>core22</code>, <code>gnome-42-2204</code>…) sont installés par Ubuntu.</p></div></li>
+        <li><label><input type="checkbox"><span>Installer un logiciel en snap (par exemple <code>vlc</code>), vérifier d'où vient la commande, puis le désinstaller.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> sudo snap install vlc
+<span class="p">$</span> which vlc
+<span class="o">/snap/bin/vlc</span>
+<span class="p">$</span> sudo snap remove vlc</pre><p>Les commandes des snaps sont dans <code>/snap/bin</code>, un dossier présent dans le <code>PATH</code> (module 09).</p></div></li>
+        <li><label><input type="checkbox"><span>Installer flatpak, ajouter Flathub et chercher une application.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> sudo apt install flatpak
+<span class="p">$</span> flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+<span class="p">$</span> flatpak search gimp
+<span class="o">GNU Image Manipulation Program   …   org.gimp.GIMP   …   flathub</span></pre><p>Pour que les applications flatpak apparaissent dans le menu, une déconnexion/reconnexion peut être nécessaire.</p></div></li>
+        <li><label><input type="checkbox"><span>Consulter l'historique des installations et vérifier qu'un redémarrage n'est pas nécessaire.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> grep -E '^(Start-Date|Commandline)' /var/log/apt/history.log | tail -4
+<span class="o">Start-Date: 2026-10-26  10:12:04</span>
+<span class="o">Commandline: apt install btop</span>
+<span class="p">$</span> ls /var/run/reboot-required 2&gt;/dev/null &amp;&amp; echo "Redémarrage nécessaire" || echo "Pas besoin de redémarrer"</pre></div></li>
+        <li><label><input type="checkbox"><span>Bonus : faire le ménage avec <code>autoremove</code> et <code>clean</code>, en notant l'espace libéré.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> df -h / | tail -1
+<span class="p">$</span> sudo apt autoremove
+<span class="p">$</span> du -sh /var/cache/apt/archives
+<span class="p">$</span> sudo apt clean
+<span class="p">$</span> df -h / | tail -1</pre><p><code>clean</code> vide le cache des paquets téléchargés : ils seraient de toute façon re-téléchargés si besoin.</p></div></li>
+      </ul>
+    </div>
+
+    <!-- ================================================== -->
+    <h2 id="questions" data-short="Questions fréquentes">💬 Questions fréquentes</h2>
+    <p>Les questions qui reviennent le plus souvent sur ce module, avec leurs réponses.</p>
+    <div class="qa" id="qa-list">
+      <details>
+        <summary>« Impossible d'obtenir le verrou /var/lib/dpkg/lock-frontend »</summary>
+        <p>Un autre programme utilise déjà le gestionnaire de paquets : souvent les mises à jour automatiques, juste après le démarrage, ou une autre fenêtre
+          de terminal. Attends quelques minutes et réessaie. Ne supprime jamais le fichier de verrou à la main : tu risquerais de corrompre la base des paquets.</p>
+      </details>
+      <details>
+        <summary>« Paquets cassés » ou « dépendances non satisfaites »</summary>
+        <p>Souvent après une installation interrompue. Essaie dans l'ordre : <code>sudo apt --fix-broken install</code>, puis <code>sudo dpkg --configure -a</code>,
+          puis <code>sudo apt update &amp;&amp; sudo apt upgrade</code>. Si un PPA est en cause, retire-le.</p>
+      </details>
+      <details>
+        <summary>Pourquoi Firefox est-il un snap sur Ubuntu ?</summary>
+        <p>Depuis Ubuntu 22.04, Mozilla et Canonical distribuent Firefox en snap : les mises à jour arrivent directement de Mozilla, le jour de leur sortie,
+          et le navigateur est isolé du système. Le prix à payer est un premier démarrage un peu plus lent.</p>
+      </details>
+    </div>
+
+    <button class="done-btn" data-module="08" type="button">🏁 Marquer ce module comme terminé</button>
+
+    <nav class="page-nav">
+      <a href="07-processus.html"><small>← Précédent</small>Module 07 — Processus &amp; tâches</a>
+      <a class="next" href="09-environnement.html"><small>Suivant →</small>Module 09 — Personnaliser son environnement</a>
+    </nav>
+  </article>
+</div>
+
+<footer class="site-footer">
+  <div>Carnet Linux · Module 08 · 🐧</div>
+</footer>
+
+<script src="../assets/js/main.js"></script>
+</body>
+</html>
