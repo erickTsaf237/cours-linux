@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SSH sous Linux : connexion, clés, scp, rsync et sécurité | Cours Linux</title>
+  <meta name="description" content="Module 13 du cours Linux : se connecter en SSH à un serveur ou à sa VM depuis Windows, créer des clés SSH, ~/.ssh/config, copier avec scp et rsync, sécuriser sshd.">
+  <meta name="theme-color" content="#e95420">
+  <link rel="apple-touch-icon" href="../assets/img/icone-180.png">
+  <link rel="icon" href="../assets/img/tux.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <script>try{const t=JSON.parse(localStorage.getItem("theme"));document.documentElement.dataset.theme=t||"light"}catch(e){document.documentElement.dataset.theme="light"}</script>
+</head>
+<body>
+<div class="progress-bar"></div>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../index.html"><img src="../assets/img/tux.svg" alt=""><span><span class="dollar">$</span> carnet-linux</span></a>
+    <nav class="nav">
+      <a href="../index.html">Programme</a>
+      <a href="13-ssh.html" class="active hide-sm">Module 13</a>
+      <button class="theme-toggle" type="button" aria-label="Changer de thème">☀️</button>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <span class="eyebrow">PHASE 3 · MODULE 13</span>
+      <h1>SSH &amp; <span class="grad">accès à distance</span></h1>
+      <p class="lead">Piloter une machine sans écran, à l'autre bout du monde ou simplement dans ta VM, depuis le terminal de ton ordinateur :
+        connexion chiffrée, clés à la place des mots de passe, copie de fichiers et serveur verrouillé.</p>
+      <div class="hero-meta">
+        <span class="chip">⏱️ Lecture <b>~45 min</b></span>
+        <span class="chip">🧪 Pratique <b>~1 h</b></span>
+        <span class="chip">🎚️ Niveau <b>intermédiaire</b></span>
+      </div>
+    </div>
+    <div class="hero-art"><img class="tux" src="../assets/img/tux.svg" alt="Tux"></div>
+  </div>
+</section>
+
+<div class="layout">
+  <aside class="toc">
+    <div class="toc-title">Sommaire</div>
+    <ol></ol>
+  </aside>
+
+  <article class="content">
+
+    <!-- ================================================== -->
+    <h2 id="objectifs" data-short="Objectifs">🎯 Ce que tu sauras à la fin</h2>
+    <div class="cards four">
+      <div class="card" style="--c:var(--accent)"><div class="icon">🔌</div><h4>Se connecter</h4><p>Ouvrir un terminal sur ta VM depuis Windows avec <code>ssh</code>.</p></div>
+      <div class="card" style="--c:var(--cyan)"><div class="icon">🔑</div><h4>Clés SSH</h4><p>Créer une paire de clés et ne plus taper de mot de passe.</p></div>
+      <div class="card" style="--c:var(--violet)"><div class="icon">📦</div><h4>Copier</h4><p>Transférer des fichiers avec <code>scp</code> et <code>rsync</code>.</p></div>
+      <div class="card" style="--c:var(--green)"><div class="icon">🛡️</div><h4>Sécuriser</h4><p>Interdire les mots de passe et root, sans s'enfermer dehors.</p></div>
+    </div>
+
+    <!-- ================================================== -->
+    <h2 id="principe" data-short="Le principe">SSH : un terminal à distance</h2>
+    <figure class="video-card">
+      <div class="video-head"><span class="video-badge">▶ Vidéo · 1 min 25</span><strong>SSH, un terminal à distance</strong><span>serveur, client, empreinte</span></div>
+      <video controls preload="none" playsinline poster="../assets/video/ssh.jpg"><source src="../assets/video/ssh.mp4" type="video/mp4">Ton navigateur ne lit pas la vidéo : <a href="../assets/video/ssh.mp4">télécharge-la ici</a>.</video>
+      <figcaption>Animation réalisée pour ce cours. Voix off et musique générées par IA (Google Gemini et Lyria).</figcaption>
+    </figure>
+
+    <p><strong>SSH</strong> (<em>Secure Shell</em>) ouvre un shell sur une autre machine : tu tapes sur ton clavier, les commandes s'exécutent là-bas, et leur sortie
+      revient dans ton terminal. Tout le trafic est <strong>chiffré</strong>, mot de passe compris. C'est ainsi qu'on administre la quasi-totalité des serveurs Linux.</p>
+    <div class="cards">
+      <div class="card" style="--c:var(--accent)"><div class="icon">🖥️</div><h4>Le serveur : <code>sshd</code></h4><p>Un service qui écoute sur le <strong>port 22</strong>. Paquet <code>openssh-server</code>, absent d'Ubuntu Desktop par défaut.</p></div>
+      <div class="card" style="--c:var(--cyan)"><div class="icon">💻</div><h4>Le client : <code>ssh</code></h4><p>Déjà présent sur Linux, macOS et Windows 10/11 (PowerShell). Paquet <code>openssh-client</code>.</p></div>
+    </div>
+    <div class="terminal" data-title="dans la VM"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> apt install <span class="s">openssh-server</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">systemctl</span> <span class="s">status ssh</span> <span class="f">--no-pager</span>
+<span class="o">○ ssh.service - OpenBSD Secure Shell server</span>
+<span class="o">     Loaded: loaded (/usr/lib/systemd/system/ssh.service; disabled; preset: enabled)</span>
+<span class="o">     Active: inactive (dead)</span>
+<span class="o">TriggeredBy: ● ssh.socket</span>                         <span class="c"># c'est le socket qui écoute</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">ss</span> <span class="f">-tln</span> | <span class="k">grep</span> <span class="s">:22</span>
+<span class="o">LISTEN 0      4096         0.0.0.0:22        0.0.0.0:*</span>
+<span class="o">LISTEN 0      4096            [::]:22           [::]:*</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> ufw <span class="s">allow ssh</span>                         <span class="c"># si le pare-feu est actif (module 12)</span></pre></div>
+    <div class="callout info"><span class="callout-title">« inactive (dead) » : est-ce grave ?</span>
+      <p>Non. Depuis Ubuntu 22.10, SSH est <strong>activé à la demande</strong> : c'est <code>ssh.socket</code> (systemd, module 10) qui écoute le port 22
+        et ne démarre <code>ssh.service</code> qu'à la première connexion. <code>ss -tln</code> le confirme : le port 22 est bien ouvert.</p></div>
+
+    <!-- ================================================== -->
+    <h2 id="vm" data-short="Se connecter à sa VM">Se connecter à sa VM depuis Windows</h2>
+    <p>En mode NAT (module 12), la VM est invisible depuis ton ordinateur. On demande à VirtualBox de faire suivre un port de l'hôte vers le port 22 de la VM :</p>
+    <ol class="steps">
+      <li><strong>Configuration › Réseau › Adaptateur 1</strong><p>Mode d'accès : <strong>NAT</strong>. Déplie <strong>Avancé</strong>, puis clique <strong>Redirection de ports</strong>.</p></li>
+      <li><strong>Ajouter une règle (+)</strong><p>Nom <code>ssh</code>, Protocole <strong>TCP</strong>, IP hôte <code>127.0.0.1</code>, Port hôte <code>2222</code>, IP invité vide, Port invité <code>22</code>. OK.</p></li>
+      <li><strong>Se connecter depuis Windows</strong><p>Ouvre <strong>PowerShell</strong> (ou le Terminal Windows) et tape <code>ssh -p 2222 user@localhost</code>, avec ton nom d'utilisateur Ubuntu.</p></li>
+    </ol>
+    <div class="terminal" data-title="Windows PowerShell"><pre><span class="p">PS C:\&gt;</span> <span class="k">ssh</span> <span class="f">-p 2222</span> <span class="s">user@localhost</span>
+<span class="o">The authenticity of host '[localhost]:2222 ([127.0.0.1]:2222)' can't be established.</span>
+<span class="o">ED25519 key fingerprint is SHA256:mn3pUboINHWcHbUWUCfcU0I8D+mkMArhs9LzEtj14VU.</span>
+<span class="o">Are you sure you want to continue connecting (yes/no/[fingerprint])? </span><b>yes</b>
+<span class="o">Warning: Permanently added '[localhost]:2222' (ED25519) to the list of known hosts.</span>
+<span class="o">user@localhost's password:</span>                             <span class="c"># rien ne s'affiche en tapant : c'est normal</span>
+<span class="o">Welcome to Ubuntu 24.04 LTS (GNU/Linux 6.8.0-49-generic x86_64)</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">exit</span>                                    <span class="c"># ou Ctrl+D : retour à Windows</span>
+<span class="o">déconnexion</span>
+<span class="o">Connection to localhost closed.</span></pre></div>
+    <p>Avantages immédiats : copier-coller natif, terminal redimensionnable, et plus besoin de la fenêtre de la VM (tu peux la démarrer « sans affichage » :
+      clic droit › <em>Démarrer › Démarrage sans interface</em>). En mode <strong>Accès par pont</strong>, pas de redirection : <code>ssh user@192.168.1.37</code>, avec l'adresse
+      donnée par <code>ip a</code> dans la VM.</p>
+    <h3>L'empreinte du serveur : <code>known_hosts</code></h3>
+    <p>À la première connexion, SSH note l'empreinte du serveur dans <code>~/.ssh/known_hosts</code>. Si elle change ensuite, il refuse de se connecter :</p>
+    <div class="terminal"><pre><span class="o">@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@</span>
+<span class="o">@    WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!     @</span>
+<span class="o">@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@</span>
+<span class="o">IT IS POSSIBLE THAT SOMEONE IS DOING SOMETHING NASTY!</span>
+<span class="o">Someone could be eavesdropping on you right now (man-in-the-middle attack)!</span>
+<span class="o">It is also possible that a host key has just been changed.</span>
+<span class="o">…</span>
+<span class="o">Host key verification failed.</span></pre></div>
+    <p>Si tu sais pourquoi (VM réinstallée, nouvelle VM sur le même port), efface l'ancienne empreinte puis reconnecte-toi :
+      <code>ssh-keygen -R "[localhost]:2222"</code> (ou <code>ssh-keygen -R 192.168.1.20</code>). Si tu ne sais pas pourquoi, ne force rien : quelqu'un se fait peut-être passer pour ton serveur.</p>
+
+    <!-- ================================================== -->
+    <h2 id="cles" data-short="Les clés SSH">Les clés SSH</h2>
+    <figure class="video-card">
+      <div class="video-head"><span class="video-badge">▶ Vidéo · 1 min 20</span><strong>Les clés SSH</strong><span>un cadenas sur le serveur, une clé dans ta poche</span></div>
+      <video controls preload="none" playsinline poster="../assets/video/cles.jpg"><source src="../assets/video/cles.mp4" type="video/mp4">Ton navigateur ne lit pas la vidéo : <a href="../assets/video/cles.mp4">télécharge-la ici</a>.</video>
+      <figcaption>Animation réalisée pour ce cours. Voix off et musique générées par IA (Google Gemini et Lyria).</figcaption>
+    </figure>
+
+    <p>Une paire de clés remplace le mot de passe : la <strong>clé privée</strong> reste sur ton ordinateur, la <strong>clé publique</strong> est copiée sur chaque serveur.
+      À la connexion, le serveur envoie un défi que seule la clé privée sait signer : aucun secret ne circule, et rien n'est devinable.</p>
+    <div class="terminal" data-title="sur ton ordinateur (Linux, macOS ou PowerShell)"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">ssh-keygen</span> <span class="f">-t</span> <span class="s">ed25519</span> <span class="f">-C</span> <span class="s">"user@portable"</span>      <span class="c"># -C : un commentaire pour la reconnaître</span>
+<span class="o">Generating public/private ed25519 key pair.</span>
+<span class="o">Enter file in which to save the key (/home/user/.ssh/id_ed25519):</span>       <span class="c"># Entrée : emplacement par défaut</span>
+<span class="o">Enter passphrase (empty for no passphrase):</span>                        <span class="c"># une phrase de passe, recommandée</span>
+<span class="o">Enter same passphrase again:</span>
+<span class="o">Your identification has been saved in /home/user/.ssh/id_ed25519</span>
+<span class="o">Your public key has been saved in /home/user/.ssh/id_ed25519.pub</span>
+<span class="o">The key fingerprint is:</span>
+<span class="o">SHA256:mn3pUboINHWcHbUWUCfcU0I8D+mkMArhs9LzEtj14VU user@portable</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">ls</span> <span class="f">-l</span> <span class="s">~/.ssh</span>
+<span class="o">-rw------- 1 user user 411 nov.  17 09:55 id_ed25519</span>          <span class="c"># privée : lisible par toi seul</span>
+<span class="o">-rw-r--r-- 1 user user  96 nov.  17 09:55 id_ed25519.pub</span>      <span class="c"># publique : à distribuer</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">cat</span> <span class="s">~/.ssh/id_ed25519.pub</span>
+<span class="o">ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPK3gdCsUsvo87U73ilPVssjUnnoe2lAp5f/gNZ9ivp5 user@portable</span></pre></div>
+    <h3>Poser la clé publique sur le serveur</h3>
+    <p>Elle doit rejoindre <code>~/.ssh/authorized_keys</code> de l'utilisateur, sur le serveur. Depuis Linux ou macOS, une commande s'en charge :</p>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">ssh-copy-id</span> <span class="s">user@192.168.1.20</span>
+<span class="o">user@192.168.1.20's password:</span>                          <span class="c"># le mot de passe, une dernière fois</span>
+<span class="o">Number of key(s) added: 1</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">ssh</span> <span class="s">user@192.168.1.20</span>                   <span class="c"># plus de mot de passe demandé</span></pre></div>
+    <p>Windows n'a pas <code>ssh-copy-id</code> ; dans PowerShell, cette ligne fait le même travail (crée le dossier si besoin et ajoute la clé à la fin du fichier) :</p>
+    <div class="terminal" data-title="Windows PowerShell"><pre><span class="p">PS C:\&gt;</span> <span class="k">ssh-keygen</span> <span class="f">-t</span> <span class="s">ed25519</span>
+<span class="p">PS C:\&gt;</span> <span class="k">type</span> <span class="v">$env:USERPROFILE</span><span class="s">\.ssh\id_ed25519.pub</span> | <span class="k">ssh</span> <span class="f">-p 2222</span> <span class="s">user@localhost</span> <span class="s">"mkdir -p ~/.ssh &amp;&amp; chmod 700 ~/.ssh &amp;&amp; cat &gt;&gt; ~/.ssh/authorized_keys"</span></pre></div>
+    <div class="callout warn"><span class="callout-title">Les permissions comptent</span>
+      <p>SSH ignore une clé que d'autres pourraient lire. Une clé privée trop ouverte donne :</p>
+      <div class="terminal"><pre><span class="o">@         WARNING: UNPROTECTED PRIVATE KEY FILE!          @</span>
+<span class="o">Permissions 0644 for '/home/user/.ssh/id_ed25519' are too open.</span>
+<span class="o">This private key will be ignored.</span></pre></div>
+      <p>Les bons réglages : <code>chmod 700 ~/.ssh</code>, <code>chmod 600 ~/.ssh/id_ed25519 ~/.ssh/authorized_keys</code>. Côté serveur, un dossier <code>~/.ssh</code>
+        ouvert à tous fait refuser la clé en silence : <code>Permission denied (publickey,password)</code>.</p></div>
+    <div class="callout tip"><span class="callout-title">Phrase de passe sans la retaper : <code>ssh-agent</code></span>
+      <p>Une phrase de passe protège la clé si ton ordinateur est volé. Pour ne la taper qu'une fois par session, l'agent la garde en mémoire : sur Ubuntu Desktop il tourne
+        déjà (<code>ssh-add</code> pour ajouter ta clé) ; sous Windows, active le service <em>OpenSSH Authentication Agent</em> puis <code>ssh-add</code>.</p></div>
+
+    <!-- ================================================== -->
+    <h2 id="config" data-short="~/.ssh/config">Des raccourcis : <code>~/.ssh/config</code></h2>
+    <p>Taper <code>ssh -p 2222 user@localhost</code> à chaque fois devient vite lassant. Le fichier <code>~/.ssh/config</code> de ton ordinateur (sous Windows :
+      <code>C:\Users\Nom\.ssh\config</code>, sans extension) donne un surnom à chaque machine :</p>
+    <div class="terminal" data-title="~/.ssh/config"><pre><span class="k">Host</span> <span class="v">vm</span>
+    <span class="k">HostName</span> <span class="s">localhost</span>
+    <span class="k">Port</span> <span class="s">2222</span>
+    <span class="k">User</span> <span class="s">user</span>
+
+<span class="k">Host</span> <span class="v">serveur</span>
+    <span class="k">HostName</span> <span class="s">192.168.1.20</span>
+    <span class="k">User</span> <span class="s">admin</span>
+    <span class="k">IdentityFile</span> <span class="s">~/.ssh/id_ed25519</span></pre></div>
+    <div class="terminal"><pre><span class="p">PS C:\&gt;</span> <span class="k">ssh</span> <span class="s">vm</span>                                   <span class="c"># remplace ssh -p 2222 user@localhost</span>
+<span class="p">PS C:\&gt;</span> <span class="k">ssh</span> <span class="s">vm</span> <span class="s">"df -h /"</span>                           <span class="c"># exécuter une seule commande, puis revenir</span></pre></div>
+    <p>Le surnom marche aussi avec <code>scp</code>, <code>rsync</code>, et l'extension <em>Remote - SSH</em> de VS Code, qui ouvre les fichiers de la VM directement dans l'éditeur.</p>
+
+    <!-- ================================================== -->
+    <h2 id="copier" data-short="scp &amp; rsync">Copier des fichiers : <code>scp</code> et <code>rsync</code></h2>
+    <p>Les deux passent par le même tunnel chiffré. La syntaxe imite <code>cp</code> : <code>source destination</code>, où une machine distante s'écrit <code>machine:chemin</code>.</p>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">scp</span> <span class="s">rapport.pdf vm:~/</span>                       <span class="c"># envoyer un fichier dans le dossier personnel</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">scp</span> <span class="s">vm:/var/log/syslog .</span>                    <span class="c"># récupérer un fichier ici (« . »)</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">scp</span> <span class="f">-r</span> <span class="s">photos vm:~/</span>                        <span class="c"># -r : un dossier entier</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">rsync</span> <span class="f">-av</span> <span class="s">projet/ vm:~/projet/</span>             <span class="c"># synchroniser : ne copie que ce qui a changé</span>
+<span class="o">sending incremental file list</span>
+<span class="o">created directory /home/user/projet</span>
+<span class="o">./</span>
+<span class="o">a.txt</span>
+<span class="o">sous/</span>
+<span class="o">sous/b.txt</span>
+
+<span class="o">sent 224 bytes  received 104 bytes  218.67 bytes/sec</span>
+<span class="o">total size is 4  speedup is 0.01</span></pre></div>
+    <div class="cards">
+      <div class="card" style="--c:var(--accent)"><div class="icon">📮</div><h4>scp</h4><p>Simple et partout disponible, y compris sous Windows. Recopie tout, à chaque fois.</p></div>
+      <div class="card" style="--c:var(--cyan)"><div class="icon">🔄</div><h4>rsync</h4><p>Ne transfère que les différences, reprend après une coupure, garde dates et droits (<code>-a</code>). Idéal pour les sauvegardes (module 15).</p></div>
+    </div>
+    <div class="callout warn"><span class="callout-title">rsync et la barre oblique finale</span>
+      <p><code>rsync -av projet/ vm:~/copie/</code> copie le <strong>contenu</strong> de <code>projet</code> dans <code>copie</code>.
+        <code>rsync -av projet vm:~/copie/</code> (sans <code>/</code>) copie le <strong>dossier</strong> lui-même : on obtient <code>copie/projet/…</code>.
+        Ajoute <code>-n</code> (<em>dry run</em>) pour voir ce qui se passerait sans rien copier. <code>rsync</code> doit être installé des deux côtés (c'est le cas sur Ubuntu).</p></div>
+
+    <!-- ================================================== -->
+    <h2 id="securiser" data-short="Sécuriser sshd">Sécuriser le serveur SSH</h2>
+    <p>Un serveur SSH ouvert sur Internet reçoit des milliers de tentatives de connexion par jour, de robots qui essaient des mots de passe courants.
+      Trois réglages les rendent inutiles. Sur Ubuntu, on les écrit dans un fichier à part dans <code>/etc/ssh/sshd_config.d/</code>, plutôt que de modifier
+      <code>sshd_config</code> : il survit aux mises à jour.</p>
+    <div class="terminal" data-title="/etc/ssh/sshd_config.d/10-securite.conf"><pre><span class="k">PasswordAuthentication</span> <span class="s">no</span>      <span class="c"># clés uniquement</span>
+<span class="k">PermitRootLogin</span> <span class="s">no</span>             <span class="c"># on se connecte en utilisateur, puis sudo</span>
+<span class="k">AllowUsers</span> <span class="s">user</span>               <span class="c"># facultatif : seuls ces comptes peuvent entrer</span></pre></div>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> sshd <span class="f">-t</span>                          <span class="c"># vérifie la syntaxe : silence = OK</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> systemctl <span class="s">restart ssh</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> sshd <span class="f">-T</span> | <span class="k">grep</span> <span class="f">-iE</span> <span class="s">'passwordauth|permitroot'</span>   <span class="c"># la configuration réellement appliquée</span>
+<span class="o">permitrootlogin no</span>
+<span class="o">passwordauthentication no</span></pre></div>
+    <p>Une faute de frappe est signalée avant qu'elle ne fasse de dégâts :</p>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> sshd <span class="f">-t</span>
+<span class="o">/etc/ssh/sshd_config.d/10-securite.conf: line 3: Bad configuration option: PasswordAuthentification</span>
+<span class="o">/etc/ssh/sshd_config.d/10-securite.conf: terminating, 1 bad configuration options</span></pre></div>
+    <div class="callout danger"><span class="callout-title">Ne scie pas la branche sur laquelle tu es assis</span>
+      <p>Avant de couper les mots de passe : vérifie que ta clé fonctionne (<code>ssh vm</code> sans mot de passe demandé). Après le redémarrage de <code>ssh</code>,
+        <strong>garde ta session ouverte</strong> et teste dans un <strong>second</strong> terminal : en cas de problème, la première session te permet encore de corriger.
+        Ensuite, un essai sans clé doit échouer : <code>Permission denied (publickey).</code></p></div>
+    <h3>Et le port 22 ?</h3>
+    <p>Changer de port (<code>Port 2200</code>) réduit le bruit des robots dans les journaux, mais ne remplace pas les clés. Sur Ubuntu 24.04, le port est géré par le socket :
+      après la modification, il faut <code>sudo systemctl daemon-reload</code> puis <code>sudo systemctl restart ssh.socket</code>, sans oublier
+      <code>sudo ufw allow 2200/tcp</code> et la redirection de VirtualBox. Pour aller plus loin, <code>sudo ufw limit ssh</code> (module 12) freine les essais en rafale, et
+      <strong>fail2ban</strong> bannit les adresses trop insistantes (module 19). Les tentatives se lisent avec <code>journalctl -u ssh</code>.</p>
+
+    <!-- ================================================== -->
+    <h2 id="glossaire" data-short="Glossaire">Glossaire du module</h2>
+    <dl class="glossary">
+      <dt>SSH</dt><dd>Protocole de connexion chiffrée à distance (port 22).</dd>
+      <dt>sshd</dt><dd>Le serveur SSH (paquet <code>openssh-server</code>).</dd>
+      <dt>Empreinte</dt><dd>Identité du serveur, mémorisée dans <code>~/.ssh/known_hosts</code>.</dd>
+      <dt>Clé privée / publique</dt><dd>Paire de clés : la privée reste chez toi, la publique va sur les serveurs.</dd>
+      <dt>authorized_keys</dt><dd>Liste des clés publiques autorisées pour un compte, sur le serveur.</dd>
+      <dt>Phrase de passe</dt><dd>Mot de passe qui chiffre la clé privée sur ton disque.</dd>
+      <dt>ssh-agent</dt><dd>Garde les clés déverrouillées en mémoire le temps d'une session.</dd>
+      <dt>Redirection de port</dt><dd>Fait suivre un port de l'hôte vers un port de la VM.</dd>
+      <dt>scp / rsync</dt><dd>Copie de fichiers par SSH / synchronisation différentielle.</dd>
+    </dl>
+
+    <!-- ================================================== -->
+    <h2 id="quiz" data-short="Quiz">🧠 Quiz : as-tu tout retenu ?</h2>
+    <div class="quiz">
+      <div class="q" data-answer="1">
+        <div class="q-text">1. Quel paquet faut-il installer sur une machine pour pouvoir s'y connecter en SSH ?</div>
+        <div class="q-opts"><button><code>openssh-client</code></button><button><code>openssh-server</code></button><button><code>ssh-copy-id</code></button></div>
+        <div class="q-explain">Le client sert à se connecter <em>vers</em> une machine ; le serveur à en accepter les connexions.</div>
+      </div>
+      <div class="q" data-answer="2">
+        <div class="q-text">2. Ta VM est en NAT avec une redirection 2222 → 22. Quelle commande lancer depuis Windows ?</div>
+        <div class="q-opts"><button><code>ssh user@10.0.2.15</code></button><button><code>ssh -p 22 user@localhost</code></button><button><code>ssh -p 2222 user@localhost</code></button></div>
+        <div class="q-explain">On se connecte au port 2222 de l'hôte, que VirtualBox fait suivre au port 22 de la VM.</div>
+      </div>
+      <div class="q" data-answer="0">
+        <div class="q-text">3. Quel fichier ne doit jamais quitter ton ordinateur ?</div>
+        <div class="q-opts"><button><code>id_ed25519</code></button><button><code>id_ed25519.pub</code></button><button><code>known_hosts</code></button></div>
+        <div class="q-explain">C'est la clé privée ; la <code>.pub</code> se donne librement.</div>
+      </div>
+      <div class="q" data-answer="1">
+        <div class="q-text">4. Dans quel fichier du serveur la clé publique doit-elle se trouver ?</div>
+        <div class="q-opts"><button><code>/etc/ssh/sshd_config</code></button><button><code>~/.ssh/authorized_keys</code></button><button><code>~/.ssh/known_hosts</code></button></div>
+        <div class="q-explain"><code>ssh-copy-id</code> l'y ajoute pour toi.</div>
+      </div>
+      <div class="q" data-answer="2">
+        <div class="q-text">5. SSH affiche « REMOTE HOST IDENTIFICATION HAS CHANGED » alors que rien n'a changé de ton côté. Que faire ?</div>
+        <div class="q-opts"><button>Supprimer tout <code>~/.ssh</code></button><button>Désactiver la vérification</button><button>Ne pas se connecter avant de savoir pourquoi l'empreinte a changé</button></div>
+        <div class="q-explain">Une réinstallation l'explique ; sinon, c'est peut-être une usurpation. <code>ssh-keygen -R</code> seulement une fois rassuré.</div>
+      </div>
+      <div class="q" data-answer="0">
+        <div class="q-text">6. Que copie <code>rsync -av photos/ vm:~/sauve/</code> ?</div>
+        <div class="q-opts"><button>Le contenu de <code>photos</code> dans <code>sauve</code></button><button>Le dossier <code>photos</code> dans <code>sauve</code></button><button>Rien, il manque <code>-r</code></button></div>
+        <div class="q-explain">La barre finale signifie « le contenu de ». <code>-a</code> inclut déjà la récursivité.</div>
+      </div>
+      <div class="q" data-answer="1">
+        <div class="q-text">7. Avant de passer <code>PasswordAuthentication</code> à <code>no</code>, il faut…</div>
+        <div class="q-opts"><button>redémarrer le serveur</button><button>vérifier que la connexion par clé fonctionne</button><button>changer le port</button></div>
+        <div class="q-explain">Sinon, plus aucun moyen d'entrer : ni mot de passe, ni clé.</div>
+      </div>
+      <div class="q" data-answer="2">
+        <div class="q-text">8. Quelle commande vérifie la configuration de sshd sans rien redémarrer ?</div>
+        <div class="q-opts"><button><code>systemctl status ssh</code></button><button><code>ssh -v</code></button><button><code>sudo sshd -t</code></button></div>
+        <div class="q-explain"><code>-t</code> comme <em>test</em> : silencieuse si tout va bien.</div>
+      </div>
+      <div class="quiz-score">Réponds aux questions pour voir ton score.</div>
+    </div>
+
+    <!-- ================================================== -->
+    <h2 id="mission" data-short="Mission pratique">🚀 Mission pratique</h2>
+    <div class="mission">
+      <h4>Piloter la VM depuis Windows</h4>
+      <p class="mission-astuce">Coche chaque étape une fois faite : sa correction s'affiche juste en dessous. Fais d'abord un instantané de la VM.
+        Remplace <code>user</code> par ton nom d'utilisateur Ubuntu.</p>
+      <ul class="checklist" data-key="m13">
+        <li><label><input type="checkbox"><span>Installer le serveur SSH dans la VM et vérifier que le port 22 écoute.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> sudo apt install openssh-server
+<span class="p">$</span> ss -tln | grep :22
+<span class="o">LISTEN 0      4096         0.0.0.0:22        0.0.0.0:*</span>
+<span class="o">LISTEN 0      4096            [::]:22           [::]:*</span>
+<span class="p">$</span> sudo ufw allow ssh          <span class="c"># si ufw est actif</span></pre></div></li>
+        <li><label><input type="checkbox"><span>Ajouter dans VirtualBox une redirection du port 2222 de l'hôte vers le port 22 de la VM.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><p><em>Configuration › Réseau › Adaptateur 1 (NAT) › Avancé › Redirection de ports › +</em> : TCP, IP hôte <code>127.0.0.1</code>, port hôte <code>2222</code>, port invité <code>22</code>.
+          Possible VM allumée. Équivalent en ligne de commande, dans PowerShell (adapte le nom de la VM) :</p><pre class="mini"><span class="p">PS&gt;</span> &amp; "C:\Program Files\Oracle\VirtualBox\VBoxManage.exe" controlvm "Ubuntu" natpf1 "ssh,tcp,127.0.0.1,2222,,22"</pre></div></li>
+        <li><label><input type="checkbox"><span>Se connecter depuis PowerShell, accepter l'empreinte, lancer <code>hostname</code>, puis se déconnecter.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">PS&gt;</span> ssh -p 2222 user@localhost
+<span class="o">Are you sure you want to continue connecting (yes/no/[fingerprint])? yes</span>
+<span class="o">user@localhost's password:</span>
+<span class="p">$</span> hostname
+<span class="o">ubuntu</span>
+<span class="p">$</span> exit
+<span class="o">déconnexion</span>
+<span class="o">Connection to localhost closed.</span></pre></div></li>
+        <li><label><input type="checkbox"><span>Créer une paire de clés ed25519 sous Windows, avec une phrase de passe.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">PS&gt;</span> ssh-keygen -t ed25519
+<span class="o">Your identification has been saved in C:\Users\Nom/.ssh/id_ed25519</span>
+<span class="o">Your public key has been saved in C:\Users\Nom/.ssh/id_ed25519.pub</span>
+<span class="p">PS&gt;</span> dir $env:USERPROFILE\.ssh</pre></div></li>
+        <li><label><input type="checkbox"><span>Copier la clé publique dans la VM, puis te connecter sans mot de passe de compte.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">PS&gt;</span> type $env:USERPROFILE\.ssh\id_ed25519.pub | ssh -p 2222 user@localhost "mkdir -p ~/.ssh &amp;&amp; chmod 700 ~/.ssh &amp;&amp; cat &gt;&gt; ~/.ssh/authorized_keys"
+<span class="p">PS&gt;</span> ssh -p 2222 user@localhost
+<span class="o">Enter passphrase for key 'C:\Users\Nom/.ssh/id_ed25519':</span>   <span class="c"># la phrase de la clé, plus le mot de passe du compte</span></pre></div></li>
+        <li><label><input type="checkbox"><span>Créer l'alias <code>vm</code> dans le fichier <code>config</code> de SSH, et t'en servir.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><p>Dans <code>C:\Users\Nom\.ssh\config</code> (créé avec <code>notepad $env:USERPROFILE\.ssh\config</code>, enregistré <strong>sans</strong> extension .txt) :</p><pre class="mini">Host vm
+    HostName localhost
+    Port 2222
+    User user</pre><pre class="mini"><span class="p">PS&gt;</span> ssh vm "whoami"
+<span class="o">user</span></pre></div></li>
+        <li><label><input type="checkbox"><span>Envoyer un fichier avec <code>scp</code>, puis synchroniser un dossier avec <code>rsync</code> depuis la VM vers elle-même.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">PS&gt;</span> echo "bonjour" &gt; note.txt
+<span class="p">PS&gt;</span> scp note.txt vm:~/
+<span class="p">PS&gt;</span> ssh vm "cat note.txt"
+<span class="o">bonjour</span></pre><p><code>rsync</code> n'existe pas sous Windows : teste-le dans la VM, vers <code>localhost</code> (la clé de la VM doit être autorisée, ou tape le mot de passe) :</p><pre class="mini"><span class="p">$</span> mkdir -p projet/sous; echo a &gt; projet/a.txt; echo b &gt; projet/sous/b.txt
+<span class="p">$</span> rsync -av projet/ localhost:/tmp/copie/
+<span class="o">sending incremental file list</span>
+<span class="o">created directory /tmp/copie</span>
+<span class="o">./</span>
+<span class="o">a.txt</span>
+<span class="o">sous/</span>
+<span class="o">sous/b.txt</span>
+<span class="p">$</span> rsync -av projet/ localhost:/tmp/copie/      <span class="c"># relancé : rien à copier</span>
+<span class="o">sending incremental file list</span>
+<span class="o"></span>                                         <span class="c"># aucune ligne de fichier : tout est déjà à jour</span></pre></div></li>
+        <li><label><input type="checkbox"><span>Interdire la connexion par mot de passe et celle de root, sans fermer ta session, puis vérifier.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> printf 'PasswordAuthentication no\nPermitRootLogin no\n' | sudo tee /etc/ssh/sshd_config.d/10-securite.conf
+<span class="p">$</span> sudo sshd -t
+<span class="p">$</span> sudo systemctl restart ssh
+<span class="p">$</span> sudo sshd -T | grep -iE 'passwordauth|permitroot'
+<span class="o">permitrootlogin no</span>
+<span class="o">passwordauthentication no</span></pre><p>Dans un <strong>second</strong> PowerShell : <code>ssh vm</code> doit fonctionner, et <code>ssh -o PubkeyAuthentication=no vm</code> doit répondre
+          <code>Permission denied (publickey).</code></p></div></li>
+      </ul>
+    </div>
+
+    <!-- ================================================== -->
+    <h2 id="questions" data-short="Questions fréquentes">💬 Questions fréquentes</h2>
+    <p>Les questions qui reviennent le plus souvent sur ce module, avec leurs réponses.</p>
+    <div class="qa" id="qa-list">
+      <details>
+        <summary>« Connection refused » : que vérifier ?</summary>
+        <p>Rien n'écoute à l'adresse et au port visés. Dans l'ordre : le serveur est-il installé (<code>ss -tln | grep :22</code> dans la VM) ? La redirection de port
+          de VirtualBox est-elle bien en TCP, 2222 → 22 ? Utilises-tu le bon port (<code>-p 2222</code>) ? Un « Connection timed out », lui, évoque plutôt
+          un pare-feu qui ignore la demande, ou une mauvaise adresse.</p>
+      </details>
+      <details>
+        <summary>Le mot de passe ne s'affiche pas quand je le tape : le clavier est bloqué ?</summary>
+        <p>Non, c'est voulu : comme avec <code>sudo</code>, rien ne s'affiche, pas même des étoiles, pour ne pas révéler la longueur du mot de passe.
+          Tape-le normalement et valide avec <kbd>Entrée</kbd>.</p>
+      </details>
+      <details>
+        <summary>Faut-il une paire de clés par serveur ?</summary>
+        <p>Non : une paire par <strong>ordinateur</strong> (ou par personne) suffit, et sa clé publique se pose sur autant de serveurs que tu veux. Si un ordinateur est perdu,
+          il suffit de retirer sa ligne des <code>authorized_keys</code> : les autres continuent de fonctionner.</p>
+      </details>
+    </div>
+
+    <button class="done-btn" data-module="13" type="button">🏁 Marquer ce module comme terminé</button>
+
+    <nav class="page-nav">
+      <a href="12-reseau.html"><small>← Précédent</small>Module 12 — Réseau</a>
+      <a class="next disabled" href="#"><small>Suivant →</small>Module 14 — Planification &amp; journaux</a>
+    </nav>
+  </article>
+</div>
+
+<footer class="site-footer">
+  <div>Carnet Linux · Module 13 · 🐧</div>
+</footer>
+
+<script src="../assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Disques Linux : lsblk, fdisk, mount, fstab, df et du | Cours Linux</title>
+  <meta name="description" content="Module 11 du cours Linux : lister les disques avec lsblk, partitionner avec fdisk, formater en ext4, monter avec mount et /etc/fstab, mesurer l'espace avec df et du, swap et LVM.">
+  <meta name="theme-color" content="#e95420">
+  <link rel="apple-touch-icon" href="../assets/img/icone-180.png">
+  <link rel="icon" href="../assets/img/tux.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <script>try{const t=JSON.parse(localStorage.getItem("theme"));document.documentElement.dataset.theme=t||"light"}catch(e){document.documentElement.dataset.theme="light"}</script>
+</head>
+<body>
+<div class="progress-bar"></div>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../index.html"><img src="../assets/img/tux.svg" alt=""><span><span class="dollar">$</span> carnet-linux</span></a>
+    <nav class="nav">
+      <a href="../index.html">Programme</a>
+      <a href="11-disques.html" class="active hide-sm">Module 11</a>
+      <button class="theme-toggle" type="button" aria-label="Changer de thème">☀️</button>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <span class="eyebrow">PHASE 3 · MODULE 11</span>
+      <h1>Disques &amp; <span class="grad">systèmes de fichiers</span></h1>
+      <p class="lead">Ajouter un disque, le découper, le formater, le brancher dans l'arbre, et comprendre où est passée toute la place :
+        les gestes de base de tout administrateur, à tester sans risque sur un disque virtuel tout neuf.</p>
+      <div class="hero-meta">
+        <span class="chip">⏱️ Lecture <b>~50 min</b></span>
+        <span class="chip">🧪 Pratique <b>~1 h 15</b></span>
+        <span class="chip">🎚️ Niveau <b>intermédiaire</b></span>
+      </div>
+    </div>
+    <div class="hero-art"><img class="tux" src="../assets/img/tux.svg" alt="Tux"></div>
+  </div>
+</section>
+
+<div class="layout">
+  <aside class="toc">
+    <div class="toc-title">Sommaire</div>
+    <ol></ol>
+  </aside>
+
+  <article class="content">
+
+    <!-- ================================================== -->
+    <h2 id="objectifs" data-short="Objectifs">🎯 Ce que tu sauras à la fin</h2>
+    <div class="cards four">
+      <div class="card" style="--c:var(--accent)"><div class="icon">🔎</div><h4>Inventaire</h4><p>Lire <code>lsblk</code> et nommer disques et partitions.</p></div>
+      <div class="card" style="--c:var(--cyan)"><div class="icon">🧱</div><h4>Préparer</h4><p>Partitionner, formater en ext4, monter.</p></div>
+      <div class="card" style="--c:var(--violet)"><div class="icon">📌</div><h4>fstab</h4><p>Rendre un montage permanent, sans casser le démarrage.</p></div>
+      <div class="card" style="--c:var(--green)"><div class="icon">📊</div><h4>Espace</h4><p>Trouver ce qui remplit le disque avec <code>df</code> et <code>du</code>.</p></div>
+    </div>
+
+    <!-- ================================================== -->
+    <h2 id="vocabulaire" data-short="Disques &amp; partitions">Disques, partitions et systèmes de fichiers</h2>
+    <figure class="video-card">
+      <div class="video-head"><span class="video-badge">▶ Vidéo · 1 min 30</span><strong>Partitionner, formater, monter</strong><span>du disque neuf à l'arbre de fichiers</span></div>
+      <video controls preload="none" playsinline poster="../assets/video/disques.jpg"><source src="../assets/video/disques.mp4" type="video/mp4">Ton navigateur ne lit pas la vidéo : <a href="../assets/video/disques.mp4">télécharge-la ici</a>.</video>
+      <figcaption>Animation réalisée pour ce cours. Voix off et musique générées par IA (Google Gemini et Lyria).</figcaption>
+    </figure>
+
+    <p>Pour qu'un disque serve à ranger des fichiers, il passe toujours par trois étapes :</p>
+    <div class="flow">
+      <div class="flow-step"><div class="ico">💽</div><b>Disque brut</b><span>/dev/sdb</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="ico">🔪</div><b>Partitionner</b><span>fdisk, parted → /dev/sdb1</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="ico">🧱</div><b>Formater</b><span>mkfs.ext4 : un système de fichiers</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step" style="border-color:var(--accent)"><div class="ico">📌</div><b>Monter</b><span>mount → /mnt/data</span></div>
+    </div>
+    <dl class="glossary">
+      <dt>Partition</dt><dd>Une zone du disque, utilisée comme un disque indépendant. La liste des partitions est la <strong>table de partitions</strong> :
+        <strong>GPT</strong> (moderne) ou <strong>MBR</strong> (ancienne, limitée à 2 To et 4 partitions principales).</dd>
+      <dt>Système de fichiers</dt><dd>La structure qui organise les fichiers dans une partition : <strong>ext4</strong> (le standard de Linux), <strong>xfs</strong> et
+        <strong>btrfs</strong> (autres choix Linux), <strong>vfat</strong> (clés USB, partition EFI), <strong>ntfs</strong> et <strong>exfat</strong> (compatibles avec Windows).</dd>
+      <dt>Point de montage</dt><dd>Le dossier où le contenu d'une partition apparaît dans l'arbre unique (module 02). Pas de lettre <code>D:</code> sous Linux.</dd>
+    </dl>
+
+    <h3>Le nom des disques</h3>
+    <div class="table-wrap"><table>
+      <tr><th>Nom</th><th>Désigne</th></tr>
+      <tr><td><code>/dev/sda</code>, <code>/dev/sdb</code>…</td><td>Disques SATA, SCSI ou USB, dans l'ordre de détection (<code>a</code> = le premier)</td></tr>
+      <tr><td><code>/dev/sda1</code>, <code>/dev/sda2</code></td><td>Les partitions du disque <code>sda</code></td></tr>
+      <tr><td><code>/dev/nvme0n1</code>, <code>/dev/nvme0n1p1</code></td><td>Disque SSD NVMe et sa première partition (<code>p1</code>)</td></tr>
+      <tr><td><code>/dev/vda</code></td><td>Disque virtuel de certaines VM (KVM, cloud). Sous VirtualBox, c'est <code>sda</code></td></tr>
+      <tr><td><code>/dev/sr0</code></td><td>Le lecteur de CD/DVD (même virtuel)</td></tr>
+      <tr><td><code>/dev/loop0</code>…</td><td>Fichiers utilisés comme des disques : chaque snap installé en monte un (module 08)</td></tr>
+    </table></div>
+
+    <!-- ================================================== -->
+    <h2 id="inventaire" data-short="lsblk &amp; blkid">Faire l'inventaire : <code>lsblk</code></h2>
+    <div class="terminal" data-title="user@ubuntu: ~"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">lsblk</span> <span class="f">-e7</span>                          <span class="c"># -e7 : masque les loop des snaps</span>
+<span class="o">NAME   MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS</span>
+<span class="o">sda      8:0    0   40G  0 disk</span>
+<span class="o">├─sda1   8:1    0    1G  0 part /boot/efi</span>
+<span class="o">└─sda2   8:2    0   39G  0 part /</span>
+<span class="o">sr0     11:0    1 1024M  0 rom</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">lsblk</span> <span class="f">-f</span> <span class="s">/dev/sda</span>                  <span class="c"># -f : systèmes de fichiers, étiquettes, UUID</span>
+<span class="o">NAME   FSTYPE FSVER LABEL UUID                                 FSAVAIL FSUSE% MOUNTPOINTS</span>
+<span class="o">sda</span>
+<span class="o">├─sda1 vfat   FAT32       4A1C-9F2E                             1,1G     1% /boot/efi</span>
+<span class="o">└─sda2 ext4   1.0         0b3e5c8a-7f41-4d2c-9a55-2e1f7d6c8b90   26,3G    27% /</span></pre></div>
+    <p><code>TYPE</code> distingue les disques (<code>disk</code>) des partitions (<code>part</code>), et <code>MOUNTPOINTS</code> indique où chaque partition est branchée.
+      Pour plus de détails : <code>sudo fdisk -l</code> (taille exacte, type de table) et <code>sudo blkid</code> (UUID de chaque partition).</p>
+    <div class="callout danger"><span class="callout-title">La règle d'or des disques</span>
+      <p>Avant toute commande qui écrit sur un disque (<code>fdisk</code>, <code>mkfs</code>…), relance <code>lsblk</code> et vérifie <strong>deux fois</strong> le nom.
+        <code>mkfs</code> sur <code>/dev/sda</code> au lieu de <code>/dev/sdb</code> efface ton système en une seconde, sans confirmation.
+        Dans ce module, on ne touche qu'à un <strong>disque ajouté exprès</strong> : la VM n'y risque rien.</p></div>
+
+    <!-- ================================================== -->
+    <h2 id="ajouter" data-short="Ajouter un disque">Ajouter un disque virtuel</h2>
+    <ol class="steps">
+      <li><strong>Éteindre la VM</strong><p>Un vrai arrêt (<code>sudo poweroff</code>), pas une mise en veille.</p></li>
+      <li><strong>Configuration › Stockage</strong><p>Sélectionne le <strong>Contrôleur : SATA</strong>, puis l'icône de disque dur avec un « + » (<em>Ajouter un disque dur</em>).</p></li>
+      <li><strong>Créer</strong><p>Type <strong>VDI</strong>, <strong>dynamiquement alloué</strong>, taille <strong>2 Go</strong>, nom <code>data</code>. Choisis-le, puis <strong>OK</strong>.</p></li>
+      <li><strong>Démarrer et vérifier</strong><p><code>lsblk</code> affiche un nouveau disque <code>sdb</code> de 2G, sans partition. C'est notre terrain de jeu.</p></li>
+    </ol>
+
+    <!-- ================================================== -->
+    <h2 id="partitionner" data-short="Partitionner">Partitionner avec <code>fdisk</code></h2>
+    <p><code>fdisk</code> est interactif : chaque commande tient en une lettre, et <strong>rien n'est écrit sur le disque avant <kbd>w</kbd></strong>.
+      En cas de doute, <kbd>q</kbd> quitte sans rien changer.</p>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> fdisk <span class="s">/dev/sdb</span>
+<span class="o">Commande (m pour l'aide) : </span><b>g</b>                <span class="c"># nouvelle table de partitions GPT</span>
+<span class="o">Une nouvelle étiquette de disque GPT a été créée.</span>
+<span class="o">Commande (m pour l'aide) : </span><b>n</b>                <span class="c"># nouvelle partition</span>
+<span class="o">Numéro de partition (1-128, 1 par défaut) : </span>⏎        <span class="c"># Entrée = valeur par défaut</span>
+<span class="o">Premier secteur (2048-4194270, 2048 par défaut) : </span>⏎
+<span class="o">Dernier secteur, +/-secteurs ou +/-taille{K,M,G,T,P} (2048-4194270, 4192255 par défaut) : </span>⏎
+<span class="o">Une nouvelle partition 1 de type « Linux filesystem » et de taille 2 GiB a été créée.</span>
+<span class="o">Commande (m pour l'aide) : </span><b>p</b>                <span class="c"># afficher le résultat avant d'écrire</span>
+<span class="o">Commande (m pour l'aide) : </span><b>w</b>                <span class="c"># écrire et quitter</span>
+<span class="o">La table de partitions a été altérée.</span></pre></div>
+    <p>Pour une partition plus petite, réponds par exemple <code>+500M</code> à la question du dernier secteur. Alternative non interactive, pratique dans les scripts :
+      <code>sudo parted /dev/sdb --script mklabel gpt mkpart data ext4 1MiB 100%</code>.</p>
+
+    <!-- ================================================== -->
+    <h2 id="formater" data-short="Formater">Formater avec <code>mkfs</code></h2>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> mkfs.ext4 <span class="f">-L</span> <span class="s">data</span> <span class="s">/dev/sdb1</span>       <span class="c"># -L : une étiquette lisible</span>
+<span class="o">mke2fs 1.47.0 (5-Feb-2023)</span>
+<span class="o">Création d'un système de fichiers avec 523776 blocs de 4k et 131072 i-noeuds</span>
+<span class="o">UUID de système de fichiers=8cd9384e-8443-4aa8-ba1b-296f168e54fc</span>
+<span class="o">…</span>
+<span class="o">Écriture des superblocs et de l'information de comptabilité du système de fichiers : complété</span></pre></div>
+    <p>Attention : on formate la <strong>partition</strong> (<code>sdb1</code>), pas le disque (<code>sdb</code>). Le formatage crée un système de fichiers vide…
+      et efface tout ce qui se trouvait sur la partition. Pour une clé USB à partager avec Windows : <code>sudo mkfs.exfat</code>.</p>
+
+    <!-- ================================================== -->
+    <h2 id="monter" data-short="Monter">Monter avec <code>mount</code></h2>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> mkdir <span class="s">/mnt/data</span>                     <span class="c"># le point de montage : un dossier vide</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> mount <span class="s">/dev/sdb1 /mnt/data</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">df</span> <span class="f">-h</span> <span class="s">/mnt/data</span>
+<span class="o">Sys. de fichiers Taille Utilisé Dispo Uti% Monté sur</span>
+<span class="o">/dev/sdb1          2,0G     24K  1,8G   1% /mnt/data</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">ls</span> <span class="s">/mnt/data</span>
+<span class="o">lost+found</span>                                    <span class="c"># dossier créé par mkfs, pour les réparations</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> chown <span class="v">$USER</span>: <span class="s">/mnt/data</span>               <span class="c"># la racine du disque appartient à root : on te la donne</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> umount <span class="s">/mnt/data</span>                    <span class="c"># démonter (sans « n » : umount)</span></pre></div>
+    <div class="callout info"><span class="callout-title">« target is busy » / « la cible est actuellement utilisée »</span>
+      <p>On ne peut pas démonter une partition utilisée : un terminal dont le dossier courant est dedans, un fichier ouvert… Fais <code>cd ~</code>, ferme ce qui l'utilise,
+        puis recommence. <code>sudo lsof /mnt/data</code> liste les coupables. Une clé USB s'éjecte de la même façon : démonter avant de débrancher, sinon des données
+        encore en mémoire risquent de ne jamais être écrites.</p></div>
+    <p>Sur le bureau, les clés USB sont montées automatiquement dans <code>/media/user/NOM</code>. <code>findmnt</code> affiche tous les montages en cours, sous forme d'arbre.</p>
+
+    <!-- ================================================== -->
+    <h2 id="fstab" data-short="/etc/fstab">Monter au démarrage : <code>/etc/fstab</code></h2>
+    <p>Un montage fait avec <code>mount</code> disparaît au redémarrage. Pour le rendre permanent, on décrit la partition dans <code>/etc/fstab</code>
+      (<em>file systems table</em>), lu à chaque démarrage. On l'identifie par son <strong>UUID</strong> : contrairement à <code>sdb1</code>, il ne change pas si l'ordre des disques change.</p>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> blkid <span class="s">/dev/sdb1</span>
+<span class="o">/dev/sdb1: LABEL="data" UUID="8cd9384e-8443-4aa8-ba1b-296f168e54fc" BLOCK_SIZE="4096" TYPE="ext4" PARTUUID="60dbf250-…"</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> cp <span class="s">/etc/fstab /etc/fstab.bak</span>              <span class="c"># toujours une sauvegarde</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> nano <span class="s">/etc/fstab</span></pre></div>
+    <div class="terminal" data-title="/etc/fstab (ligne ajoutée à la fin)"><pre><span class="c"># &lt;périphérique&gt;                         &lt;point de montage&gt; &lt;type&gt; &lt;options&gt;        &lt;dump&gt; &lt;fsck&gt;</span>
+<span class="v">UUID=8cd9384e-8443-4aa8-ba1b-296f168e54fc</span>  <span class="s">/mnt/data</span>   <span class="k">ext4</span>   <span class="f">defaults,nofail</span>  0  2</pre></div>
+    <div class="table-wrap"><table>
+      <tr><th>Champ</th><th>Sens</th></tr>
+      <tr><td><code>UUID=…</code></td><td>Quelle partition (copie l'UUID donné par <code>blkid</code>, sans les guillemets)</td></tr>
+      <tr><td><code>/mnt/data</code></td><td>Où la monter (le dossier doit exister)</td></tr>
+      <tr><td><code>ext4</code></td><td>Son système de fichiers</td></tr>
+      <tr><td><code>defaults,nofail</code></td><td>Options : réglages standard, et <strong>ne pas bloquer le démarrage</strong> si le disque est absent</td></tr>
+      <tr><td><code>0</code></td><td>Ancienne sauvegarde <code>dump</code> : toujours 0</td></tr>
+      <tr><td><code>2</code></td><td>Ordre de vérification au démarrage : 1 pour <code>/</code>, 2 pour les autres, 0 pour jamais</td></tr>
+    </table></div>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> findmnt <span class="f">--verify</span>                  <span class="c"># relit fstab et signale les erreurs</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> systemctl <span class="s">daemon-reload</span>             <span class="c"># systemd transforme fstab en unités (module 10)</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> mount <span class="f">-a</span>                         <span class="c"># monte tout ce qui est dans fstab : silence = succès</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">findmnt</span> <span class="s">/mnt/data</span>
+<span class="o">TARGET    SOURCE    FSTYPE OPTIONS</span>
+<span class="o">/mnt/data /dev/sdb1 ext4   rw,relatime</span></pre></div>
+    <div class="callout danger"><span class="callout-title">Une faute dans fstab peut bloquer le démarrage</span>
+      <p>Une ligne fausse (UUID mal copié, dossier inexistant) et la machine s'arrête au démarrage en <strong>mode d'urgence</strong>. Pour l'éviter : sauvegarde,
+        <code>nofail</code> sur les disques secondaires, et <strong>toujours</strong> <code>sudo mount -a</code> avant de redémarrer : s'il affiche une erreur, corrige
+        tout de suite. Si c'est déjà arrivé : au mode d'urgence, entre le mot de passe, <code>nano /etc/fstab</code>, commente la ligne fautive avec <code>#</code>, puis <code>reboot</code>.</p></div>
+
+    <!-- ================================================== -->
+    <h2 id="espace" data-short="df, du &amp; ncdu">Où est passée la place ? <code>df</code> et <code>du</code></h2>
+    <figure class="video-card">
+      <div class="video-head"><span class="video-badge">▶ Vidéo · 1 min 20</span><strong>Disque plein : l'enquête</strong><span>df pour voir, du pour trouver</span></div>
+      <video controls preload="none" playsinline poster="../assets/video/espace.jpg"><source src="../assets/video/espace.mp4" type="video/mp4">Ton navigateur ne lit pas la vidéo : <a href="../assets/video/espace.mp4">télécharge-la ici</a>.</video>
+      <figcaption>Animation réalisée pour ce cours. Voix off et musique générées par IA (Google Gemini et Lyria).</figcaption>
+    </figure>
+
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">df</span> <span class="f">-h</span> <span class="f">-x tmpfs -x squashfs</span>              <span class="c"># sans les systèmes de fichiers en mémoire et les snaps</span>
+<span class="o">Sys. de fichiers Taille Utilisé Dispo Uti% Monté sur</span>
+<span class="o">/dev/sda2           39G    9,8G   27G  27% /</span>
+<span class="o">/dev/sda1          1,1G    6,1M  1,1G   1% /boot/efi</span>
+<span class="o">/dev/sdb1          2,0G     24K  1,8G   1% /mnt/data</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> du <span class="f">-sh</span> <span class="s">/var/log /var/cache/apt</span>          <span class="c"># -s : total, -h : lisible</span>
+<span class="o">90M	/var/log</span>
+<span class="o">160M	/var/cache/apt</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> du <span class="f">-h --max-depth=1</span> <span class="s">/var</span> 2&gt;/dev/null | <span class="k">sort</span> <span class="f">-h</span> | <span class="k">tail</span> <span class="f">-4</span>
+<span class="o">90M	/var/log</span>
+<span class="o">178M	/var/cache</span>
+<span class="o">1,9G	/var/lib</span>
+<span class="o">2,2G	/var</span></pre></div>
+    <div class="cards">
+      <div class="card" style="--c:var(--accent)"><div class="icon">🗺️</div><h4>df : la carte</h4><p>« Disk free » : remplissage de chaque <strong>système de fichiers</strong>. Répond à : <em>quel disque</em> est plein ?</p></div>
+      <div class="card" style="--c:var(--cyan)"><div class="icon">🔦</div><h4>du : la lampe torche</h4><p>« Disk usage » : poids des <strong>dossiers</strong>. Répond à : <em>qui</em> le remplit ? À combiner avec <code>sort -h</code>.</p></div>
+      <div class="card" style="--c:var(--violet)"><div class="icon">🧭</div><h4>ncdu : l'explorateur</h4><p><code>sudo apt install ncdu</code>, puis <code>sudo ncdu /</code> : on navigue avec les flèches, triés par taille. <kbd>d</kbd> supprime, <kbd>q</kbd> quitte.</p></div>
+    </div>
+    <h3>Faire le ménage sans risque</h3>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> apt autoremove                      <span class="c"># dépendances devenues inutiles, vieux noyaux</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> apt clean                           <span class="c"># vide le cache des paquets téléchargés</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> journalctl <span class="f">--vacuum-size=100M</span>         <span class="c"># réduit le journal de systemd à 100 Mo</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">du</span> <span class="f">-sh</span> <span class="s">~/.cache ~/Téléchargements</span>             <span class="c"># et chez toi : cache et vieux téléchargements</span></pre></div>
+    <div class="callout warn"><span class="callout-title">Jamais de <code>rm</code> au hasard dans /var ou /usr</span>
+      <p>Les fichiers de <code>/var/lib</code> (bases des paquets, des snaps…) ou de <code>/usr</code> ne se suppriment pas à la main : passe toujours par l'outil qui les gère
+        (<code>apt</code>, <code>snap</code>, <code>journalctl</code>). Et un journal énorme dans <code>/var/log</code> se vide avec <code>sudo truncate -s 0 fichier.log</code>,
+        pas avec <code>rm</code> : le programme qui écrit dedans le garde ouvert.</p></div>
+
+    <!-- ================================================== -->
+    <h2 id="swap" data-short="Le swap">Le swap : la mémoire de secours</h2>
+    <p>Quand la mémoire vive (RAM) est pleine, le noyau déplace les données les moins utilisées vers le <strong>swap</strong>, une zone du disque.
+      Le système ralentit au lieu de planter. Ubuntu utilise un <strong>fichier</strong> d'échange, <code>/swap.img</code>, plutôt qu'une partition.</p>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">free</span> <span class="f">-h</span>
+<span class="o">               total       utilisé      libre     partagé tamp/cache   disponible</span>
+<span class="o">Mem:           3,8Gi       1,9Gi       480Mi        52Mi       1,7Gi       1,9Gi</span>
+<span class="o">Échange:       3,8Gi       120Mi       3,7Gi</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">swapon</span> <span class="f">--show</span>
+<span class="o">NAME      TYPE SIZE   USED PRIO</span>
+<span class="o">/swap.img file 3,8G 120,5M   -2</span></pre></div>
+    <p>Lis la colonne <strong>disponible</strong>, pas <strong>libre</strong> : Linux utilise la mémoire inoccupée comme cache disque (<code>tamp/cache</code>), et la rend dès qu'un programme en a besoin.
+      Un peu de swap utilisé est normal ; un swap plein et une machine qui rame signifient qu'il manque de la RAM (dans une VM : augmente-la dans la configuration).</p>
+
+    <!-- ================================================== -->
+    <h2 id="lvm" data-short="LVM">Aller plus loin : LVM</h2>
+    <p>Une partition a une taille fixe, difficile à changer. <strong>LVM</strong> (<em>Logical Volume Manager</em>) ajoute une couche de souplesse : on regroupe
+      des disques dans un grand réservoir, puis on y découpe des volumes qu'on peut agrandir à chaud, même sur plusieurs disques.</p>
+    <div class="flow">
+      <div class="flow-step"><div class="ico">💽</div><b>Volumes physiques (PV)</b><span>/dev/sdb1, /dev/sdc1…</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="ico">🪣</div><b>Groupe de volumes (VG)</b><span>le réservoir commun</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step" style="border-color:var(--accent)"><div class="ico">📦</div><b>Volumes logiques (LV)</b><span>formatés et montés comme des partitions</span></div>
+    </div>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> pvs; <span class="k">sudo</span> vgs; <span class="k">sudo</span> lvs                 <span class="c"># l'état de chaque couche</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> lvextend <span class="f">-r -l +100%FREE</span> <span class="s">/dev/ubuntu-vg/ubuntu-lv</span>   <span class="c"># agrandir le volume ET son système de fichiers</span></pre></div>
+    <div class="callout info"><span class="callout-title">Le piège classique d'Ubuntu Server</span>
+      <p>Ubuntu Server installe le système sur LVM, mais ne donne au volume racine qu'une partie du disque. Si <code>df -h /</code> montre un disque de 100 Go à moitié vide
+        et une racine pleine de 50 Go, la commande <code>lvextend</code> ci-dessus récupère tout l'espace libre du groupe. Ubuntu Desktop, lui, n'utilise pas LVM par défaut.</p></div>
+
+    <!-- ================================================== -->
+    <h2 id="glossaire" data-short="Glossaire">Glossaire du module</h2>
+    <dl class="glossary">
+      <dt>Partition</dt><dd>Zone d'un disque utilisée comme un disque indépendant (<code>sda1</code>).</dd>
+      <dt>GPT / MBR</dt><dd>Formats de table de partitions : moderne / ancien.</dd>
+      <dt>ext4</dt><dd>Le système de fichiers standard de Linux.</dd>
+      <dt>mkfs</dt><dd>Crée un système de fichiers (formate) sur une partition.</dd>
+      <dt>Montage</dt><dd>Brancher une partition sur un dossier de l'arbre (<code>mount</code> / <code>umount</code>).</dd>
+      <dt>/etc/fstab</dt><dd>Liste des montages à faire au démarrage.</dd>
+      <dt>UUID</dt><dd>Identifiant unique et stable d'un système de fichiers.</dd>
+      <dt>df / du</dt><dd>Espace libre par système de fichiers / poids des dossiers.</dd>
+      <dt>Swap</dt><dd>Espace disque utilisé quand la mémoire vive est pleine.</dd>
+      <dt>LVM</dt><dd>Gestion de volumes logiques, redimensionnables.</dd>
+    </dl>
+
+    <!-- ================================================== -->
+    <h2 id="quiz" data-short="Quiz">🧠 Quiz : as-tu tout retenu ?</h2>
+    <div class="quiz">
+      <div class="q" data-answer="1">
+        <div class="q-text">1. Que désigne <code>/dev/sdb2</code> ?</div>
+        <div class="q-opts"><button>Le deuxième disque</button><button>La deuxième partition du deuxième disque</button><button>Un dossier de sauvegarde</button></div>
+        <div class="q-explain"><code>sdb</code> = deuxième disque détecté, <code>2</code> = sa deuxième partition.</div>
+      </div>
+      <div class="q" data-answer="2">
+        <div class="q-text">2. Dans quel ordre prépare-t-on un disque neuf ?</div>
+        <div class="q-opts"><button>Monter, formater, partitionner</button><button>Formater, partitionner, monter</button><button>Partitionner, formater, monter</button></div>
+        <div class="q-explain">On découpe, on installe un système de fichiers, puis on le branche dans l'arbre.</div>
+      </div>
+      <div class="q" data-answer="0">
+        <div class="q-text">3. Dans <code>fdisk</code>, quand les modifications sont-elles écrites sur le disque ?</div>
+        <div class="q-opts"><button>Seulement avec la commande <code>w</code></button><button>Après chaque commande</button><button>En quittant avec <code>q</code></button></div>
+        <div class="q-explain"><code>q</code> quitte au contraire sans rien écrire.</div>
+      </div>
+      <div class="q" data-answer="1">
+        <div class="q-text">4. Pourquoi identifier une partition par son UUID dans <code>fstab</code> ?</div>
+        <div class="q-opts"><button>C'est plus court</button><button>Il ne change pas si l'ordre des disques change</button><button>C'est obligatoire pour ext4</button></div>
+        <div class="q-explain"><code>sdb</code> peut devenir <code>sdc</code> si on ajoute un disque ; l'UUID reste le même.</div>
+      </div>
+      <div class="q" data-answer="2">
+        <div class="q-text">5. Que faire juste après avoir modifié <code>/etc/fstab</code> ?</div>
+        <div class="q-opts"><button>Redémarrer pour voir</button><button>Rien</button><button><code>sudo mount -a</code> pour vérifier qu'il n'y a pas d'erreur</button></div>
+        <div class="q-explain">Une erreur trouvée maintenant est facile à corriger ; au démarrage, beaucoup moins.</div>
+      </div>
+      <div class="q" data-answer="0">
+        <div class="q-text">6. Le disque est plein. Quelle commande trouve les dossiers les plus lourds ?</div>
+        <div class="q-opts"><button><code>du -h --max-depth=1 | sort -h</code></button><button><code>df -h</code></button><button><code>free -h</code></button></div>
+        <div class="q-explain"><code>df</code> dit quel disque est plein, <code>du</code> dit ce qui le remplit.</div>
+      </div>
+      <div class="q" data-answer="1">
+        <div class="q-text">7. Pourquoi <code>umount</code> répond « target is busy » ?</div>
+        <div class="q-opts"><button>Le disque est cassé</button><button>Un programme ou un terminal utilise encore la partition</button><button>Il faut <code>unmount</code> avec un n</button></div>
+        <div class="q-explain">Souvent, c'est simplement ton terminal qui est dans le dossier : <code>cd ~</code>.</div>
+      </div>
+      <div class="q" data-answer="2">
+        <div class="q-text">8. Dans <code>free -h</code>, quelle colonne indique la mémoire réellement utilisable ?</div>
+        <div class="q-opts"><button>libre</button><button>partagé</button><button>disponible</button></div>
+        <div class="q-explain">La mémoire de cache est rendue aux programmes dès qu'ils en ont besoin.</div>
+      </div>
+      <div class="quiz-score">Réponds aux questions pour voir ton score.</div>
+    </div>
+
+    <!-- ================================================== -->
+    <h2 id="mission" data-short="Mission pratique">🚀 Mission pratique</h2>
+    <div class="mission">
+      <h4>À faire dans la machine virtuelle</h4>
+      <p class="mission-astuce">Coche chaque étape une fois faite : sa correction s'affiche juste en dessous. Avant de commencer, fais un instantané de la VM (<em>Machine › Prendre un instantané</em>).</p>
+      <ul class="checklist" data-key="m11">
+        <li><label><input type="checkbox"><span>Lister les disques et partitions, avec leur système de fichiers.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> lsblk -e7
+<span class="o">NAME   MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS</span>
+<span class="o">sda      8:0    0   40G  0 disk</span>
+<span class="o">├─sda1   8:1    0    1G  0 part /boot/efi</span>
+<span class="o">└─sda2   8:2    0   39G  0 part /</span>
+<span class="p">$</span> lsblk -f -e7</pre><p>Les tailles dépendent de ta VM.</p></div></li>
+        <li><label><input type="checkbox"><span>Ajouter dans VirtualBox un disque de 2 Go et le retrouver dans Ubuntu.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><p>VM éteinte : <em>Configuration › Stockage › Contrôleur : SATA › Ajouter un disque dur › Créer</em> (VDI, dynamique, 2 Go). Puis, VM démarrée :</p><pre class="mini"><span class="p">$</span> lsblk -e7 /dev/sdb
+<span class="o">NAME MAJ:MIN RM SIZE RO TYPE MOUNTPOINTS</span>
+<span class="o">sdb    8:16   0   2G  0 disk</span></pre></div></li>
+        <li><label><input type="checkbox"><span>Créer avec <code>fdisk</code> une table GPT et une partition qui occupe tout le disque.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> sudo fdisk /dev/sdb
+<span class="c"># g (GPT), n (nouvelle partition), Entrée trois fois, p (vérifier), w (écrire)</span>
+<span class="p">$</span> lsblk /dev/sdb
+<span class="o">NAME   MAJ:MIN RM SIZE RO TYPE MOUNTPOINTS</span>
+<span class="o">sdb      8:16   0   2G  0 disk</span>
+<span class="o">└─sdb1   8:17   0   2G  0 part</span></pre></div></li>
+        <li><label><input type="checkbox"><span>Formater la partition en ext4 avec l'étiquette <code>data</code>.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> sudo mkfs.ext4 -L data /dev/sdb1
+<span class="p">$</span> lsblk -f /dev/sdb
+<span class="o">NAME   FSTYPE FSVER LABEL UUID                                 FSAVAIL FSUSE% MOUNTPOINTS</span>
+<span class="o">sdb</span>
+<span class="o">└─sdb1 ext4   1.0   data  8cd9384e-8443-4aa8-ba1b-296f168e54fc</span></pre><p>Ton UUID sera différent.</p></div></li>
+        <li><label><input type="checkbox"><span>La monter sur <code>/mnt/data</code>, t'en donner la propriété, et y créer un fichier.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> sudo mkdir /mnt/data
+<span class="p">$</span> sudo mount /dev/sdb1 /mnt/data
+<span class="p">$</span> sudo chown $USER: /mnt/data
+<span class="p">$</span> echo "Bonjour le disque" &gt; /mnt/data/test.txt
+<span class="p">$</span> df -h /mnt/data
+<span class="o">Sys. de fichiers Taille Utilisé Dispo Uti% Monté sur</span>
+<span class="o">/dev/sdb1          2,0G     28K  1,8G   1% /mnt/data</span></pre></div></li>
+        <li><label><input type="checkbox"><span>Provoquer l'erreur « cible utilisée » au démontage, puis démonter correctement.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> cd /mnt/data
+<span class="p">$</span> sudo umount /mnt/data
+<span class="o">umount: /mnt/data: la cible est actuellement utilisée.</span>
+<span class="p">$</span> cd ~
+<span class="p">$</span> sudo umount /mnt/data
+<span class="p">$</span> ls /mnt/data          <span class="c"># vide : le fichier est sur le disque, plus dans l'arbre</span></pre></div></li>
+        <li><label><input type="checkbox"><span>Ajouter la partition à <code>/etc/fstab</code> par son UUID, avec <code>nofail</code>, et tester sans redémarrer.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> sudo cp /etc/fstab /etc/fstab.bak
+<span class="p">$</span> echo "UUID=$(sudo blkid -s UUID -o value /dev/sdb1)  /mnt/data  ext4  defaults,nofail  0  2" | sudo tee -a /etc/fstab
+<span class="o">UUID=8cd9384e-8443-4aa8-ba1b-296f168e54fc  /mnt/data  ext4  defaults,nofail  0  2</span>
+<span class="p">$</span> sudo findmnt --verify
+<span class="p">$</span> sudo systemctl daemon-reload
+<span class="p">$</span> sudo mount -a
+<span class="p">$</span> cat /mnt/data/test.txt
+<span class="o">Bonjour le disque</span></pre><p><code>tee -a</code> ajoute à la fin du fichier (comme <code>&gt;&gt;</code>, mais avec les droits de <code>sudo</code>, module 05). Redémarre ensuite : le disque doit être monté tout seul.</p></div></li>
+        <li><label><input type="checkbox"><span>Afficher l'espace libre des vrais disques, puis les 5 dossiers les plus lourds de <code>/usr</code>.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> df -h -x tmpfs -x squashfs
+<span class="p">$</span> sudo du -h --max-depth=1 /usr 2&gt;/dev/null | sort -h | tail -5
+<span class="o">265M	/usr/libexec</span>
+<span class="o">580M	/usr/bin</span>
+<span class="o">1,4G	/usr/share</span>
+<span class="o">3,9G	/usr/lib</span>
+<span class="o">6,2G	/usr</span></pre><p>La dernière ligne est le total de <code>/usr</code> lui-même. Les tailles dépendent des logiciels installés.</p></div></li>
+        <li><label><input type="checkbox"><span>Mesurer le cache d'apt, puis le vider et mesurer à nouveau.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> sudo du -sh /var/cache/apt
+<span class="o">160M	/var/cache/apt</span>
+<span class="p">$</span> sudo apt clean
+<span class="p">$</span> sudo du -sh /var/cache/apt
+<span class="o">68M	/var/cache/apt</span></pre><p>Il reste les listes de paquets, recréées par <code>apt update</code>.</p></div></li>
+        <li><label><input type="checkbox"><span>Afficher la mémoire et le swap, et retrouver le fichier d'échange.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> free -h
+<span class="p">$</span> swapon --show
+<span class="o">NAME      TYPE SIZE USED PRIO</span>
+<span class="o">/swap.img file 3,8G   0B   -2</span>
+<span class="p">$</span> ls -lh /swap.img
+<span class="o">-rw------- 1 root root 3,8G oct.  20 10:41 /swap.img</span></pre><p>Seul root peut le lire : il peut contenir des morceaux de mémoire de n'importe quel programme.</p></div></li>
+      </ul>
+    </div>
+
+    <!-- ================================================== -->
+    <h2 id="questions" data-short="Questions fréquentes">💬 Questions fréquentes</h2>
+    <p>Les questions qui reviennent le plus souvent sur ce module, avec leurs réponses.</p>
+    <div class="qa" id="qa-list">
+      <details>
+        <summary>Pourquoi <code>lsblk</code> affiche-t-il plein de <code>loop</code> ?</summary>
+        <p>Chaque snap installé (module 08) est un fichier compressé monté comme un disque en lecture seule : ce sont les <code>loop0</code>, <code>loop1</code>…
+          Ils sont normaux. <code>lsblk -e7</code> les masque (7 est le numéro de périphérique des loop) ; <code>df -x squashfs</code> fait de même pour <code>df</code>.</p>
+      </details>
+      <details>
+        <summary>Après une erreur dans fstab, la machine démarre en « mode d'urgence » (emergency mode)</summary>
+        <p>Entre le mot de passe de ton utilisateur… ou de root si on te le demande. La racine peut être en lecture seule : <code>mount -o remount,rw /</code>.
+          Puis <code>nano /etc/fstab</code>, ajoute un <code>#</code> devant la ligne fautive (ou restaure <code>/etc/fstab.bak</code>), et <code>reboot</code>.
+          Dans une VM, restaurer l'instantané pris avant la mission est encore plus rapide.</p>
+      </details>
+      <details>
+        <summary><code>df</code> et <code>du</code> ne donnent pas le même total : lequel croire ?</summary>
+        <p>Les deux. <code>df</code> interroge le système de fichiers, <code>du</code> additionne les fichiers qu'il peut lire. Les écarts viennent des dossiers que <code>du</code>
+          ne peut pas lire sans <code>sudo</code>, de l'espace réservé à root (5 % sur ext4), et des fichiers supprimés mais encore ouverts par un programme,
+          qui occupent toujours de la place jusqu'à sa fermeture.</p>
+      </details>
+    </div>
+
+    <button class="done-btn" data-module="11" type="button">🏁 Marquer ce module comme terminé</button>
+
+    <nav class="page-nav">
+      <a href="10-demarrage-systemd.html"><small>← Précédent</small>Module 10 — Démarrage &amp; systemd</a>
+      <a class="next" href="12-reseau.html"><small>Suivant →</small>Module 12 — Réseau</a>
+    </nav>
+  </article>
+</div>
+
+<footer class="site-footer">
+  <div>Carnet Linux · Module 11 · 🐧</div>
+</footer>
+
+<script src="../assets/js/main.js"></script>
+</body>
+</html>

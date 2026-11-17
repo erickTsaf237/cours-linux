@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Le pare-feu ufw — vidéo</title>
+<link rel="stylesheet" href="commun.css">
+<style>
+/* 1. qui entre ? */
+#machine { left: 1240px; top: 300px; }
+.cnx { position: absolute; width: 46px; height: 46px; border-radius: 50%; left: 120px; z-index: 5; }
+#k1 { top: 330px; background: var(--vert); } #k2 { top: 420px; background: var(--rouge); } #k3 { top: 510px; background: var(--jaune); }
+#mur { left: 900px; top: 220px; width: 120px; height: 460px; border-radius: 16px;
+  background: repeating-linear-gradient(0deg, #b4532a 0 54px, #7a2f12 54px 60px), #b4532a; box-shadow: 0 0 60px rgba(233,84,32,.5); transform-origin: 50% 100%; }
+#mur-lab { left: 760px; top: 700px; width: 400px; text-align: center; font-family: var(--display); font-weight: 800; font-size: 54px; color: var(--orange-2); }
+#qui { top: 110px; font-size: 76px; }
+
+/* 2. le vigile */
+#portes { left: 300px; top: 180px; width: 1320px; display: flex; gap: 40px; justify-content: center; }
+.pt { width: 260px; height: 330px; border-radius: 22px 22px 8px 8px; background: #1d2740; border: 4px solid rgba(255,255,255,.25);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.pt b { font-family: var(--display); font-weight: 800; font-size: 80px; }
+.pt span { font-family: var(--mono); font-size: 30px; color: var(--gris); }
+.pt i { font-style: normal; font-family: var(--emoji); font-size: 54px; height: 70px; }
+#vig { left: 120px; top: 560px; font-size: 150px; }
+#liste { left: 330px; top: 560px; width: 560px; padding: 22px 30px; border-radius: 16px; background: #f4efe6; color: #2a2f3a; font-family: var(--mono); font-size: 34px; line-height: 1.5;
+  box-shadow: 0 30px 70px rgba(0,0,0,.5); }
+#liste b { font-family: var(--display); font-size: 38px; }
+.vis { position: absolute; width: 56px; height: 56px; border-radius: 50%; top: 760px; z-index: 6; }
+#v-ok { left: 1000px; background: var(--vert); box-shadow: 0 0 30px var(--vert); }
+#v-ko { left: 1100px; background: var(--rouge); box-shadow: 0 0 30px var(--rouge); }
+#verdict { left: 1040px; top: 600px; width: 700px; text-align: center; font-family: var(--display); font-weight: 800; font-size: 64px; }
+
+/* 3. netfilter → ufw */
+#noyau { left: 200px; top: 160px; width: 780px; height: 600px; padding: 30px 34px; border-radius: 26px; background: #0d1117; border: 3px solid #2a3342; overflow: hidden; }
+#noyau h5 { font-family: var(--display); font-weight: 800; font-size: 48px; margin-bottom: 18px; }
+#noyau h5 small { font-family: var(--mono); font-size: 28px; color: var(--gris); font-weight: 500; }
+#noyau pre { font-family: var(--mono); font-size: 21px; line-height: 1.5; color: #8b949e; white-space: pre; }
+#ufw-carte { left: 1080px; top: 220px; width: 660px; padding: 40px; text-align: center; }
+#ufw-carte b { display: block; font-family: var(--mono); font-size: 150px; color: var(--orange-2); line-height: 1.1; }
+#ufw-carte span { font-family: var(--display); font-weight: 800; font-size: 44px; }
+#ufw-carte em { display: block; font-style: normal; font-family: var(--mono); font-size: 30px; color: var(--gris); margin-top: 10px; }
+#ufw-cmd { left: 1080px; top: 620px; width: 660px; text-align: center; font-family: var(--mono); font-size: 40px; color: var(--vert); }
+
+/* terminaux */
+.tgrand { left: 230px; width: 1460px; }
+.tgrand .corps { font-size: 36px; padding: 26px 36px; }
+#t-st { top: 300px; }
+#etat-g { top: 620px; font-family: var(--display); font-weight: 800; font-size: 90px; color: var(--rouge); }
+
+/* 5. stratégie */
+.sens { top: 140px; width: 760px; height: 230px; display: flex; align-items: center; justify-content: center; gap: 30px; }
+#entree { left: 160px; } #sortie { left: 1000px; }
+.sens .ic { font-family: var(--emoji); font-size: 100px; }
+.sens b { display: block; font-family: var(--display); font-weight: 800; font-size: 54px; }
+.sens span { font-family: var(--mono); font-size: 36px; }
+#t-def { top: 420px; }
+#t-def .corps { font-size: 32px; padding: 22px 34px; }
+
+/* 6. piège */
+#piege-t { top: 110px; font-size: 90px; color: var(--jaune); }
+#admin { left: 170px; top: 360px; }
+#serveur { left: 1450px; top: 360px; }
+#fil { left: 470px; top: 470px; width: 980px; height: 10px; border-radius: 5px; background: var(--vert); transform-origin: 0 50%; box-shadow: 0 0 30px rgba(63,185,80,.6); }
+#fil-lab { left: 760px; top: 400px; width: 400px; text-align: center; font-family: var(--mono); font-size: 40px; color: var(--vert); }
+#coupe { left: 900px; top: 420px; font-size: 110px; }
+#cadenas { left: 1500px; top: 610px; font-size: 110px; }
+#dehors { top: 760px; font-family: var(--display); font-weight: 800; font-size: 60px; color: var(--rouge); }
+
+/* 7. enable */
+#t-en { top: 130px; }
+#t-en .corps { font-size: 30px; padding: 20px 32px; min-height: 660px; }
+
+/* 8. nmap */
+#t-nm { top: 150px; }
+#t-nm .corps { font-size: 34px; }
+#tes { left: 1100px; top: 640px; font-size: 60px; color: var(--jaune); transform: rotate(-6deg); }
+
+/* 9. récap */
+#rc1 { top: 260px; font-size: 110px; }
+#rc2 { top: 450px; font-size: 110px; }
+#rc-ico { top: 640px; font-size: 120px; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="bg" class="layer"><div id="blob1" class="blob"></div><div id="blob2" class="blob"></div><div id="blob3" class="blob"></div></div>
+  <div id="grille" class="layer"></div>
+  <div id="cam-punch"><div id="cam-drift">
+
+    <div class="scene" id="s-qui">
+      <div class="ligne display grad mots" id="qui">Qui a le droit d'entrer ?</div>
+      <div class="abs verre station" id="machine"><div class="ico">🖥️</div><div class="nom">ta machine</div><div class="role">sur le réseau</div></div>
+      <div class="cnx" id="k1"></div><div class="cnx" id="k2"></div><div class="cnx" id="k3"></div>
+      <div class="abs" id="mur"></div>
+      <div class="abs" id="mur-lab">🧱 le pare-feu</div>
+    </div>
+
+    <div class="scene" id="s-vigile">
+      <div class="abs" id="portes">
+        <div class="pt" id="pt22"><i></i><b>22</b><span>SSH</span></div>
+        <div class="pt" id="pt80"><i></i><b>80</b><span>web</span></div>
+        <div class="pt" id="pt443"><i></i><b>443</b><span>web sécurisé</span></div>
+        <div class="pt" id="pt3306"><i></i><b>3306</b><span>base de données</span></div>
+      </div>
+      <div class="abs emoji" id="vig">💂</div>
+      <div class="abs" id="liste"><b>📋 Autorisés</b><br>22 · 80 · 443</div>
+      <div class="vis" id="v-ok"></div><div class="vis" id="v-ko"></div>
+      <div class="abs" id="verdict"></div>
+    </div>
+
+    <div class="scene" id="s-nf">
+      <div class="abs" id="noyau"><h5>⚙️ netfilter <small>· dans le noyau</small></h5>
+<pre>table inet filter {
+  chain input {
+    type filter hook input priority filter;
+    policy drop;
+    ct state established,related accept
+    ct state invalid drop
+    iifname "lo" accept
+    ip protocol icmp icmp type echo-request accept
+    tcp dport 22 ct state new accept
+    tcp dport { 80, 443 } accept
+    counter drop
+  }
+  chain forward { type filter hook forward … }
+  chain output { type filter hook output … }
+}</pre></div>
+      <div class="abs verre" id="ufw-carte"><b>ufw</b><span>le pare-feu simplifié</span><em>Uncomplicated FireWall</em></div>
+      <div class="abs" id="ufw-cmd">sudo ufw allow ssh</div>
+    </div>
+
+    <div class="scene" id="s-status">
+      <div class="abs terminal tgrand" id="t-st"><div class="barre-t"><i></i><i></i><i></i><span>user@ubuntu: ~</span></div>
+        <div class="corps">
+          <div class="l" id="st0"><span class="p">user@ubuntu:~$</span> <span class="tape">sudo ufw status</span></div>
+          <div class="l o" id="st0o">État : <span class="err">inactif</span></div>
+        </div></div>
+      <div class="ligne" id="etat-g">💤 inactif</div>
+    </div>
+
+    <div class="scene" id="s-strat">
+      <div class="abs verre sens" id="entree"><div class="ic">⬇️</div><div><b>Entrée</b><span class="err" style="color:var(--rouge)">deny : tout refuser</span></div></div>
+      <div class="abs verre sens" id="sortie"><div class="ic">⬆️</div><div><b>Sortie</b><span style="color:var(--vert)">allow : tout autoriser</span></div></div>
+      <div class="abs terminal tgrand" id="t-def"><div class="barre-t"><i></i><i></i><i></i><span>user@ubuntu: ~</span></div>
+        <div class="corps">
+          <div class="l" id="df0"><span class="p">$</span> <span class="tape">sudo ufw default deny incoming</span></div>
+          <div class="l" id="df1"><span class="p">$</span> <span class="tape">sudo ufw default allow outgoing</span></div>
+          <div class="l" id="df2"><span class="p">$</span> <span class="tape">sudo ufw allow ssh</span></div>
+          <div class="l o" id="df2o">Les règles ont été mises à jour</div>
+          <div class="l" id="df3"><span class="p">$</span> <span class="tape">sudo ufw allow 80/tcp</span></div>
+          <div class="l o" id="df3o">Les règles ont été mises à jour</div>
+        </div></div>
+    </div>
+
+    <div class="scene" id="s-piege">
+      <div class="ligne display mots" id="piege-t">⚠️ Piège classique</div>
+      <div class="abs verre station" id="admin"><div class="ico">🧑‍💻</div><div class="nom">toi</div><div class="role">à distance</div></div>
+      <div class="abs verre station" id="serveur"><div class="ico">🖥️</div><div class="nom">serveur</div><div class="role">port 22</div></div>
+      <div class="abs" id="fil"></div>
+      <div class="abs" id="fil-lab">ssh</div>
+      <div class="abs emoji" id="coupe">✂️</div>
+      <div class="abs emoji" id="cadenas">🔒</div>
+      <div class="ligne" id="dehors">…et tu restes dehors</div>
+    </div>
+
+    <div class="scene" id="s-enable">
+      <div class="abs terminal tgrand" id="t-en"><div class="barre-t"><i></i><i></i><i></i><span>user@ubuntu: ~</span></div>
+        <div class="corps">
+          <div class="l" id="en0"><span class="p">user@ubuntu:~$</span> <span class="tape">sudo ufw enable</span></div>
+          <div class="l o" id="en0o"><span class="ok">Le pare-feu est actif et lancé au démarrage du système</span></div>
+          <div class="l" id="en1"><span class="p">user@ubuntu:~$</span> <span class="tape">sudo ufw status verbose</span></div>
+          <div class="l o eno">État : <span class="ok">actif</span></div>
+          <div class="l o eno">Par défaut : deny (incoming), allow (outgoing), disabled (routed)</div>
+          <div class="l o eno">Vers                       Action      De</div>
+          <div class="l o eno">22/tcp                     <span class="ok">ALLOW IN</span>    Anywhere</div>
+          <div class="l o eno" id="r80">80/tcp                     <span class="ok">ALLOW IN</span>    Anywhere</div>
+          <div class="l" id="en2"><span class="p">user@ubuntu:~$</span> <span class="tape">sudo ufw delete allow 80/tcp</span></div>
+          <div class="l o" id="en2o">La règle a été supprimée</div>
+        </div></div>
+    </div>
+
+    <div class="scene" id="s-nmap">
+      <div class="abs terminal tgrand" id="t-nm"><div class="barre-t"><i></i><i></i><i></i><span>depuis une autre machine</span></div>
+        <div class="corps">
+          <div class="l" id="nm0"><span class="p">$</span> <span class="tape">nmap 192.168.1.20</span></div>
+          <div class="l o nmo">Nmap scan report for 192.168.1.20</div>
+          <div class="l o nmo">Not shown: 999 filtered tcp ports (no-response)</div>
+          <div class="l o nmo">PORT   STATE SERVICE</div>
+          <div class="l o nmo">22/tcp <span class="ok">open</span>  ssh</div>
+        </div></div>
+      <div class="abs tampon" id="tes">Uniquement sur les tiennes !</div>
+    </div>
+
+    <div class="scene" id="s-recap">
+      <div class="ligne display mots" id="rc1">🔒 Tout fermer,</div>
+      <div class="ligne display grad mots" id="rc2">ouvrir le nécessaire</div>
+      <div class="ligne emoji" id="rc-ico">💂</div>
+    </div>
+
+  </div></div>
+  <div id="vignette" class="layer"></div>
+  <div class="abs" id="badge"><img src="img/tux.svg" alt=""><div><div class="nom"><b>$</b> carnet-linux</div><div class="sous">Module 12 · Le pare-feu ufw</div></div></div>
+  <canvas id="particules" width="1920" height="1080"></canvas>
+  <div class="abs" id="rideau"></div>
+  <div class="abs" id="st"></div>
+  <div class="abs" id="barre"></div>
+  <div id="flash" class="layer"></div>
+</div>
+<script src="lib/gsap.min.js"></script>
+<script src="commun.js"></script>
+<script>
+Film.demarrer({
+  film: 'ufw',
+  fin: { titre: 'Le pare-feu ufw', sous: 'Carnet Linux · Module 12 — Réseau', prompt: 'sudo ufw status' },
+  construire(C) {
+    // 1. qui entre ?
+    gsap.set('#s-qui', { autoAlpha: 1 });
+    gsap.set(['#mur', '#mur-lab', '.cnx'], { opacity: 0 });
+    motsEntrent('#qui .mot', 0.4);
+    pop('#machine', 0.8, { depuis: 0.5 });
+    [['#k1', 1.6], ['#k2', 2.3], ['#k3', 3.0]].forEach(([k, t]) => {
+      tl.fromTo(k, { x: 0, opacity: 1 }, { x: 1150, duration: 1.1, ease: 'power1.in', immediateRender: false }, t);
+      tl.set(k, { opacity: 0 }, t + 1.1);
+    });
+    tl.fromTo('#mur', { scaleY: 0, opacity: 1 }, { scaleY: 1, opacity: 1, duration: 0.5, ease: 'back.out(1.6)', immediateRender: false }, C.parefeu);
+    coup(C.parefeu + 0.4);
+    tl.fromTo('#mur-lab', { y: 20, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.parefeu + 0.5);
+    [['#k1', C.parefeu + 1.0], ['#k2', C.parefeu + 1.6]].forEach(([k, t]) => {
+      tl.fromTo(k, { x: 0, opacity: 1 }, { keyframes: [{ x: 720, duration: 0.6, ease: 'power1.in' }, { x: 560, duration: 0.4, ease: 'power2.out' }, { opacity: 0, duration: 0.2 }], immediateRender: false }, t);
+    });
+
+    // 2. le vigile
+    rideau(C.vigile, '#s-qui', '#s-vigile');
+    gsap.set(['#vig', '#liste', '.vis', '#verdict', '.pt'], { opacity: 0 });
+    pop('#vig', C.vigile + 0.3, { depuis: 0.3 });
+    pop('.pt', C.porte, { stagger: 0.2, depuis: 0.6 });
+    tl.fromTo('#liste', { y: 40, opacity: 0, rotation: 6 }, { y: 0, opacity: 1, rotation: -2, immediateRender: false }, C.liste);
+    tl.set('#v-ok', { opacity: 1 }, C.autorise - 0.4);
+    tl.to('#v-ok', { x: -640, y: -370, duration: 0.9, ease: 'power2.inOut' }, C.autorise - 0.3);
+    tl.to('#v-ok', { opacity: 0, duration: 0.2 }, C.autorise + 0.6);
+    tl.set('#pt22 i', { textContent: '✅' }, C.autorise + 0.5);
+    allumer('#pt22', C.autorise + 0.5, 'rgba(63,185,80,.9)');
+    tl.set('#verdict', { textContent: '✅ Autorisé', color: '#3fb950', opacity: 1 }, C.autorise + 0.4);
+    tl.set('#v-ko', { opacity: 1 }, C.refuse - 0.3);
+    tl.to('#v-ko', { keyframes: [{ x: 420, y: -380, duration: 0.8, ease: 'power2.inOut' }, { x: 380, y: -200, duration: 0.4, ease: 'power2.out' }, { opacity: 0, duration: 0.2 }] }, C.refuse - 0.2);
+    tl.set('#pt3306 i', { textContent: '⛔' }, C.refuse + 0.6);
+    allumer('#pt3306', C.refuse + 0.6, 'rgba(248,113,113,.9)');
+    secousse(C.refuse + 0.6, 8);
+    tl.set('#verdict', { textContent: '⛔ Refusé', color: '#f87171' }, C.refuse + 0.6);
+
+    // 3. netfilter → ufw
+    plonge(C.netfilter, '#s-vigile', '#s-nf');
+    gsap.set(['#ufw-carte', '#ufw-cmd'], { opacity: 0 });
+    tl.fromTo('#noyau', { x: -40, opacity: 0 }, { x: 0, opacity: 1, immediateRender: false }, C.netfilter + 0.2);
+    tl.fromTo('#noyau pre', { y: 0 }, { y: -60, duration: 4, ease: 'none', immediateRender: false }, C.complexes);
+    tl.to('#noyau', { borderColor: '#f87171', duration: 0.3 }, C.complexes);
+    pop('#ufw-carte', C.ufw + 0.6, { depuis: 0.5 });
+    tl.to('#noyau', { opacity: 0.35, scale: 0.94, duration: 0.5 }, C.ufw + 0.6);
+    tl.fromTo('#ufw-cmd', { y: 20, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.ufw + 2.0);
+
+    // 4. status
+    rideau(C.status, '#s-nf', '#s-status');
+    gsap.set(['#st0o', '#etat-g'], { opacity: 0 });
+    tl.fromTo('#t-st', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.status + 0.1);
+    ligne('#st0', C.status + 1.2, 0.8);
+    sortie('#st0o', C.status + 2.4);
+    pop('#etat-g', C.status + 4.6, { depuis: 0.5 });
+
+    // 5. stratégie
+    plonge(C.strategie, '#s-status', '#s-strat');
+    gsap.set(['#entree', '#sortie', '#df0', '#df1', '#df2', '#df2o', '#df3', '#df3o'], { opacity: 0 });
+    pop('#entree', C.strategie + 1.0, { depuis: 0.6 });
+    pop('#sortie', C.strategie + 2.6, { depuis: 0.6 });
+    tl.fromTo('#t-def', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.strategie + 1.4);
+    ligne('#df0', C.strategie + 1.6, 1.0);
+    ligne('#df1', C.strategie + 3.2, 1.0);
+    ligne('#df2', C.allowssh + 0.8, 0.7);
+    sortie('#df2o', C.allowssh + 2.0);
+    ligne('#df3', C.allow80 + 0.8, 0.8);
+    sortie('#df3o', C.allow80 + 2.6);
+
+    // 6. piège
+    rideau(C.piege, '#s-strat', '#s-piege');
+    gsap.set(['#coupe', '#cadenas', '#dehors', '#fil-lab'], { opacity: 0 });
+    motsEntrent('#piege-t .mot', C.piege + 0.2);
+    pop(['#admin', '#serveur'], C.piege + 1.6, { stagger: 0.3, depuis: 0.5 });
+    tl.fromTo('#fil', { scaleX: 0 }, { scaleX: 1, duration: 0.8, immediateRender: false }, C.piege + 2.6);
+    tl.fromTo('#fil-lab', { opacity: 0 }, { opacity: 1, immediateRender: false }, C.piege + 3.2);
+    pop('#coupe', C.dehors - 0.2, { depuis: 0.3, rot: -30 });
+    tl.to('#fil', { backgroundColor: '#f87171', boxShadow: '0 0 30px rgba(248,113,113,.7)', duration: 0.2 }, C.dehors + 0.3);
+    tl.to('#fil', { scaleX: 0.42, duration: 0.4, ease: 'power2.in' }, C.dehors + 0.5);
+    tl.to('#fil-lab', { opacity: 0, duration: 0.2 }, C.dehors + 0.3);
+    pop('#cadenas', C.dehors + 0.8, { depuis: 2, ease: 'power4.in', duree: 0.3 });
+    secousse(C.dehors + 1.1, 16);
+    tl.fromTo('#dehors', { y: 20, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.dehors + 1.2);
+
+    // 7. enable, verbose, delete
+    plonge(C.enable, '#s-piege', '#s-enable');
+    gsap.set(['#en0o', '#en1', '.eno', '#en2', '#en2o'], { opacity: 0 });
+    ligne('#en0', C.enable + 0.8, 0.6);
+    sortie('#en0o', C.enable + 1.8);
+    salve(C.enable + 2.0, 1000, 330, 30, ['#3fb950', '#ffffff'], 'etincelles', 0.6);
+    ligne('#en1', C.verbose, 1.0);
+    sortie('.eno', C.verbose + 1.4, 0.15);
+    ligne('#en2', C.delete + 1.6, 1.0);
+    sortie('#en2o', C.delete + 2.8);
+    tl.to('#r80', { opacity: 0.25, textDecoration: 'line-through', duration: 0.3 }, C.delete + 2.8);
+
+    // 8. nmap
+    rideau(C.nmap, '#s-enable', '#s-nmap');
+    gsap.set(['.nmo', '#tes'], { opacity: 0 });
+    tl.fromTo('#t-nm', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.nmap + 0.1);
+    ligne('#nm0', C.nmap + 1.0, 0.8);
+    sortie('.nmo', C.nmap + 2.2, 0.25);
+    tl.fromTo('#tes', { scale: 2.5, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.3, ease: 'power4.in', immediateRender: false }, C.tiennes + 0.2);
+    coup(C.tiennes + 0.5);
+
+    // 9. récap
+    plonge(C.recap, '#s-nmap', '#s-recap');
+    gsap.set(['#rc1 .mot', '#rc2 .mot', '#rc-ico'], { opacity: 0 });
+    motsEntrent('#rc1 .mot', C.recap + 0.1);
+    motsEntrent('#rc2 .mot', C.recap + 1.2);
+    pop('#rc-ico', C.final + 0.3, { depuis: 0.3 });
+    salve(C.final + 0.5, 960, 420, 60, ['#e95420', '#3fb950', '#f5c542'], 'confetti', 0.9);
+  },
+});
+</script>
+</body>
+</html>

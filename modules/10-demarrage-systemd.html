@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>systemd et systemctl : démarrage, services, journalctl | Cours Linux</title>
+  <meta name="description" content="Module 10 du cours Linux : du bouton Power au bureau (UEFI, GRUB, noyau, initramfs), systemd et systemctl, services et cibles, journaux avec journalctl, écrire sa propre unité.">
+  <meta name="theme-color" content="#e95420">
+  <link rel="apple-touch-icon" href="../assets/img/icone-180.png">
+  <link rel="icon" href="../assets/img/tux.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <script>try{const t=JSON.parse(localStorage.getItem("theme"));document.documentElement.dataset.theme=t||"light"}catch(e){document.documentElement.dataset.theme="light"}</script>
+</head>
+<body>
+<div class="progress-bar"></div>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../index.html"><img src="../assets/img/tux.svg" alt=""><span><span class="dollar">$</span> carnet-linux</span></a>
+    <nav class="nav">
+      <a href="../index.html">Programme</a>
+      <a href="10-demarrage-systemd.html" class="active hide-sm">Module 10</a>
+      <button class="theme-toggle" type="button" aria-label="Changer de thème">☀️</button>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <span class="eyebrow">PHASE 3 · MODULE 10</span>
+      <h1>Démarrage &amp; <span class="grad">systemd</span></h1>
+      <p class="lead">Que se passe-t-il entre l'appui sur le bouton et l'écran de connexion ? Et qui fait tourner, en silence, le réseau,
+        l'horloge ou les journaux ? Bienvenue dans la salle des machines : celle où l'on démarre, arrête et dépanne les services.</p>
+      <div class="hero-meta">
+        <span class="chip">⏱️ Lecture <b>~50 min</b></span>
+        <span class="chip">🧪 Pratique <b>~1 h</b></span>
+        <span class="chip">🎚️ Niveau <b>intermédiaire</b></span>
+      </div>
+    </div>
+    <div class="hero-art"><img class="tux" src="../assets/img/tux.svg" alt="Tux"></div>
+  </div>
+</section>
+
+<div class="layout">
+  <aside class="toc">
+    <div class="toc-title">Sommaire</div>
+    <ol></ol>
+  </aside>
+
+  <article class="content">
+
+    <!-- ================================================== -->
+    <h2 id="objectifs" data-short="Objectifs">🎯 Ce que tu sauras à la fin</h2>
+    <div class="cards four">
+      <div class="card" style="--c:var(--accent)"><div class="icon">⚡</div><h4>Démarrage</h4><p>Les quatre relais : UEFI, GRUB, noyau, systemd.</p></div>
+      <div class="card" style="--c:var(--cyan)"><div class="icon">⚙️</div><h4>Services</h4><p>Démarrer, arrêter, activer un service avec <code>systemctl</code>.</p></div>
+      <div class="card" style="--c:var(--violet)"><div class="icon">📜</div><h4>Journaux</h4><p>Trouver la cause d'une panne avec <code>journalctl</code>.</p></div>
+      <div class="card" style="--c:var(--green)"><div class="icon">🛠️</div><h4>Unités</h4><p>Transformer son propre script en service.</p></div>
+    </div>
+
+    <!-- ================================================== -->
+    <h2 id="demarrage" data-short="Du bouton au bureau">Du bouton Power au bureau</h2>
+    <figure class="video-card">
+      <div class="video-head"><span class="video-badge">▶ Vidéo · 1 min 30</span><strong>La course de relais du démarrage</strong><span>UEFI, GRUB, noyau, systemd</span></div>
+      <video controls preload="none" playsinline poster="../assets/video/demarrage.jpg"><source src="../assets/video/demarrage.mp4" type="video/mp4">Ton navigateur ne lit pas la vidéo : <a href="../assets/video/demarrage.mp4">télécharge-la ici</a>.</video>
+      <figcaption>Animation réalisée pour ce cours. Voix off et musique générées par IA (Google Gemini et Lyria).</figcaption>
+    </figure>
+
+    <p>Le démarrage d'un ordinateur est une <strong>course de relais</strong> : chaque étape fait un travail précis, puis passe le témoin à la suivante.</p>
+    <ol class="steps">
+      <li><strong>Le firmware (UEFI ou BIOS)</strong><p>Programme gravé sur la carte mère. Il teste le matériel, puis cherche un programme de démarrage sur un disque.
+        Les machines récentes utilisent l'<strong>UEFI</strong>, qui lit la partition <code>/boot/efi</code> ; les plus anciennes, le BIOS.</p></li>
+      <li><strong>Le chargeur d'amorçage : GRUB</strong><p>Il affiche (parfois) un menu pour choisir le système ou le noyau, puis charge en mémoire
+        le <strong>noyau</strong> et l'<strong>initramfs</strong>, qu'il trouve dans <code>/boot</code>.</p></li>
+      <li><strong>Le noyau et l'initramfs</strong><p>Le noyau prend le contrôle du matériel. L'initramfs est un mini-système en mémoire qui contient
+        de quoi accéder au vrai disque (pilotes, chiffrement…). Une fois la partition racine <code>/</code> montée, le noyau lance le programme n° 1.</p></li>
+      <li><strong>systemd, le chef d'orchestre</strong><p>Processus n° 1 (PID 1), il démarre tous les services en parallèle selon leurs dépendances,
+        jusqu'à la <strong>cible</strong> finale : l'écran de connexion graphique.</p></li>
+    </ol>
+    <div class="terminal" data-title="user@ubuntu: ~"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">ls</span> <span class="s">/boot</span>                       <span class="c"># le noyau (vmlinuz) et l'initramfs (initrd.img)</span>
+<span class="o">config-6.8.0-45-generic      initrd.img-6.8.0-45-generic  vmlinuz-6.8.0-45-generic</span>
+<span class="o">efi  grub  initrd.img  vmlinuz  …</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">uname</span> <span class="f">-r</span>                       <span class="c"># la version du noyau en cours</span>
+<span class="o">6.8.0-45-generic</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">ps</span> <span class="f">-p</span> <span class="s">1</span> <span class="f">-o</span> <span class="s">pid,comm</span>             <span class="c"># qui porte le numéro 1 ?</span>
+<span class="o">    PID COMMAND</span>
+<span class="o">      1 systemd</span></pre></div>
+
+    <h3>Combien de temps a pris chaque étape ?</h3>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">systemd-analyze</span>
+<span class="o">Startup finished in 2.405s (kernel) + 11.873s (userspace) = 14.279s</span>
+<span class="o">graphical.target reached after 11.820s in userspace.</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">systemd-analyze</span> <span class="s">blame</span> | <span class="k">head</span> <span class="f">-5</span>          <span class="c"># les services les plus lents</span>
+<span class="o">5.312s snapd.seeded.service</span>
+<span class="o">2.906s NetworkManager-wait-online.service</span>
+<span class="o">1.147s snapd.service</span>
+<span class="o"> 981ms plymouth-quit-wait.service</span>
+<span class="o"> 875ms systemd-resolved.service</span></pre></div>
+    <p>Sur une machine physique en UEFI, la première ligne affiche aussi le temps passé dans le firmware et dans GRUB (<code>firmware</code>, <code>loader</code>).</p>
+
+    <!-- ================================================== -->
+    <h2 id="grub" data-short="Le menu GRUB">Le menu GRUB</h2>
+    <p>Quand Ubuntu est le seul système installé, GRUB reste caché. Pour faire apparaître son menu, maintiens <kbd>Maj</kbd> (BIOS) ou appuie
+      plusieurs fois sur <kbd>Échap</kbd> (UEFI) juste après l'allumage. Le menu permet de choisir un ancien noyau, ou d'entrer dans le
+      <strong>mode de dépannage</strong> (<em>Advanced options › recovery mode</em>) : précieux quand le système ne démarre plus.</p>
+    <p>Ses réglages sont dans <code>/etc/default/grub</code>. Par exemple, pour afficher le menu 5 secondes à chaque démarrage :</p>
+    <div class="terminal" data-title="/etc/default/grub (extrait)"><pre><span class="v">GRUB_DEFAULT</span>=<span class="s">0</span>                    <span class="c"># entrée choisie par défaut (la première)</span>
+<span class="v">GRUB_TIMEOUT_STYLE</span>=<span class="s">menu</span>             <span class="c"># « hidden » par défaut : menu caché</span>
+<span class="v">GRUB_TIMEOUT</span>=<span class="s">5</span>                    <span class="c"># secondes avant de démarrer</span>
+<span class="v">GRUB_CMDLINE_LINUX_DEFAULT</span>=<span class="s">"quiet splash"</span>   <span class="c"># options passées au noyau</span></pre></div>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> nano <span class="s">/etc/default/grub</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> update-grub                 <span class="c"># OBLIGATOIRE : régénère /boot/grub/grub.cfg</span></pre></div>
+    <div class="callout warn"><span class="callout-title">Ne jamais modifier grub.cfg à la main</span>
+      <p><code>/boot/grub/grub.cfg</code> est réécrit à chaque mise à jour du noyau. On modifie toujours <code>/etc/default/grub</code>, puis on lance
+        <code>sudo update-grub</code>. Dans une VM, fais un <strong>instantané</strong> VirtualBox avant : une faute ici peut empêcher le démarrage.</p></div>
+
+    <!-- ================================================== -->
+    <h2 id="services" data-short="Services &amp; systemctl">Les services et <code>systemctl</code></h2>
+    <figure class="video-card">
+      <div class="video-head"><span class="video-badge">▶ Vidéo · 1 min 20</span><strong>systemctl et journalctl</strong><span>start, c'est maintenant ; enable, c'est pour toujours</span></div>
+      <video controls preload="none" playsinline poster="../assets/video/systemd.jpg"><source src="../assets/video/systemd.mp4" type="video/mp4">Ton navigateur ne lit pas la vidéo : <a href="../assets/video/systemd.mp4">télécharge-la ici</a>.</video>
+      <figcaption>Animation réalisée pour ce cours. Voix off et musique générées par IA (Google Gemini et Lyria).</figcaption>
+    </figure>
+
+    <p>Un <strong>service</strong> (ou <em>démon</em>, <em>daemon</em> en anglais, d'où le « d » final de <code>sshd</code>, <code>systemd</code>…) est un programme
+      qui tourne en arrière-plan, sans fenêtre : il planifie des tâches, gère le réseau, imprime, répond aux connexions SSH…
+      <code>systemctl</code> est la télécommande de systemd pour les piloter.</p>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">systemctl</span> <span class="s">status</span> <span class="s">cron</span>
+<span class="o"><span class="ok">●</span> cron.service - Regular background program processing daemon</span>
+<span class="o">     Loaded: loaded (/usr/lib/systemd/system/cron.service; <b>enabled</b>; preset: enabled)</span>
+<span class="o">     Active: <span class="ok">active (running)</span> since mar. 2026-10-27 09:12:04 CET; 2h 3min ago</span>
+<span class="o">       Docs: man:cron(8)</span>
+<span class="o">   Main PID: 812 (cron)</span>
+<span class="o">      Tasks: 1 (limit: 4598)</span>
+<span class="o">     Memory: 1.2M (peak: 2.0M)</span>
+<span class="o">     CGroup: /system.slice/cron.service</span>
+<span class="o">             └─812 /usr/sbin/cron -f -P</span>
+<span class="o"></span>
+<span class="o">oct. 27 09:12:04 ubuntu systemd[1]: Started cron.service - Regular background program processing daemon.</span></pre></div>
+    <p>Trois informations à lire en priorité : le <strong>point</strong> (vert : tout va bien, rouge : en échec, blanc : arrêté), la ligne
+      <code>Loaded</code> (<code>enabled</code> : il démarre avec la machine) et la ligne <code>Active</code> (son état actuel). Les dernières lignes
+      viennent du journal. Si la sortie dépasse l'écran, elle s'ouvre dans <code>less</code> : <kbd>q</kbd> pour quitter.</p>
+
+    <div class="table-wrap"><table>
+      <tr><th>Commande</th><th>Effet</th><th>Quand ?</th></tr>
+      <tr><td><code>sudo systemctl start nom</code></td><td>Démarre le service</td><td>Maintenant</td></tr>
+      <tr><td><code>sudo systemctl stop nom</code></td><td>L'arrête</td><td>Maintenant</td></tr>
+      <tr><td><code>sudo systemctl restart nom</code></td><td>L'arrête puis le relance</td><td>Après un changement de configuration</td></tr>
+      <tr><td><code>sudo systemctl reload nom</code></td><td>Relit sa configuration sans couper (si le service le permet)</td><td>Serveur web en production</td></tr>
+      <tr><td><code>sudo systemctl enable nom</code></td><td>Le lance à chaque démarrage</td><td>Pour toujours</td></tr>
+      <tr><td><code>sudo systemctl disable nom</code></td><td>Ne le lance plus au démarrage</td><td>Pour toujours</td></tr>
+      <tr><td><code>sudo systemctl enable --now nom</code></td><td><code>enable</code> + <code>start</code> en une fois</td><td>Le plus courant</td></tr>
+    </table></div>
+    <div class="callout key"><span class="callout-title">start ≠ enable</span>
+      <p><code>start</code> agit sur <strong>maintenant</strong>, <code>enable</code> sur <strong>les prochains démarrages</strong>. Les deux sont indépendants :
+        un service peut être démarré sans être activé (il ne reviendra pas après un redémarrage), ou activé sans être démarré
+        (il attendra le prochain démarrage). <code>systemctl is-active nom</code> et <code>systemctl is-enabled nom</code> répondent en un mot.</p></div>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">systemctl</span> <span class="s">list-units</span> <span class="f">--type=service</span>             <span class="c"># services chargés en ce moment</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">systemctl</span> <span class="s">list-units</span> <span class="f">--type=service --state=failed</span>   <span class="c"># ceux en échec</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">systemctl</span> <span class="s">list-unit-files</span> <span class="f">--type=service</span>        <span class="c"># tous les services installés, activés ou non</span></pre></div>
+    <div class="callout tip"><span class="callout-title">Pas besoin d'écrire « .service »</span>
+      <p><code>systemctl status cron</code> et <code>systemctl status cron.service</code> sont équivalents. Et la touche <kbd>Tab</kbd> complète les noms de services.</p></div>
+
+    <!-- ================================================== -->
+    <h2 id="cibles" data-short="Cibles &amp; arrêt">Cibles, arrêt et redémarrage</h2>
+    <p>Une <strong>cible</strong> (<em>target</em>) est un groupe de services à atteindre : c'est la « destination » du démarrage.</p>
+    <div class="cards">
+      <div class="card" style="--c:var(--accent)"><div class="icon">🖥️</div><h4>graphical.target</h4><p>Tout le système, avec l'interface graphique. La cible par défaut d'Ubuntu Desktop.</p></div>
+      <div class="card" style="--c:var(--cyan)"><div class="icon">⌨️</div><h4>multi-user.target</h4><p>Tout le système, en mode texte seulement. Celle des serveurs.</p></div>
+      <div class="card" style="--c:var(--violet)"><div class="icon">🩺</div><h4>rescue.target</h4><p>Mode de secours : le strict minimum, pour réparer.</p></div>
+    </div>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">systemctl</span> <span class="s">get-default</span>
+<span class="o">graphical.target</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> systemctl <span class="s">reboot</span>                     <span class="c"># redémarrer (ou simplement : sudo reboot)</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> systemctl <span class="s">poweroff</span>                   <span class="c"># éteindre (ou : sudo poweroff)</span></pre></div>
+    <p><code>sudo systemctl set-default multi-user.target</code> ferait démarrer la machine en mode texte (sans bureau) ; <code>graphical.target</code> rétablit le bureau.
+      Pratique pour transformer une VM en petit serveur qui consomme moins de mémoire.</p>
+
+    <!-- ================================================== -->
+    <h2 id="journaux" data-short="journalctl">Les journaux avec <code>journalctl</code></h2>
+    <p>systemd recueille dans un <strong>journal</strong> central les messages du noyau, des services et du démarrage. C'est le premier endroit où regarder
+      quand quelque chose ne marche pas.</p>
+    <div class="table-wrap"><table>
+      <tr><th>Commande</th><th>Affiche</th></tr>
+      <tr><td><code>journalctl -u cron</code></td><td>Les messages d'un seul service</td></tr>
+      <tr><td><code>journalctl -u cron -f</code></td><td>Les mêmes, en direct (<kbd>Ctrl</kbd> + <kbd>C</kbd> pour arrêter), comme <code>tail -f</code></td></tr>
+      <tr><td><code>journalctl -b</code></td><td>Tout depuis le dernier démarrage (<code>-b -1</code> : le démarrage précédent)</td></tr>
+      <tr><td><code>journalctl -p err -b</code></td><td>Seulement les erreurs (et pire) de ce démarrage</td></tr>
+      <tr><td><code>journalctl --since "1 hour ago"</code></td><td>La dernière heure (accepte aussi <code>"2026-10-27 14:00"</code>, <code>today</code>…)</td></tr>
+      <tr><td><code>journalctl -k</code></td><td>Les messages du noyau (comme <code>sudo dmesg</code>)</td></tr>
+      <tr><td><code>journalctl -n 20</code></td><td>Les 20 dernières lignes</td></tr>
+    </table></div>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">journalctl</span> <span class="f">-u</span> <span class="s">cron</span> <span class="f">-n</span> <span class="s">3</span>
+<span class="o">oct. 27 09:12:04 ubuntu systemd[1]: Started cron.service - Regular background program processing daemon.</span>
+<span class="o">oct. 27 10:17:01 ubuntu CRON[2804]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)</span>
+<span class="o">oct. 27 10:17:01 ubuntu CRON[2805]: (root) CMD (cd / &amp;&amp; run-parts --report /etc/cron.hourly)</span></pre></div>
+    <p>Chaque ligne donne la <strong>date</strong>, la <strong>machine</strong>, le <strong>programme</strong> avec son PID entre crochets, puis le message.
+      Les commandes de <code>less</code> fonctionnent : <kbd>/</kbd> pour chercher, <kbd>G</kbd> pour aller à la fin.
+      Un utilisateur ordinaire du groupe <code>adm</code> (c'est ton cas sur Ubuntu) voit tous les journaux ; sinon, ajoute <code>sudo</code>.</p>
+    <div class="callout tip"><span class="callout-title">La méthode de dépannage</span>
+      <p>Un service ne démarre pas ? 1) <code>systemctl status nom</code> pour voir l'état et les dernières lignes ; 2) <code>journalctl -u nom -b</code> pour l'historique
+        complet ; 3) lis la première erreur, pas la dernière : c'est souvent elle la cause. Faute de frappe dans un fichier de configuration, port déjà
+        utilisé, fichier introuvable… la réponse est presque toujours écrite.</p></div>
+
+    <!-- ================================================== -->
+    <h2 id="unite" data-short="Écrire une unité">Écrire sa propre unité</h2>
+    <p>Chaque service est décrit par un fichier texte, une <strong>unité</strong>. Celles des paquets sont dans <code>/usr/lib/systemd/system/</code> ;
+      les tiennes vont dans <code>/etc/systemd/system/</code>. Exemple : transformer un petit script en service, qui démarre avec la machine et redémarre s'il plante.</p>
+    <div class="terminal" data-title="/usr/local/bin/bonjour.sh"><pre><span class="c">#!/bin/bash</span>
+<span class="k">while</span> true; <span class="k">do</span>
+  <span class="k">echo</span> <span class="s">"Bonjour, il est $(date +%T)"</span>     <span class="c"># tout ce qu'un service affiche part dans le journal</span>
+  <span class="k">sleep</span> <span class="s">30</span>
+<span class="k">done</span></pre></div>
+    <div class="terminal" data-title="/etc/systemd/system/bonjour.service"><pre><span class="k">[Unit]</span>
+<span class="v">Description</span>=<span class="s">Service d'exemple qui dit bonjour</span>
+<span class="v">After</span>=<span class="s">network.target</span>                 <span class="c"># démarrer après le réseau</span>
+
+<span class="k">[Service]</span>
+<span class="v">ExecStart</span>=<span class="s">/usr/local/bin/bonjour.sh</span>      <span class="c"># chemin ABSOLU du programme</span>
+<span class="v">Restart</span>=<span class="s">on-failure</span>                     <span class="c"># le relancer s'il plante</span>
+
+<span class="k">[Install]</span>
+<span class="v">WantedBy</span>=<span class="s">multi-user.target</span>              <span class="c"># ce que fait « enable » : l'accrocher à cette cible</span></pre></div>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> chmod +x <span class="s">/usr/local/bin/bonjour.sh</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> systemctl <span class="s">daemon-reload</span>              <span class="c"># systemd relit les unités (après CHAQUE modification)</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> systemctl <span class="s">enable</span> <span class="f">--now</span> <span class="s">bonjour</span>
+<span class="o">Created symlink /etc/systemd/system/multi-user.target.wants/bonjour.service → /etc/systemd/system/bonjour.service.</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">journalctl</span> <span class="f">-u</span> <span class="s">bonjour</span> <span class="f">-f</span>
+<span class="o">oct. 27 13:02:10 ubuntu systemd[1]: Started bonjour.service - Service d'exemple qui dit bonjour.</span>
+<span class="o">oct. 27 13:02:10 ubuntu bonjour.sh[638]: Bonjour, il est 13:02:10</span>
+<span class="o">oct. 27 13:02:40 ubuntu bonjour.sh[638]: Bonjour, il est 13:02:40</span></pre></div>
+    <p>Le message <code>Created symlink</code> montre ce que fait vraiment <code>enable</code> : un simple lien symbolique (module 02) qui rattache le service à sa cible.
+      <code>disable</code> supprime ce lien. On reviendra aux unités au module 14, avec les <strong>timers</strong>, l'alternative moderne à cron.</p>
+
+    <!-- ================================================== -->
+    <h2 id="glossaire" data-short="Glossaire">Glossaire du module</h2>
+    <dl class="glossary">
+      <dt>UEFI / BIOS</dt><dd>Firmware de la carte mère : première étape du démarrage.</dd>
+      <dt>GRUB</dt><dd>Chargeur d'amorçage : il charge le noyau et l'initramfs.</dd>
+      <dt>Noyau</dt><dd>Le cœur du système (<code>vmlinuz</code>), qui gère le matériel.</dd>
+      <dt>initramfs</dt><dd>Mini-système en mémoire qui aide le noyau à monter le vrai disque.</dd>
+      <dt>systemd</dt><dd>Le premier processus (PID 1), qui démarre et surveille tous les services.</dd>
+      <dt>Service (démon)</dt><dd>Programme qui tourne en arrière-plan, sans fenêtre.</dd>
+      <dt>Unité</dt><dd>Fichier qui décrit un service, une cible, un timer… pour systemd.</dd>
+      <dt>Cible (target)</dt><dd>Groupe d'unités à atteindre, comme <code>graphical.target</code>.</dd>
+      <dt>systemctl</dt><dd>Commande pour piloter systemd : status, start, enable…</dd>
+      <dt>journalctl</dt><dd>Commande pour lire le journal de systemd.</dd>
+    </dl>
+
+    <!-- ================================================== -->
+    <h2 id="quiz" data-short="Quiz">🧠 Quiz : as-tu tout retenu ?</h2>
+    <div class="quiz">
+      <div class="q" data-answer="1">
+        <div class="q-text">1. Dans quel ordre se déroule le démarrage ?</div>
+        <div class="q-opts"><button>GRUB → UEFI → systemd → noyau</button><button>UEFI → GRUB → noyau → systemd</button><button>Noyau → UEFI → GRUB → systemd</button></div>
+        <div class="q-explain">Le firmware lance GRUB, qui charge le noyau, qui lance systemd.</div>
+      </div>
+      <div class="q" data-answer="2">
+        <div class="q-text">2. Quel processus porte le PID 1 ?</div>
+        <div class="q-opts"><button>bash</button><button>GRUB</button><button>systemd</button></div>
+        <div class="q-explain">systemd est le premier processus lancé par le noyau, l'ancêtre de tous les autres.</div>
+      </div>
+      <div class="q" data-answer="0">
+        <div class="q-text">3. Après avoir modifié <code>/etc/default/grub</code>, que faut-il faire ?</div>
+        <div class="q-opts"><button><code>sudo update-grub</code></button><button>Rien, c'est automatique</button><button>Modifier aussi <code>grub.cfg</code> à la main</button></div>
+        <div class="q-explain"><code>update-grub</code> régénère <code>/boot/grub/grub.cfg</code> à partir de tes réglages.</div>
+      </div>
+      <div class="q" data-answer="1">
+        <div class="q-text">4. Tu veux qu'un service démarre maintenant ET à chaque démarrage. Quelle commande ?</div>
+        <div class="q-opts"><button><code>sudo systemctl start nom</code></button><button><code>sudo systemctl enable --now nom</code></button><button><code>sudo systemctl restart nom</code></button></div>
+        <div class="q-explain"><code>--now</code> ajoute le démarrage immédiat à <code>enable</code>.</div>
+      </div>
+      <div class="q" data-answer="2">
+        <div class="q-text">5. Un service a été démarré avec <code>start</code>, sans <code>enable</code>. Après un redémarrage…</div>
+        <div class="q-opts"><button>Il tourne toujours</button><button>Il est supprimé</button><button>Il est arrêté</button></div>
+        <div class="q-explain"><code>start</code> n'agit que sur le moment présent.</div>
+      </div>
+      <div class="q" data-answer="0">
+        <div class="q-text">6. Comment voir en direct les messages du service <code>nginx</code> ?</div>
+        <div class="q-opts"><button><code>journalctl -u nginx -f</code></button><button><code>systemctl -f nginx</code></button><button><code>cat nginx.log</code></button></div>
+        <div class="q-explain"><code>-u</code> filtre sur une unité, <code>-f</code> suit les nouveaux messages.</div>
+      </div>
+      <div class="q" data-answer="1">
+        <div class="q-text">7. Que faut-il lancer après avoir créé ou modifié un fichier <code>.service</code> ?</div>
+        <div class="q-opts"><button><code>sudo update-grub</code></button><button><code>sudo systemctl daemon-reload</code></button><button><code>source ~/.bashrc</code></button></div>
+        <div class="q-explain">systemd garde les unités en mémoire : <code>daemon-reload</code> les lui fait relire.</div>
+      </div>
+      <div class="q" data-answer="2">
+        <div class="q-text">8. Quelle cible démarre le système complet, mais sans interface graphique ?</div>
+        <div class="q-opts"><button><code>graphical.target</code></button><button><code>rescue.target</code></button><button><code>multi-user.target</code></button></div>
+        <div class="q-explain">C'est la cible par défaut des serveurs.</div>
+      </div>
+      <div class="quiz-score">Réponds aux questions pour voir ton score.</div>
+    </div>
+
+    <!-- ================================================== -->
+    <h2 id="mission" data-short="Mission pratique">🚀 Mission pratique</h2>
+    <div class="mission">
+      <h4>À faire dans la machine virtuelle</h4>
+      <p class="mission-astuce">Coche chaque étape une fois faite : sa correction s'affiche juste en dessous.</p>
+      <ul class="checklist" data-key="m10">
+        <li><label><input type="checkbox"><span>Retrouver la version du noyau en cours, et ses fichiers dans <code>/boot</code>.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> uname -r
+<span class="o">6.8.0-45-generic</span>
+<span class="p">$</span> ls /boot | grep "$(uname -r)"
+<span class="o">config-6.8.0-45-generic</span>
+<span class="o">initrd.img-6.8.0-45-generic</span>
+<span class="o">System.map-6.8.0-45-generic</span>
+<span class="o">vmlinuz-6.8.0-45-generic</span></pre><p>Le numéro de version dépend des mises à jour installées.</p></div></li>
+        <li><label><input type="checkbox"><span>Mesurer la durée du démarrage et trouver les trois services les plus lents.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> systemd-analyze
+<span class="o">Startup finished in 2.405s (kernel) + 11.873s (userspace) = 14.279s</span>
+<span class="p">$</span> systemd-analyze blame | head -3
+<span class="o">5.312s snapd.seeded.service</span>
+<span class="o">2.906s NetworkManager-wait-online.service</span>
+<span class="o">1.147s snapd.service</span></pre></div></li>
+        <li><label><input type="checkbox"><span>Afficher l'état du service <code>cron</code> et dire s'il est actif et activé.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> systemctl status cron
+<span class="o">● cron.service - Regular background program processing daemon</span>
+<span class="o">     Loaded: loaded (/usr/lib/systemd/system/cron.service; enabled; preset: enabled)</span>
+<span class="o">     Active: active (running) since …</span>
+<span class="p">$</span> systemctl is-active cron; systemctl is-enabled cron
+<span class="o">active</span>
+<span class="o">enabled</span></pre><p>Actif (il tourne) et activé (il démarre avec la machine). <kbd>q</kbd> pour quitter l'affichage de <code>status</code>.</p></div></li>
+        <li><label><input type="checkbox"><span>Arrêter <code>cron</code>, vérifier, puis le redémarrer.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> sudo systemctl stop cron
+<span class="p">$</span> systemctl is-active cron
+<span class="o">inactive</span>
+<span class="p">$</span> sudo systemctl start cron
+<span class="p">$</span> systemctl is-active cron
+<span class="o">active</span></pre></div></li>
+        <li><label><input type="checkbox"><span>Lister les services en cours, puis ceux en échec.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> systemctl list-units --type=service
+<span class="p">$</span> systemctl list-units --type=service --state=failed
+<span class="o">  UNIT LOAD ACTIVE SUB DESCRIPTION</span>
+<span class="o">0 loaded units listed.</span></pre><p>« 0 loaded units » : aucun service en échec, c'est une bonne nouvelle.</p></div></li>
+        <li><label><input type="checkbox"><span>Trouver la cible par défaut de la machine.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> systemctl get-default
+<span class="o">graphical.target</span></pre></div></li>
+        <li><label><input type="checkbox"><span>Afficher les erreurs du démarrage en cours, puis les 10 derniers messages de <code>cron</code>.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> journalctl -p err -b
+<span class="p">$</span> journalctl -u cron -n 10</pre><p>Quelques erreurs au démarrage sont normales dans une VM (matériel virtuel absent, etc.) : l'important est de savoir où les trouver.</p></div></li>
+        <li><label><input type="checkbox"><span>Créer le script <code>/usr/local/bin/bonjour.sh</code> et l'unité <code>bonjour.service</code> du cours.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> sudo nano /usr/local/bin/bonjour.sh      <span class="c"># coller le script du cours</span>
+<span class="p">$</span> sudo chmod +x /usr/local/bin/bonjour.sh
+<span class="p">$</span> sudo nano /etc/systemd/system/bonjour.service   <span class="c"># coller l'unité du cours</span>
+<span class="p">$</span> sudo systemctl daemon-reload</pre></div></li>
+        <li><label><input type="checkbox"><span>Activer et démarrer <code>bonjour</code>, puis suivre ses messages en direct.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> sudo systemctl enable --now bonjour
+<span class="o">Created symlink /etc/systemd/system/multi-user.target.wants/bonjour.service → /etc/systemd/system/bonjour.service.</span>
+<span class="p">$</span> journalctl -u bonjour -f
+<span class="o">… bonjour.sh[638]: Bonjour, il est 13:02:10</span>
+<span class="o">… bonjour.sh[638]: Bonjour, il est 13:02:40</span></pre><p>Un message toutes les 30 secondes. <kbd>Ctrl</kbd> + <kbd>C</kbd> pour arrêter de suivre (le service, lui, continue).</p></div></li>
+        <li><label><input type="checkbox"><span>Bonus : tuer le processus du service et constater que systemd le relance, puis tout supprimer.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> systemctl show -p MainPID bonjour
+<span class="o">MainPID=423</span>
+<span class="p">$</span> sudo systemctl kill -s KILL bonjour     <span class="c"># tue brutalement le processus du service</span>
+<span class="p">$</span> systemctl show -p MainPID -p NRestarts bonjour
+<span class="o">MainPID=432</span>
+<span class="o">NRestarts=1</span>                                <span class="c"># relancé automatiquement, avec un nouveau PID</span>
+<span class="p">$</span> sudo systemctl disable --now bonjour
+<span class="o">Removed "/etc/systemd/system/multi-user.target.wants/bonjour.service".</span>
+<span class="p">$</span> sudo rm /etc/systemd/system/bonjour.service /usr/local/bin/bonjour.sh
+<span class="p">$</span> sudo systemctl daemon-reload</pre><p>C'est <code>Restart=on-failure</code> qui relance le service : un arrêt brutal par signal compte comme un échec, un <code>systemctl stop</code> non.</p></div></li>
+      </ul>
+    </div>
+
+    <!-- ================================================== -->
+    <h2 id="questions" data-short="Questions fréquentes">💬 Questions fréquentes</h2>
+    <p>Les questions qui reviennent le plus souvent sur ce module, avec leurs réponses.</p>
+    <div class="qa" id="qa-list">
+      <details>
+        <summary><code>systemctl status</code> bloque le terminal et je ne peux plus rien taper</summary>
+        <p>La sortie s'est ouverte dans le lecteur <code>less</code> : appuie sur <kbd>q</kbd>. Pour l'éviter : <code>systemctl status cron --no-pager</code>.</p>
+      </details>
+      <details>
+        <summary>Mon service affiche <code>status=203/EXEC</code> et refuse de démarrer</summary>
+        <p>systemd n'arrive pas à lancer le programme indiqué dans <code>ExecStart</code>. Vérifie que le chemin est <strong>absolu</strong> et exact,
+          que le fichier est exécutable (<code>chmod +x</code>) et qu'un script commence bien par sa ligne <code>#!/bin/bash</code>.</p>
+      </details>
+      <details>
+        <summary>Quelle différence entre systemd et les anciens scripts <code>/etc/init.d</code> ?</summary>
+        <p>Avant systemd, les services étaient lancés un par un par des scripts (SysVinit). systemd les démarre en parallèle, suit leurs dépendances
+          et les relance s'ils plantent. La commande <code>service cron status</code> existe encore par compatibilité : elle appelle <code>systemctl</code>.</p>
+      </details>
+    </div>
+
+    <button class="done-btn" data-module="10" type="button">🏁 Marquer ce module comme terminé</button>
+
+    <nav class="page-nav">
+      <a href="09-environnement.html"><small>← Précédent</small>Module 09 — Personnaliser son environnement</a>
+      <a class="next" href="11-disques.html"><small>Suivant →</small>Module 11 — Disques &amp; systèmes de fichiers</a>
+    </nav>
+  </article>
+</div>
+
+<footer class="site-footer">
+  <div>Carnet Linux · Module 10 · 🐧</div>
+</footer>
+
+<script src="../assets/js/main.js"></script>
+</body>
+</html>

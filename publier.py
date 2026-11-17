@@ -143,6 +143,7 @@ def page_404(base):
   <meta name="robots" content="noindex">
   <link rel="icon" href="{base}/assets/img/tux.svg">
   <link rel="stylesheet" href="{base}/assets/css/style.css">
+  <script>try{{document.documentElement.dataset.theme=JSON.parse(localStorage.getItem("theme"))||"light"}}catch(e){{document.documentElement.dataset.theme="light"}}</script>
 </head>
 <body>
 <section class="hero"><div class="hero-inner" style="grid-template-columns:1fr;text-align:center">

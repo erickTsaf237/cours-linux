@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>systemctl et journalctl — vidéo</title>
+<link rel="stylesheet" href="commun.css">
+<style>
+#chef { left: 760px; top: 300px; width: 400px; height: 230px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+#chef .ico { font-family: var(--emoji); font-size: 90px; line-height: 1; }
+#chef .nom { font-family: var(--mono); font-size: 52px; color: var(--orange-2); margin-top: 10px; }
+.svc { position: absolute; }
+#v1 { left: 170px; top: 150px; } #v2 { left: 760px; top: 110px; } #v3 { left: 1390px; top: 150px; }
+#v4 { left: 120px; top: 600px; } #v5 { left: 780px; top: 640px; } #v6 { left: 1380px; top: 600px; }
+#svc-titre { top: 790px; font-size: 80px; }
+svg#liens { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; }
+svg#liens line { stroke: rgba(255,138,61,.6); stroke-width: 4; stroke-dasharray: 10 10; }
+
+#ctl { top: 330px; font-family: var(--mono); font-size: 170px; color: var(--orange-2); }
+#ctl-lab { top: 560px; font-family: var(--display); font-weight: 700; font-size: 50px; color: var(--gris); }
+
+#t-st { left: 130px; top: 130px; width: 1660px; }
+#t-st .corps { font-size: 32px; min-height: 560px; }
+#point { color: var(--vert); display: inline-block; }
+.marque { position: absolute; left: 0; right: 0; height: 52px; border-radius: 10px; background: rgba(245,197,66,.14); border: 2px solid rgba(245,197,66,.6); }
+
+#voyant { left: 860px; top: 140px; width: 200px; height: 200px; border-radius: 50%; background: #3a4256; border: 6px solid rgba(255,255,255,.2); }
+#svc-nom { top: 370px; font-family: var(--mono); font-size: 54px; }
+#boutons { top: 520px; }
+#boutons .bt { display: inline-block; width: 440px; margin: 0 20px; padding: 30px 0; border-radius: 26px; text-align: center;
+  background: #141c2e; border: 3px solid rgba(255,255,255,.18); }
+#boutons .bt b { display: block; font-family: var(--emoji); font-size: 76px; line-height: 1.1; }
+#boutons .bt span { font-family: var(--mono); font-size: 50px; }
+
+#piege-titre { top: 110px; font-size: 96px; color: var(--jaune); }
+.col { top: 300px; width: 700px; height: 420px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; }
+#c-start { left: 200px; } #c-enable { left: 1020px; }
+.col .ico { font-family: var(--emoji); font-size: 110px; line-height: 1.1; }
+.col .cmd { font-family: var(--mono); font-size: 70px; color: var(--orange-2); }
+.col .quand { font-family: var(--display); font-weight: 800; font-size: 56px; }
+.col .dis { font-family: var(--mono); font-size: 34px; color: var(--gris); }
+
+#editeur { left: 160px; top: 110px; width: 1200px; background: #0d1117; border: 2px solid #2a3342; border-radius: 22px; overflow: hidden;
+  font-family: var(--mono); font-size: 38px; color: #d6deeb; box-shadow: 0 40px 100px rgba(0,0,0,.6); }
+#editeur .tete { background: #161b22; color: #7d8590; text-align: center; font-size: 26px; padding: 12px; border-bottom: 2px solid #2a3342; }
+#editeur .corps-e { padding: 24px 40px; }
+#editeur .ln { white-space: pre; height: 58px; position: relative; }
+#editeur .sec { color: #ffa657; } #editeur .cle { color: #79c0ff; } #editeur .val { color: #a5d6ff; }
+.bulle { position: absolute; left: 1400px; top: 0; font-family: var(--display); font-weight: 800; font-size: 40px; color: var(--jaune); white-space: nowrap; }
+#tiennes { top: 820px; font-family: var(--mono); font-size: 44px; color: var(--vert); }
+
+#t-jr { left: 160px; top: 110px; width: 1600px; }
+#t-jr .corps { font-size: 30px; min-height: 640px; line-height: 1.6; }
+#direct { left: 1460px; top: 128px; font-family: var(--display); font-weight: 800; font-size: 28px; color: var(--rouge); z-index: 3; }
+
+#recap { top: 330px; }
+#recap span.g { display: inline-block; font-family: var(--mono); font-size: 110px; color: var(--orange-2); }
+#recap span.fl { display: inline-block; font-size: 90px; margin: 0 50px; vertical-align: 6px; }
+#recap-lab { top: 540px; font-family: var(--display); font-weight: 800; font-size: 56px; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="bg" class="layer"><div id="blob1" class="blob"></div><div id="blob2" class="blob"></div><div id="blob3" class="blob"></div></div>
+  <div id="grille" class="layer"></div>
+  <div id="cam-punch"><div id="cam-drift">
+
+    <div class="scene" id="s-intro">
+      <svg id="liens"><line x1="960" y1="415" x2="330" y2="185"/><line x1="960" y1="415" x2="920" y2="150"/><line x1="960" y1="415" x2="1560" y2="185"/>
+        <line x1="960" y1="415" x2="290" y2="635"/><line x1="960" y1="415" x2="960" y2="675"/><line x1="960" y1="415" x2="1560" y2="635"/></svg>
+      <div class="noeud svc" id="v1"><span class="ico">🌐</span>réseau</div>
+      <div class="noeud svc" id="v2"><span class="ico">⏰</span>horloge</div>
+      <div class="noeud svc" id="v3"><span class="ico">📜</span>journaux</div>
+      <div class="noeud svc" id="v4"><span class="ico">🖨️</span>impression</div>
+      <div class="noeud svc" id="v5"><span class="ico">🔐</span>ssh</div>
+      <div class="noeud svc" id="v6"><span class="ico">📅</span>cron</div>
+      <div class="abs verre" id="chef"><div class="ico">🎼</div><div class="nom">systemd</div></div>
+      <div class="ligne display grad mots" id="svc-titre">des services</div>
+    </div>
+
+    <div class="scene" id="s-ctl">
+      <div class="ligne" id="ctl">systemctl</div>
+      <div class="ligne" id="ctl-lab">🎛️ la télécommande des services</div>
+    </div>
+
+    <div class="scene" id="s-status">
+      <div class="abs terminal" id="t-st"><div class="barre-t"><i></i><i></i><i></i><span>user@ubuntu: ~</span></div>
+        <div class="corps" style="position:relative">
+          <div class="l" id="s0"><span class="p">user@ubuntu:~$</span> <span class="tape">systemctl status cron</span></div>
+          <div class="l o so"><span id="point">●</span> cron.service - Regular background program processing daemon</div>
+          <div class="l o so">     Loaded: loaded (/usr/lib/systemd/system/cron.service; <span class="ok">enabled</span>)</div>
+          <div class="l o so" id="l-active">     Active: <span class="ok">active (running)</span> since mar. 09:12:04; 2h 3min ago</div>
+          <div class="l o so">   Main PID: 812 (cron)</div>
+          <div class="l o so"> </div>
+          <div class="l o so" id="l-j1">oct. 27 09:12:04 ubuntu systemd[1]: Started cron.service.</div>
+          <div class="l o so">oct. 27 10:17:01 ubuntu CRON[2805]: (root) CMD (run-parts /etc/cron.hourly)</div>
+          <div class="marque" id="m-active" style="top:176px"></div>
+          <div class="marque" id="m-journal" style="top:325px;height:102px"></div>
+        </div></div>
+    </div>
+
+    <div class="scene" id="s-cmds">
+      <div class="abs" id="voyant"></div>
+      <div class="ligne" id="svc-nom">cron.service</div>
+      <div class="ligne" id="boutons"><span class="bt" id="b-start"><b>▶️</b><span>start</span></span><span class="bt" id="b-stop"><b>⏹️</b><span>stop</span></span><span class="bt" id="b-restart"><b>🔄</b><span>restart</span></span></div>
+    </div>
+
+    <div class="scene" id="s-piege">
+      <div class="ligne display mots" id="piege-titre">⚠️ Piège classique</div>
+      <div class="abs verre col" id="c-start"><div class="ico">⏱️</div><div class="cmd">start</div><div class="quand">maintenant</div><div class="dis">perdu au redémarrage</div></div>
+      <div class="abs verre col" id="c-enable"><div class="ico">♾️</div><div class="cmd">enable</div><div class="quand">pour toujours</div><div class="dis" id="dis">disable : plus au démarrage</div></div>
+    </div>
+
+    <div class="scene" id="s-unite">
+      <div class="abs" id="editeur"><div class="tete">/etc/systemd/system/bonjour.service</div>
+        <div class="corps-e">
+          <div class="ln u"><span class="sec">[Unit]</span></div>
+          <div class="ln u"><span class="cle">Description</span>=<span class="val">Service d'exemple</span></div>
+          <div class="ln u" id="u-after"><span class="cle">After</span>=<span class="val">network.target</span></div>
+          <div class="ln u"> </div>
+          <div class="ln u"><span class="sec">[Service]</span></div>
+          <div class="ln u" id="u-exec"><span class="cle">ExecStart</span>=<span class="val">/usr/local/bin/bonjour.sh</span></div>
+          <div class="ln u" id="u-restart"><span class="cle">Restart</span>=<span class="val">on-failure</span></div>
+          <div class="ln u"> </div>
+          <div class="ln u"><span class="sec">[Install]</span></div>
+          <div class="ln u"><span class="cle">WantedBy</span>=<span class="val">multi-user.target</span></div>
+        </div></div>
+      <div class="bulle" id="bl-exec" style="top:478px">← quel programme</div>
+      <div class="bulle" id="bl-after" style="top:304px">← après quoi</div>
+      <div class="bulle" id="bl-restart" style="top:536px">← s'il plante</div>
+      <div class="ligne" id="tiennes">✍️ tes unités : /etc/systemd/system/</div>
+    </div>
+
+    <div class="scene" id="s-journal">
+      <div class="abs terminal" id="t-jr"><div class="barre-t"><i></i><i></i><i></i><span>user@ubuntu: ~</span></div>
+        <div class="corps">
+          <div class="l" id="jp0"><span class="p">user@ubuntu:~$</span> <span class="tape">systemctl status bonjour</span></div>
+          <div class="l err jp">× bonjour.service - Service d'exemple</div>
+          <div class="l err jp">     Active: failed (Result: exit-code)</div>
+          <div class="l" id="j0"><span class="p">user@ubuntu:~$</span> <span class="tape">journalctl</span></div>
+          <div class="l o jt">oct. 27 13:01:02 ubuntu kernel: usb 1-1: new device found</div>
+          <div class="l o jt">oct. 27 13:01:40 ubuntu NetworkManager[702]: device enp0s3: connected</div>
+          <div class="l o jt">oct. 27 13:02:10 ubuntu bonjour.sh[638]: Bonjour, il est 13:02:10</div>
+          <div class="l o jt">oct. 27 13:02:11 ubuntu gnome-shell[1520]: window created</div>
+          <div class="l o jt">oct. 27 13:02:15 ubuntu systemd[1]: Started cron.service.</div>
+          <div class="l o jt">oct. 27 13:02:40 ubuntu bonjour.sh[638]: Bonjour, il est 13:02:40</div>
+          <div class="l o jt">oct. 27 13:02:52 ubuntu snapd[810]: autorefresh: next refresh 17:30</div>
+          <div class="l" id="j1"><span class="p">user@ubuntu:~$</span> <span class="tape">journalctl -u bonjour -f</span></div>
+          <div class="l o ju">oct. 27 13:02:10 ubuntu bonjour.sh[638]: Bonjour, il est 13:02:10</div>
+          <div class="l o ju">oct. 27 13:02:40 ubuntu bonjour.sh[638]: Bonjour, il est 13:02:40</div>
+          <div class="l o jf">oct. 27 13:03:10 ubuntu bonjour.sh[638]: Bonjour, il est 13:03:10</div>
+          <div class="l o jf">oct. 27 13:03:40 ubuntu bonjour.sh[638]: Bonjour, il est 13:03:40</div>
+          <div class="l o jf">oct. 27 13:04:10 ubuntu bonjour.sh[638]: Bonjour, il est 13:04:10</div>
+        </div></div>
+      <div class="abs" id="direct">● EN DIRECT</div>
+    </div>
+
+    <div class="scene" id="s-recap">
+      <div class="ligne" id="recap"><span class="g">status</span><span class="fl">➜</span><span class="g">journalctl</span></div>
+      <div class="ligne" id="recap-lab">la réponse est presque toujours écrite dedans</div>
+    </div>
+
+  </div></div>
+  <div id="vignette" class="layer"></div>
+  <div class="abs" id="badge"><img src="img/tux.svg" alt=""><div><div class="nom"><b>$</b> carnet-linux</div><div class="sous">Module 10 · systemctl et journalctl</div></div></div>
+  <canvas id="particules" width="1920" height="1080"></canvas>
+  <div class="abs" id="rideau"></div>
+  <div class="abs" id="st"></div>
+  <div class="abs" id="barre"></div>
+  <div id="flash" class="layer"></div>
+</div>
+<script src="lib/gsap.min.js"></script>
+<script src="commun.js"></script>
+<script>
+Film.demarrer({
+  film: 'systemd',
+  fin: { titre: 'systemctl et journalctl', sous: 'Carnet Linux · Module 10 — Démarrage & systemd', prompt: 'systemctl status cron' },
+  construire(C) {
+    // 1. les services et leur chef
+    gsap.set('#s-intro', { autoAlpha: 1 });
+    gsap.set(['#liens line', '#chef', '#svc-titre .mot'], { opacity: 0 });
+    pop('.svc', 0.6, { stagger: 0.6, depuis: 0.4 });
+    motsEntrent('#svc-titre .mot', C.services);
+    pop('#chef', C.gouverne, { depuis: 0.3 });
+    tl.to('#liens line', { opacity: 1, duration: 0.4, stagger: 0.08 }, C.gouverne + 0.5);
+    tl.to('#liens line', { strokeDashoffset: -80, duration: 2, ease: 'none' }, C.gouverne + 0.5);
+    allumer('#chef', C.gouverne + 0.6);
+
+    // 2. systemctl
+    plonge(C.systemctl, '#s-intro', '#s-ctl');
+    gsap.set('#ctl-lab', { opacity: 0 });
+    tl.fromTo('#ctl', { scale: 2, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.35, ease: 'power4.in', immediateRender: false }, C.systemctl + 0.6);
+    coup(C.systemctl + 0.95);
+    tl.fromTo('#ctl-lab', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.systemctl + 1.4);
+
+    // 3. status
+    rideau(C.status, '#s-ctl', '#s-status');
+    gsap.set(['.so', '.marque'], { opacity: 0 });
+    ligne('#s0', C.status + 0.3, 1.0);
+    sortie('.so', C.status + 1.8, 0.12);
+    tl.to('#m-active', { opacity: 1, duration: 0.3 }, C.actif);
+    tl.to('#m-active', { opacity: 0, duration: 0.3 }, C.vert - 0.2);
+    tl.to('#m-journal', { opacity: 1, duration: 0.3 }, C.actif + 2.2);
+    tl.to('#m-journal', { opacity: 0, duration: 0.3 }, C.vert - 0.2);
+    tl.to('#point', { scale: 2.2, textShadow: '0 0 30px #3fb950', duration: 0.4, yoyo: true, repeat: 3 }, C.vert + 0.4);
+
+    // 4. start / stop / restart
+    plonge(C.start, '#s-status', '#s-cmds');
+    gsap.set(['.bt'], { opacity: 0.35 });
+    const voyant = (t, c) => tl.to('#voyant', { backgroundColor: c, boxShadow: `0 0 90px ${c}`, duration: 0.3 }, t);
+    tl.set('#voyant', { backgroundColor: '#f87171', boxShadow: '0 0 60px #f87171' }, C.start);
+    voyant(C.start + 1.4, '#3fb950'); allumer('#b-start', C.start + 1.2); tl.to('#b-start', { opacity: 1, duration: 0.2 }, C.start + 1.2);
+    eteindre('#b-start', C.stop); tl.to('#b-start', { opacity: 0.35, duration: 0.2 }, C.stop);
+    voyant(C.stop + 0.4, '#f87171'); allumer('#b-stop', C.stop + 0.2); tl.to('#b-stop', { opacity: 1, duration: 0.2 }, C.stop + 0.2);
+    eteindre('#b-stop', C.restart + 0.8); tl.to('#b-stop', { opacity: 0.35, duration: 0.2 }, C.restart + 0.8);
+    allumer('#b-restart', C.restart + 1.4); tl.to('#b-restart', { opacity: 1, duration: 0.2 }, C.restart + 1.4);
+    tl.to('#b-restart b', { rotation: 360, duration: 0.8, ease: 'power2.inOut' }, C.restart + 1.6);
+    voyant(C.restart + 2.0, '#f87171'); voyant(C.restart + 2.5, '#3fb950');
+
+    // 5. le piège start / enable
+    rideau(C.piege, '#s-cmds', '#s-piege');
+    gsap.set(['#c-start', '#c-enable', '#dis'], { opacity: 0 });
+    motsEntrent('#piege-titre .mot', C.piege + 0.1);
+    secousse(C.piege + 0.5, 10);
+    pop('#c-start', C.piege + 1.6, { depuis: 0.5 });
+    pop('#c-enable', C.enable, { depuis: 0.5 });
+    tl.fromTo('#dis', { y: 20, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.disable);
+    allumer('#c-start', C.maintenant); eteindre('#c-start', C.toujours);
+    allumer('#c-enable', C.toujours, 'rgba(63,185,80,.9)');
+
+    // 6. une unité
+    plonge(C.unite, '#s-piege', '#s-unite');
+    gsap.set(['.u', '.bulle', '#tiennes'], { opacity: 0 });
+    tl.fromTo('#editeur', { y: 40, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.unite);
+    sortie('.u', C.unite + 0.6, 0.1);
+    const bulle = (b, l, t) => { tl.fromTo(b, { x: 40, opacity: 0 }, { x: 0, opacity: 1, immediateRender: false }, t);
+      tl.to(l, { backgroundColor: 'rgba(245,197,66,.15)', duration: 0.3 }, t); };
+    bulle('#bl-exec', '#u-exec', C.unite + 3.0);
+    bulle('#bl-after', '#u-after', C.unite + 4.4);
+    bulle('#bl-restart', '#u-restart', C.unite + 5.6);
+    tl.fromTo('#tiennes', { y: 20, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.tiennes);
+
+    // 7. journalctl
+    rideau(C.panne, '#s-unite', '#s-journal');
+    gsap.set(['.jp', '.jt', '#j1', '.ju', '.jf', '#direct'], { opacity: 0 });
+    gsap.set(['#j1', '.ju', '.jf'], { display: 'none' });
+    ligne('#jp0', C.panne + 0.6, 1.0);
+    sortie('.jp', C.panne + 2.0, 0.2);
+    secousse(C.panne + 2.1, 8);
+    ligne('#j0', C.journalctl, 0.6);
+    sortie('.jt', C.journalctl + 0.9, 0.18);
+    // -u : on ne garde que les lignes du service
+    tl.set(['.jt', '.jp', '#jp0', '#j0'], { display: 'none' }, C.u + 0.2);
+    tl.set('#j1', { display: 'block' }, C.u + 0.2);
+    ligne('#j1', C.u + 0.2, 1.2);
+    tl.set('.ju', { display: 'block' }, C.u + 1.6);
+    sortie('.ju', C.u + 1.6, 0.25);
+    tl.set('.jf', { display: 'block' }, C.f + 0.6);
+    sortie('.jf', C.f + 0.8, 0.9);
+    tl.fromTo('#direct', { opacity: 0 }, { opacity: 1, duration: 0.2, immediateRender: false }, C.f + 0.6);
+    tl.to('#direct', { opacity: 0.3, duration: 0.4, yoyo: true, repeat: 3 }, C.f + 0.9);
+
+    // 8. récap
+    plonge(C.reflexe, '#s-journal', '#s-recap');
+    gsap.set(['#recap span', '#recap-lab'], { opacity: 0 });
+    pop('#recap span', C.reflexe + 0.8, { stagger: 0.5, depuis: 0.3 });
+    tl.fromTo('#recap-lab', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.final);
+    salve(C.final + 0.3, 960, 420, 60, ['#e95420', '#b36bd6', '#f5c542'], 'confetti', 0.9);
+  },
+});
+</script>
+</body>
+</html>

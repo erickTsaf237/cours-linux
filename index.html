@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/style.css">
-  <script>try{const t=JSON.parse(localStorage.getItem("theme"));if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+  <script>try{const t=JSON.parse(localStorage.getItem("theme"));document.documentElement.dataset.theme=t||"light"}catch(e){document.documentElement.dataset.theme="light"}</script>
 </head>
 <body>
 <div class="progress-bar"></div>
@@ -22,7 +22,7 @@
     <a class="brand" href="index.html"><img src="assets/img/tux.svg" alt=""><span><span class="dollar">$</span> carnet-linux</span></a>
     <nav class="nav">
       <a href="index.html" class="active">Programme</a>
-      <a href="modules/08-logiciels.html" class="hide-sm">Module en cours</a>
+      <a href="modules/12-reseau.html" class="hide-sm">Module en cours</a>
       <button class="theme-toggle" type="butt   on" aria-label="Changer de thème">☀️</button>
     </nav>
   </div>
@@ -147,26 +147,26 @@
         <p>Ce qui fait tourner une machine : démarrage, services, disques, réseau.</p>
       </div>
       <div class="modules">
-        <div class="module locked" data-module="10">
-          <div class="m-top"><span class="m-num">MODULE 10</span><span class="status soon">à venir</span></div>
+        <a class="module" data-module="10" href="modules/10-demarrage-systemd.html">
+          <div class="m-top"><span class="m-num">MODULE 10</span><span class="status open">disponible</span></div>
           <h4>Démarrage &amp; systemd</h4>
           <ul><li>UEFI, GRUB, noyau, initramfs</li><li>systemctl : services et cibles</li><li>journalctl et les logs</li><li>Écrire sa propre unité</li></ul>
-        </div>
-        <div class="module locked" data-module="11">
-          <div class="m-top"><span class="m-num">MODULE 11</span><span class="status soon">à venir</span></div>
+        </a>
+        <a class="module" data-module="11" href="modules/11-disques.html">
+          <div class="m-top"><span class="m-num">MODULE 11</span><span class="status open">disponible</span></div>
           <h4>Disques &amp; systèmes de fichiers</h4>
           <ul><li>lsblk, fdisk, parted</li><li>mkfs, mount, /etc/fstab</li><li>LVM : volumes logiques</li><li>Swap, df, du</li></ul>
-        </div>
-        <div class="module locked" data-module="12">
-          <div class="m-top"><span class="m-num">MODULE 12</span><span class="status soon">à venir</span></div>
+        </a>
+        <a class="module" data-module="12" href="modules/12-reseau.html">
+          <div class="m-top"><span class="m-num">MODULE 12</span><span class="status open">disponible</span></div>
           <h4>Réseau</h4>
           <ul><li>Modèle TCP/IP en pratique</li><li>ip, ss, ping, traceroute, dig</li><li>Netplan et NetworkManager</li><li>Pare-feu avec ufw</li></ul>
-        </div>
-        <div class="module locked" data-module="13">
-          <div class="m-top"><span class="m-num">MODULE 13</span><span class="status soon">à venir</span></div>
+        </a>
+        <a class="module" data-module="13" href="modules/13-ssh.html">
+          <div class="m-top"><span class="m-num">MODULE 13</span><span class="status open">disponible</span></div>
           <h4>SSH &amp; accès à distance</h4>
           <ul><li>Se connecter à sa VM depuis Windows</li><li>Clés SSH, ~/.ssh/config</li><li>scp et rsync</li><li>Sécuriser sshd</li></ul>
-        </div>
+        </a>
         <div class="module locked" data-module="14">
           <div class="m-top"><span class="m-num">MODULE 14</span><span class="status soon">à venir</span></div>
           <h4>Planification &amp; journaux</h4>
@@ -265,6 +265,8 @@
     <h2>Journal de bord</h2>
     <p class="section-intro">L'historique du cours : ce qui a été ajouté et quand.</p>
     <ul class="changelog">
+      <li><time datetime="2026-11-17">17/11/2026</time><span>Publication des modules <a href="modules/12-reseau.html">12 — Réseau</a> (adresses, DNS, diagnostic, Netplan, pare-feu ufw) et <a href="modules/13-ssh.html">13 — SSH &amp; accès à distance</a> (connexion à la VM depuis Windows, clés, scp, rsync, sécurisation), avec deux vidéos chacun.</span></li>
+      <li><time datetime="2026-10-29">29/10/2026</time><span>Début de la phase 3 : publication des modules <a href="modules/10-demarrage-systemd.html">10 — Démarrage &amp; systemd</a> et <a href="modules/11-disques.html">11 — Disques &amp; systèmes de fichiers</a>, avec deux vidéos chacun. Le site s'affiche désormais en thème clair par défaut.</span></li>
       <li><time datetime="2026-10-26">26/10/2026</time><span>Publication des modules <a href="modules/08-logiciels.html">08 — Gestion des logiciels</a> et <a href="modules/09-environnement.html">09 — Personnaliser son environnement</a>, avec deux vidéos chacun. La phase 2 est complète.</span></li>
       <li><time datetime="2026-10-24">24/10/2026</time><span>Publication des modules <a href="modules/06-rechercher-regex.html">06 — Rechercher &amp; expressions régulières</a> et <a href="modules/07-processus.html">07 — Processus &amp; tâches</a>, avec deux vidéos chacun.</span></li>
       <li><time datetime="2026-10-23">23/10/2026</time><span>Publication des modules <a href="modules/04-utilisateurs-permissions.html">04 — Utilisateurs, groupes &amp; permissions</a> et <a href="modules/05-redirections-pipes.html">05 — Redirections, pipes &amp; filtres</a>, avec deux vidéos chacun. Les vidéos du module 03 sont en ligne. Nouveau : chaque étape des missions pratiques affiche sa correction une fois cochée.</span></li>

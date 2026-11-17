@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Le trajet d'une page web — vidéo</title>
+<link rel="stylesheet" href="commun.css">
+<style>
+/* 1. le navigateur */
+#nav { left: 360px; top: 150px; width: 1200px; height: 560px; border-radius: 24px; background: #f4f6fb; overflow: hidden; box-shadow: 0 40px 100px rgba(0,0,0,.6); }
+#nav .barre-n { height: 86px; background: #dfe4ee; display: flex; align-items: center; gap: 14px; padding: 0 26px; }
+#nav .barre-n i { width: 18px; height: 18px; border-radius: 50%; background: #b8c0cf; display: block; }
+#url { flex: 1; height: 54px; margin-left: 20px; border-radius: 27px; background: #fff; display: flex; align-items: center; padding: 0 26px;
+  font-family: var(--mono); font-size: 32px; color: #1f2937; }
+#url .cad { font-family: var(--emoji); font-size: 26px; margin-right: 14px; }
+#page { position: absolute; left: 0; right: 0; top: 86px; bottom: 0; background: linear-gradient(135deg, #e95420, #77216f); display: flex; flex-direction: column;
+  align-items: center; justify-content: center; color: #fff; }
+#page b { font-family: var(--display); font-size: 110px; font-weight: 800; letter-spacing: -.03em; }
+#page span { font-size: 36px; opacity: .85; }
+#coul { top: 760px; font-size: 80px; }
+
+/* 2. l'adresse IP */
+#vm { left: 240px; top: 170px; }
+#etiq-ip { left: 210px; top: 430px; width: 360px; text-align: center; padding: 16px 0; border-radius: 18px; background: rgba(56,189,248,.14); border: 3px solid var(--cyan);
+  font-family: var(--mono); font-size: 44px; color: var(--cyan); }
+#lettre { left: 690px; top: 180px; width: 520px; padding: 30px 36px; border-radius: 18px; background: #f4efe6; color: #2a2f3a; transform: rotate(-3deg);
+  box-shadow: 0 30px 70px rgba(0,0,0,.5); font-size: 36px; line-height: 1.45; }
+#lettre b { font-family: var(--display); font-size: 40px; }
+#lettre .tim { position: absolute; right: 26px; top: 22px; font-family: var(--emoji); font-size: 64px; }
+#routeur { left: 1400px; top: 170px; }
+#jeton { left: 1450px; top: 430px; width: 220px; text-align: center; padding: 10px 0; border-radius: 14px; background: var(--cyan); color: #04121d;
+  font-family: var(--mono); font-size: 34px; z-index: 5; }
+#dhcp-lab { left: 1250px; top: 520px; width: 600px; white-space: nowrap; text-align: center; font-family: var(--display); font-weight: 800; font-size: 44px; color: var(--cyan); }
+#t-ip { left: 240px; top: 610px; width: 1440px; }
+#t-ip .corps { font-size: 34px; padding: 22px 34px; }
+#ip-surl { border-radius: 8px; }
+
+/* 3. le DNS */
+#nom-g { top: 150px; font-family: var(--mono); font-size: 120px; color: #fff; }
+#nom-q { left: 1500px; top: 120px; font-family: var(--display); font-weight: 800; font-size: 160px; color: var(--jaune); }
+#bits { top: 330px; font-family: var(--mono); font-size: 54px; color: rgba(56,189,248,.7); letter-spacing: .2em; }
+#annuaire { left: 110px; top: 440px; width: 740px; padding: 26px 34px; }
+#annuaire h5 { font-family: var(--display); font-weight: 800; font-size: 50px; margin-bottom: 14px; }
+#annuaire h5 span { font-family: var(--emoji); }
+#annuaire .ent { white-space: nowrap; font-family: var(--mono); font-size: 32px; color: var(--gris); line-height: 1.6; border-radius: 8px; padding: 0 10px; }
+#fleche-dns { left: 870px; top: 560px; font-size: 90px; color: var(--orange-2); }
+#t-dig { left: 990px; top: 440px; width: 820px; }
+#t-dig .corps { font-size: 32px; padding: 22px 30px; }
+
+/* 4. la passerelle */
+.st4 { top: 250px; }
+#n-vm { left: 130px; } #n-gw { left: 590px; } #n-net { left: 1050px; } #n-srv { left: 1510px; }
+.cable { position: absolute; top: 360px; height: 8px; border-radius: 4px; background: rgba(255,255,255,.18); transform-origin: 0 50%; }
+#c1 { left: 430px; width: 160px; } #c2 { left: 890px; width: 160px; } #c3 { left: 1350px; width: 160px; }
+#paquet { left: 270px; top: 340px; width: 50px; height: 50px; border-radius: 12px; background: var(--jaune); box-shadow: 0 0 30px rgba(245,197,66,.8); z-index: 5; }
+#porte-lab { left: 530px; top: 500px; width: 420px; text-align: center; font-family: var(--display); font-weight: 800; font-size: 42px; color: var(--orange-2); }
+#t-route { left: 300px; top: 640px; width: 1320px; }
+#t-route .corps { font-size: 34px; padding: 22px 34px; }
+#gw-surl { border-radius: 8px; }
+
+/* 5. les ports */
+#immeuble { left: 160px; top: 150px; width: 820px; height: 640px; border-radius: 26px; background: #141c2e; border: 3px solid rgba(255,255,255,.2); }
+#immeuble .toit { position: absolute; left: 0; right: 0; top: 24px; text-align: center; font-family: var(--mono); font-size: 40px; color: var(--cyan); }
+.porte { position: absolute; top: 140px; width: 220px; height: 440px; border-radius: 18px 18px 6px 6px; background: #1d2740; border: 3px solid rgba(255,255,255,.25);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.porte b { font-family: var(--display); font-weight: 800; font-size: 76px; }
+.porte span { font-family: var(--mono); font-size: 30px; color: var(--gris); margin-top: 8px; }
+.porte i { font-style: normal; font-family: var(--emoji); font-size: 60px; margin-bottom: 14px; }
+#po22 { left: 40px; } #po80 { left: 300px; } #po443 { left: 560px; }
+#num-lab { left: 1060px; top: 160px; width: 720px; text-align: center; font-family: var(--mono); font-size: 60px; color: var(--jaune); }
+#t-ss { left: 1030px; top: 300px; width: 780px; }
+#t-ss .corps { font-size: 28px; padding: 22px 26px; }
+
+/* 6. ping */
+#t-ping { left: 230px; top: 150px; width: 1460px; }
+#t-ping .corps { font-size: 34px; padding: 24px 34px; min-height: 400px; }
+#tampon-dns { left: 1180px; top: 650px; font-size: 90px; color: var(--rouge); transform: rotate(-10deg); }
+#loupe { left: 1500px; top: 640px; font-size: 110px; }
+
+/* 7. récap */
+#recap { top: 300px; }
+.rr { display: inline-block; width: 380px; height: 330px; margin: 0 14px; vertical-align: top; padding-top: 34px; text-align: center; }
+.rr b { display: block; font-family: var(--emoji); font-size: 90px; line-height: 1.1; }
+.rr strong { display: block; font-family: var(--display); font-weight: 800; font-size: 50px; margin: 12px 0 14px; }
+.rr code { font-family: var(--mono); font-size: 38px; color: var(--orange-2); }
+#recap-t { top: 720px; font-size: 64px; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="bg" class="layer"><div id="blob1" class="blob"></div><div id="blob2" class="blob"></div><div id="blob3" class="blob"></div></div>
+  <div id="grille" class="layer"></div>
+  <div id="cam-punch"><div id="cam-drift">
+
+    <div class="scene" id="s-nav">
+      <div class="abs" id="nav"><div class="barre-n"><i></i><i></i><i></i><div id="url"><span class="cad">🔒</span><span class="tape">ubuntu.com</span></div></div>
+        <div id="page"><b>Ubuntu</b><span>The open-source operating system</span></div></div>
+      <div class="ligne display grad mots" id="coul">que s'est-il passé ?</div>
+    </div>
+
+    <div class="scene" id="s-ip">
+      <div class="abs verre station" id="vm"><div class="ico">💻</div><div class="nom">ta machine</div><div class="role">enp0s3</div></div>
+      <div class="abs" id="etiq-ip">10.0.2.15</div>
+      <div class="abs" id="lettre"><span class="tim">✉️</span><b>12 rue des Pingouins</b><br>75000 Paris<br><span style="color:#8a6d3b">une adresse, pour te trouver</span></div>
+      <div class="abs verre station" id="routeur"><div class="ico">📡</div><div class="nom">le routeur</div><div class="role">serveur DHCP</div></div>
+      <div class="abs" id="jeton">10.0.2.15</div>
+      <div class="abs" id="dhcp-lab">« tiens, ton adresse »</div>
+      <div class="abs terminal" id="t-ip"><div class="barre-t"><i></i><i></i><i></i><span>user@ubuntu: ~</span></div>
+        <div class="corps">
+          <div class="l" id="ip0"><span class="p">user@ubuntu:~$</span> <span class="tape">ip a</span></div>
+          <div class="l o ipo">2: enp0s3: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 state UP</div>
+          <div class="l o ipo">    inet <span class="v" id="ip-surl">10.0.2.15/24</span> brd 10.0.2.255 scope global <span class="ok">dynamic</span> enp0s3</div>
+        </div></div>
+    </div>
+
+    <div class="scene" id="s-dns">
+      <div class="ligne" id="nom-g">ubuntu.com</div>
+      <div class="abs" id="nom-q">?</div>
+      <div class="ligne" id="bits">185 · 125 · 190 · 20</div>
+      <div class="abs verre" id="annuaire"><h5><span>📖</span> DNS</h5>
+        <div class="ent" id="ent1">ubuntu.com → 185.125.190.20</div>
+        <div class="ent">wikipedia.org → 185.15.58.224</div>
+        <div class="ent">debian.org → 151.101.2.132</div></div>
+      <div class="abs" id="fleche-dns">→</div>
+      <div class="abs terminal" id="t-dig"><div class="barre-t"><i></i><i></i><i></i><span>user@ubuntu: ~</span></div>
+        <div class="corps">
+          <div class="l" id="dg0"><span class="p">$</span> <span class="tape">dig +short ubuntu.com</span></div>
+          <div class="l o dgo"><span class="ok">185.125.190.20</span></div>
+          <div class="l o dgo"><span class="ok">185.125.190.21</span></div>
+          <div class="l o dgo"><span class="ok">185.125.190.29</span></div>
+        </div></div>
+    </div>
+
+    <div class="scene" id="s-route">
+      <div class="abs verre station st4" id="n-vm"><div class="ico">💻</div><div class="nom">toi</div><div class="role">10.0.2.15</div></div>
+      <div class="abs verre station st4" id="n-gw"><div class="ico">📡</div><div class="nom">passerelle</div><div class="role">10.0.2.2</div></div>
+      <div class="abs verre station st4" id="n-net"><div class="ico">🌍</div><div class="nom">Internet</div><div class="role">des routeurs, partout</div></div>
+      <div class="abs verre station st4" id="n-srv"><div class="ico">🖥️</div><div class="nom">serveur</div><div class="role">185.125.190.20</div></div>
+      <div class="cable" id="c1"></div><div class="cable" id="c2"></div><div class="cable" id="c3"></div>
+      <div class="abs" id="paquet"></div>
+      <div class="abs" id="porte-lab">🚪 la porte de sortie</div>
+      <div class="abs terminal" id="t-route"><div class="barre-t"><i></i><i></i><i></i><span>user@ubuntu: ~</span></div>
+        <div class="corps">
+          <div class="l" id="rt0"><span class="p">user@ubuntu:~$</span> <span class="tape">ip route</span></div>
+          <div class="l o rto">default via <span class="v" id="gw-surl">10.0.2.2</span> dev enp0s3 proto dhcp metric 100</div>
+          <div class="l o rto">10.0.2.0/24 dev enp0s3 proto kernel scope link src 10.0.2.15</div>
+        </div></div>
+    </div>
+
+    <div class="scene" id="s-port">
+      <div class="abs" id="immeuble"><div class="toit">🏢 185.125.190.20</div>
+        <div class="porte" id="po22"><i>🔐</i><b>22</b><span>SSH</span></div>
+        <div class="porte" id="po80"><i>🌐</i><b>80</b><span>HTTP</span></div>
+        <div class="porte" id="po443"><i>🔒</i><b>443</b><span>HTTPS</span></div></div>
+      <div class="abs" id="num-lab">adresse<span style="color:#fff">:</span>port</div>
+      <div class="abs terminal" id="t-ss"><div class="barre-t"><i></i><i></i><i></i><span>user@ubuntu: ~</span></div>
+        <div class="corps">
+          <div class="l" id="ss0"><span class="p">$</span> <span class="tape">ss -tuln</span></div>
+          <div class="l o sso">Netid State  Local Address:Port</div>
+          <div class="l o sso">udp   UNCONN 127.0.0.53%lo:53</div>
+          <div class="l o sso">tcp   LISTEN 127.0.0.53%lo:53</div>
+          <div class="l o sso" id="ss22">tcp   LISTEN       0.0.0.0:<span class="ok">22</span></div>
+          <div class="l o sso">tcp   LISTEN     127.0.0.1:631</div>
+        </div></div>
+    </div>
+
+    <div class="scene" id="s-ping">
+      <div class="abs terminal" id="t-ping"><div class="barre-t"><i></i><i></i><i></i><span>user@ubuntu: ~</span></div>
+        <div class="corps">
+          <div class="l" id="pg0"><span class="p">user@ubuntu:~$</span> <span class="tape">ping -c 2 185.125.190.20</span></div>
+          <div class="l o pgo">64 bytes from 185.125.190.20: icmp_seq=1 ttl=53 time=<span class="ok">26.9 ms</span></div>
+          <div class="l o pgo">64 bytes from 185.125.190.20: icmp_seq=2 ttl=53 time=<span class="ok">30.6 ms</span></div>
+          <div class="l o pgo"><span class="ok">2 packets transmitted, 2 received, 0% packet loss</span></div>
+          <div class="l" id="pg1"><span class="p">user@ubuntu:~$</span> <span class="tape">ping -c 2 ubuntu.com</span></div>
+          <div class="l o" id="pg1o"><span class="err">ping: ubuntu.com: Échec temporaire dans la résolution du nom</span></div>
+        </div></div>
+      <div class="abs tampon" id="tampon-dns">DNS</div>
+      <div class="abs emoji" id="loupe">🕵️</div>
+    </div>
+
+    <div class="scene" id="s-recap">
+      <div class="ligne" id="recap">
+        <span class="rr verre" id="r1"><b>🏠</b><strong>adresse</strong><code>ip a</code></span><span class="rr verre" id="r2"><b>📖</b><strong>nom</strong><code>dig</code></span><span class="rr verre" id="r3"><b>🚪</b><strong>passerelle</strong><code>ip route</code></span><span class="rr verre" id="r4"><b>🔢</b><strong>port</strong><code>ss -tuln</code></span>
+      </div>
+      <div class="ligne display grad mots" id="recap-t">plus de secret</div>
+    </div>
+
+  </div></div>
+  <div id="vignette" class="layer"></div>
+  <div class="abs" id="badge"><img src="img/tux.svg" alt=""><div><div class="nom"><b>$</b> carnet-linux</div><div class="sous">Module 12 · Le trajet d'une page web</div></div></div>
+  <canvas id="particules" width="1920" height="1080"></canvas>
+  <div class="abs" id="rideau"></div>
+  <div class="abs" id="st"></div>
+  <div class="abs" id="barre"></div>
+  <div id="flash" class="layer"></div>
+</div>
+<script src="lib/gsap.min.js"></script>
+<script src="commun.js"></script>
+<script>
+Film.demarrer({
+  film: 'reseau',
+  fin: { titre: 'Le trajet d\'une page web', sous: 'Carnet Linux · Module 12 — Réseau', prompt: 'ip a' },
+  construire(C) {
+    const surligne = (sel, t, fin, coul = 'rgba(56,189,248,.35)') => {
+      tl.to(sel, { backgroundColor: coul, duration: 0.25 }, t);
+      if (fin) tl.to(sel, { backgroundColor: 'rgba(0,0,0,0)', duration: 0.3 }, fin);
+    };
+
+    // 1. le navigateur
+    gsap.set('#s-nav', { autoAlpha: 1 });
+    gsap.set(['#page', '#coul .mot'], { opacity: 0 });
+    tl.fromTo('#nav', { y: 60, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, 0.2);
+    taper('#url .tape', 1.7, 2.8);
+    tl.fromTo('#page', { opacity: 0, scale: 0.96 }, { opacity: 1, scale: 1, duration: 0.25, immediateRender: false }, C.coulisses - 1.4);
+    flash(C.coulisses - 1.4, 0.3, 0.3);
+    tl.to('#nav', { scale: 0.86, y: -40, duration: 0.6 }, C.coulisses);
+    motsEntrent('#coul .mot', C.coulisses + 0.2);
+
+    // 2. l'adresse IP
+    plonge(C.ip, '#s-nav', '#s-ip');
+    gsap.set(['#etiq-ip', '#lettre', '#routeur', '#jeton', '#dhcp-lab', '#t-ip', '.ipo'], { opacity: 0 });
+    pop('#vm', C.ip + 0.2, { depuis: 0.5 });
+    pop('#etiq-ip', C.ip + 1.6, { depuis: 0.3 });
+    tl.fromTo('#lettre', { x: 120, opacity: 0, rotation: 8 }, { x: 0, opacity: 1, rotation: -3, immediateRender: false }, C.postale);
+    tl.to('#lettre', { x: 80, opacity: 0, duration: 0.4 }, C.ipa - 0.3);
+    tl.fromTo('#t-ip', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.ipa);
+    ligne('#ip0', C.ipa + 0.3, 0.3);
+    sortie('.ipo', C.ipa + 1.0, 0.2);
+    surligne('#ip-surl', C.exemple + 0.2, C.dhcp + 3);
+    pop('#routeur', C.dhcp, { depuis: 0.5 });
+    tl.fromTo('#jeton', { x: 0, opacity: 0 }, { x: 0, opacity: 1, duration: 0.3, immediateRender: false }, C.dhcp + 1.0);
+    tl.to('#jeton', { x: -1210, duration: 1.1, ease: 'power2.inOut' }, C.dhcp + 1.4);
+    tl.to('#jeton', { opacity: 0, duration: 0.2 }, C.dhcp + 2.5);
+    tl.fromTo('#dhcp-lab', { y: 20, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.dhcp + 0.6);
+    tl.fromTo('#etiq-ip', { scale: 1 }, { scale: 1.12, duration: 0.2, yoyo: true, repeat: 1, immediateRender: false }, C.dhcp + 2.5);
+
+    // 3. le DNS
+    rideau(C.nom, '#s-ip', '#s-dns');
+    gsap.set(['#nom-q', '#bits', '#annuaire', '#fleche-dns', '#t-dig', '.dgo'], { opacity: 0 });
+    tl.fromTo('#nom-g', { scale: 1.6, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, immediateRender: false }, C.nom + 0.2);
+    pop('#nom-q', C.nom + 1.6, { depuis: 0.3, rot: 20 });
+    tl.fromTo('#bits', { y: 20, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.chiffres);
+    tl.to('#nom-q', { opacity: 0, duration: 0.3 }, C.dns);
+    pop('#annuaire', C.dns + 0.3, { depuis: 0.6 });
+    surligne('#ent1', C.traduit + 0.6, null, 'rgba(245,197,66,.3)');
+    tl.to('#ent1', { color: '#fff', duration: 0.3 }, C.traduit + 0.6);
+    tl.fromTo('#fleche-dns', { x: -30, opacity: 0 }, { x: 0, opacity: 1, immediateRender: false }, C.dig - 0.2);
+    tl.fromTo('#t-dig', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.dig);
+    ligne('#dg0', C.dig + 0.3, 0.8);
+    sortie('.dgo', C.dig + 1.4, 0.15);
+
+    // 4. la passerelle
+    plonge(C.passerelle, '#s-dns', '#s-route');
+    gsap.set(['#porte-lab', '#t-route', '.rto', '#paquet'], { opacity: 0 });
+    pop('.st4', C.passerelle + 0.1, { stagger: 0.25, depuis: 0.5 });
+    tl.fromTo('.cable', { scaleX: 0 }, { scaleX: 1, duration: 0.4, stagger: 0.25, immediateRender: false }, C.passerelle + 0.4);
+    tl.set('#paquet', { opacity: 1 }, C.passerelle + 1.4);
+    tl.to('#paquet', { x: 460, duration: 0.9, ease: 'power2.inOut' }, C.passerelle + 1.5);
+    allumer('#n-gw', C.passerelle + 2.3);
+    tl.fromTo('#porte-lab', { y: 20, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.passerelle + 2.4);
+    tl.to('#paquet', { x: 920, duration: 0.7, ease: 'power2.inOut' }, C.passerelle + 3.4);
+    tl.to('#paquet', { x: 1380, duration: 0.7, ease: 'power2.inOut' }, C.passerelle + 4.1);
+    tl.to('#paquet', { opacity: 0, duration: 0.2 }, C.passerelle + 4.8);
+    tl.fromTo('#t-route', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.route - 0.2);
+    ligne('#rt0', C.route + 0.1, 0.4);
+    sortie('.rto', C.route + 0.8, 0.2);
+    surligne('#gw-surl', C.route + 1.3, null);
+
+    // 5. les ports
+    rideau(C.port, '#s-route', '#s-port');
+    gsap.set(['.porte', '#num-lab', '#t-ss', '.sso'], { opacity: 0 });
+    tl.fromTo('#immeuble', { y: 40, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.port + 0.2);
+    pop('.porte', C.port + 1.6, { stagger: 0.25, depuis: 0.6 });
+    tl.fromTo('#num-lab', { y: 20, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.numero + 0.6);
+    allumer('#po443', C.p443);
+    eteindre('#po443', C.p22);
+    allumer('#po22', C.p22 + 0.4);
+    eteindre('#po22', C.ss + 1.5);
+    tl.fromTo('#t-ss', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.ss);
+    ligne('#ss0', C.ss + 0.3, 0.5);
+    sortie('.sso', C.ss + 1.2, 0.12);
+    surligne('#ss22', C.ss + 2.4, null, 'rgba(63,185,80,.25)');
+
+    // 6. ping
+    plonge(C.panne, '#s-port', '#s-ping');
+    gsap.set(['.pgo', '#pg1', '#pg1o', '#tampon-dns', '#loupe'], { opacity: 0 });
+    ligne('#pg0', C.panne + 0.8, 0.9);
+    sortie('.pgo', C.ping + 0.4, 0.35);
+    ligne('#pg1', C.pingnom + 0.8, 0.6);
+    sortie('#pg1o', C.pingnom + 1.8);
+    secousse(C.pingnom + 1.8, 8);
+    tl.fromTo('#tampon-dns', { scale: 3, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.3, ease: 'power4.in', immediateRender: false }, C.coupable + 0.6);
+    coup(C.coupable + 0.9);
+    pop('#loupe', C.coupable + 1.0, { depuis: 0.3, rot: -20 });
+
+    // 7. récap
+    rideau(C.recap, '#s-ping', '#s-recap');
+    gsap.set(['.rr', '#recap-t .mot'], { opacity: 0 });
+    pop('#r1', C.recap + 0.1, { depuis: 0.4 }); pop('#r2', C.recap + 0.6, { depuis: 0.4 });
+    pop('#r3', C.recap + 1.0, { depuis: 0.4 }); pop('#r4', C.recap + 1.6, { depuis: 0.4 });
+    motsEntrent('#recap-t .mot', C.final + 0.6);
+    salve(C.final + 0.9, 960, 420, 60, ['#e95420', '#38bdf8', '#f5c542'], 'confetti', 0.9);
+  },
+});
+</script>
+</body>
+</html>

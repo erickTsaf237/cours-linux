@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Réseau Linux : ip, DNS, ping, ss, Netplan et pare-feu ufw | Cours Linux</title>
+  <meta name="description" content="Module 12 du cours Linux : adresse IP, passerelle, DNS et ports, les commandes ip, dig, ping et ss, configurer le réseau avec Netplan ou nmcli, et protéger sa machine avec ufw.">
+  <meta name="theme-color" content="#e95420">
+  <link rel="apple-touch-icon" href="../assets/img/icone-180.png">
+  <link rel="icon" href="../assets/img/tux.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <script>try{const t=JSON.parse(localStorage.getItem("theme"));document.documentElement.dataset.theme=t||"light"}catch(e){document.documentElement.dataset.theme="light"}</script>
+</head>
+<body>
+<div class="progress-bar"></div>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../index.html"><img src="../assets/img/tux.svg" alt=""><span><span class="dollar">$</span> carnet-linux</span></a>
+    <nav class="nav">
+      <a href="../index.html">Programme</a>
+      <a href="12-reseau.html" class="active hide-sm">Module 12</a>
+      <button class="theme-toggle" type="button" aria-label="Changer de thème">☀️</button>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <span class="eyebrow">PHASE 3 · MODULE 12</span>
+      <h1>Réseau : <span class="grad">adresses, noms &amp; pare-feu</span></h1>
+      <p class="lead">Adresse IP, DNS, passerelle, ports : quatre notions suffisent pour comprendre comment ta machine parle au monde,
+        diagnostiquer une connexion en panne et décider qui a le droit d'entrer.</p>
+      <div class="hero-meta">
+        <span class="chip">⏱️ Lecture <b>~50 min</b></span>
+        <span class="chip">🧪 Pratique <b>~1 h</b></span>
+        <span class="chip">🎚️ Niveau <b>intermédiaire</b></span>
+      </div>
+    </div>
+    <div class="hero-art"><img class="tux" src="../assets/img/tux.svg" alt="Tux"></div>
+  </div>
+</section>
+
+<div class="layout">
+  <aside class="toc">
+    <div class="toc-title">Sommaire</div>
+    <ol></ol>
+  </aside>
+
+  <article class="content">
+
+    <!-- ================================================== -->
+    <h2 id="objectifs" data-short="Objectifs">🎯 Ce que tu sauras à la fin</h2>
+    <div class="cards four">
+      <div class="card" style="--c:var(--accent)"><div class="icon">🏠</div><h4>Adresses</h4><p>Lire ton IP, ton masque et ta passerelle avec <code>ip</code>.</p></div>
+      <div class="card" style="--c:var(--cyan)"><div class="icon">📖</div><h4>Noms</h4><p>Comprendre le DNS et l'interroger avec <code>dig</code>.</p></div>
+      <div class="card" style="--c:var(--violet)"><div class="icon">🩺</div><h4>Diagnostic</h4><p>Trouver où une connexion casse : <code>ping</code>, <code>ss</code>…</p></div>
+      <div class="card" style="--c:var(--green)"><div class="icon">🧱</div><h4>Pare-feu</h4><p>Fermer tout, puis ouvrir le nécessaire avec <code>ufw</code>.</p></div>
+    </div>
+
+    <!-- ================================================== -->
+    <h2 id="bases" data-short="Les 4 notions">Les quatre notions du réseau</h2>
+    <figure class="video-card">
+      <div class="video-head"><span class="video-badge">▶ Vidéo · 1 min 20</span><strong>Le trajet d'une page web</strong><span>adresse, nom, passerelle, port</span></div>
+      <video controls preload="none" playsinline poster="../assets/video/reseau.jpg"><source src="../assets/video/reseau.mp4" type="video/mp4">Ton navigateur ne lit pas la vidéo : <a href="../assets/video/reseau.mp4">télécharge-la ici</a>.</video>
+      <figcaption>Animation réalisée pour ce cours. Voix off et musique générées par IA (Google Gemini et Lyria).</figcaption>
+    </figure>
+
+    <p>Quand tu ouvres <code>https://ubuntu.com</code>, ta machine répond en une fraction de seconde à quatre questions :</p>
+    <div class="flow">
+      <div class="flow-step"><div class="ico">🏠</div><b>Qui suis-je ?</b><span>mon adresse IP : 10.0.2.15</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="ico">📖</div><b>Où est ubuntu.com ?</b><span>le DNS : 185.125.190.20</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="ico">🚪</div><b>Par où sortir ?</b><span>la passerelle : 10.0.2.2</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step" style="border-color:var(--accent)"><div class="ico">🔢</div><b>Quel service ?</b><span>le port 443 (HTTPS)</span></div>
+    </div>
+    <dl class="glossary">
+      <dt>Adresse IP</dt><dd>L'adresse d'une machine sur le réseau. En <strong>IPv4</strong> : quatre nombres de 0 à 255 (<code>192.168.1.20</code>).
+        En <strong>IPv6</strong>, plus longue : <code>2001:db8::1</code>.</dd>
+      <dt>Masque (<code>/24</code>)</dt><dd>Indique quelle partie de l'adresse désigne le <strong>réseau</strong>. <code>192.168.1.20/24</code> : les 24 premiers bits
+        (<code>192.168.1</code>) sont le réseau, le dernier nombre la machine. Toutes les machines en <code>192.168.1.x</code> se parlent directement.</dd>
+      <dt>Passerelle</dt><dd>Le routeur par lequel passe tout ce qui sort du réseau local : ta box, ou le routeur virtuel de VirtualBox.</dd>
+      <dt>DNS</dt><dd>L'annuaire d'Internet : il traduit un nom (<code>ubuntu.com</code>) en adresse IP.</dd>
+      <dt>DHCP</dt><dd>Le service, souvent dans la box, qui distribue automatiquement adresse, masque, passerelle et DNS aux machines qui arrivent.</dd>
+      <dt>Port</dt><dd>Un numéro de 0 à 65535 qui désigne un service sur une machine : 22 pour SSH, 80 pour HTTP, 443 pour HTTPS, 53 pour le DNS.</dd>
+      <dt>TCP / UDP</dt><dd>Deux façons de transporter les données : <strong>TCP</strong> vérifie que tout arrive, dans l'ordre (web, SSH) ;
+        <strong>UDP</strong> envoie sans vérifier, plus vite (DNS, vidéo, jeux).</dd>
+    </dl>
+    <div class="callout info"><span class="callout-title">Les adresses privées</span>
+      <p>Trois plages sont réservées aux réseaux locaux et ne circulent jamais sur Internet : <code>10.x.x.x</code>, <code>172.16.x.x</code> à <code>172.31.x.x</code>
+        et <code>192.168.x.x</code>. Ta box traduit ces adresses en une seule adresse publique (c'est le <strong>NAT</strong>). Et <code>127.0.0.1</code>, alias
+        <code>localhost</code>, désigne toujours… la machine elle-même.</p></div>
+
+    <!-- ================================================== -->
+    <h2 id="ip" data-short="ip a &amp; ip route">Ton adresse et ta route : <code>ip</code></h2>
+    <div class="terminal" data-title="user@ubuntu: ~"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">ip</span> <span class="s">a</span>                                 <span class="c"># a = address : toutes les interfaces</span>
+<span class="o">1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000</span>
+<span class="o">    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00</span>
+<span class="o">    inet 127.0.0.1/8 scope host lo</span>
+<span class="o">2: enp0s3: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc fq_codel state UP group default qlen 1000</span>
+<span class="o">    link/ether 08:00:27:3a:5c:9e brd ff:ff:ff:ff:ff:ff</span>
+<span class="o">    inet 10.0.2.15/24 brd 10.0.2.255 scope global dynamic noprefixroute enp0s3</span>
+<span class="o">       valid_lft 86045sec preferred_lft 86045sec</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">ip</span> <span class="f">-br</span> <span class="s">a</span>                             <span class="c"># -br : la version courte</span>
+<span class="o">lo               UNKNOWN        127.0.0.1/8 ::1/128</span>
+<span class="o">enp0s3           UP             10.0.2.15/24 fe80::a00:27ff:fe3a:5c9e/64</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">ip</span> <span class="s">route</span>
+<span class="o">default via 10.0.2.2 dev enp0s3 proto dhcp src 10.0.2.15 metric 100</span>
+<span class="o">10.0.2.0/24 dev enp0s3 proto kernel scope link src 10.0.2.15 metric 100</span></pre></div>
+    <div class="table-wrap"><table>
+      <tr><th>Ce que tu lis</th><th>Signification</th></tr>
+      <tr><td><code>lo</code></td><td>L'interface de bouclage : la machine qui se parle à elle-même (<code>127.0.0.1</code>)</td></tr>
+      <tr><td><code>enp0s3</code></td><td>La carte réseau (Ethernet, bus PCI 0, emplacement 3). Une carte Wi-Fi s'appellerait <code>wlp2s0</code> par exemple</td></tr>
+      <tr><td><code>state UP</code></td><td>Le câble (virtuel) est branché et l'interface active</td></tr>
+      <tr><td><code>link/ether 08:00:27:…</code></td><td>L'adresse <strong>MAC</strong>, gravée dans la carte (<code>08:00:27</code> = carte VirtualBox)</td></tr>
+      <tr><td><code>inet 10.0.2.15/24</code></td><td>L'adresse IPv4 et son masque. <code>dynamic</code> : reçue par DHCP</td></tr>
+      <tr><td><code>default via 10.0.2.2</code></td><td>La route par défaut : tout ce qui n'est pas local part vers la passerelle <code>10.0.2.2</code></td></tr>
+    </table></div>
+    <div class="callout tip"><span class="callout-title">Et <code>ifconfig</code> ?</span>
+      <p>Tu le croiseras dans de vieux tutoriels. Il vient du paquet <code>net-tools</code>, abandonné et absent d'Ubuntu par défaut. <code>ip</code> le remplace :
+        <code>ip a</code> pour <code>ifconfig</code>, <code>ip route</code> pour <code>route -n</code>, <code>ss</code> pour <code>netstat</code>.</p></div>
+
+    <!-- ================================================== -->
+    <h2 id="dns" data-short="DNS &amp; dig">Les noms : DNS, <code>dig</code> et <code>/etc/hosts</code></h2>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">dig</span> <span class="f">+short</span> <span class="s">ubuntu.com</span>                    <span class="c"># la réponse seule</span>
+<span class="o">185.125.190.20</span>
+<span class="o">185.125.190.21</span>
+<span class="o">185.125.190.29</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">dig</span> <span class="s">ubuntu.com</span>                           <span class="c"># la version détaillée</span>
+<span class="o">;; ANSWER SECTION:</span>
+<span class="o">ubuntu.com.		60	IN	A	185.125.190.20</span>          <span class="c"># A = adresse IPv4, 60 = durée de validité (s)</span>
+<span class="o">…</span>
+<span class="o">;; Query time: 39 msec</span>
+<span class="o">;; SERVER: 127.0.0.53#53(127.0.0.53) (UDP)</span>          <span class="c"># qui a répondu</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">resolvectl</span> <span class="s">status</span>                       <span class="c"># les vrais serveurs DNS utilisés</span>
+<span class="o">Link 2 (enp0s3)</span>
+<span class="o">    Current Scopes: DNS</span>
+<span class="o">Current DNS Server: 10.0.2.3</span>
+<span class="o">       DNS Servers: 10.0.2.3</span></pre></div>
+    <p>Pourquoi <code>127.0.0.53</code> ? Ubuntu fait passer toutes les questions DNS par un petit service local, <strong>systemd-resolved</strong>, qui garde les réponses en cache
+      et les transmet aux vrais serveurs (ici <code>10.0.2.3</code>, celui de VirtualBox). C'est aussi pourquoi <code>/etc/resolv.conf</code> ne contient que
+      <code>nameserver 127.0.0.53</code> : il ne faut pas le modifier à la main. <code>dig</code> vient du paquet <code>bind9-dnsutils</code> : s'il manque, <code>sudo apt install bind9-dnsutils</code>.</p>
+    <h3>Le carnet d'adresses local : <code>/etc/hosts</code></h3>
+    <p>Avant d'interroger le DNS, Linux lit <code>/etc/hosts</code>. Une ligne ajoutée ici l'emporte : pratique pour donner un nom à une machine du réseau local
+      ou tester un site avant sa mise en ligne.</p>
+    <div class="terminal" data-title="/etc/hosts"><pre><span class="o">127.0.0.1       localhost</span>
+<span class="o">127.0.1.1       ubuntu</span>
+<span class="v">192.168.1.20</span>    <span class="s">serveur</span>                <span class="c"># ajouté : « ping serveur » fonctionne désormais</span></pre></div>
+    <p><code>getent hosts serveur</code> affiche ce que le système résout réellement, <code>/etc/hosts</code> compris (contrairement à <code>dig</code>, qui n'interroge que le DNS).</p>
+
+    <!-- ================================================== -->
+    <h2 id="diagnostic" data-short="Diagnostiquer">Diagnostiquer une connexion</h2>
+    <p>« Internet ne marche pas » cache toujours une étape précise qui casse. On remonte le chemin, du plus proche au plus lointain :</p>
+    <ol class="steps">
+      <li><strong>L'interface est-elle active, avec une adresse ?</strong><p><code>ip -br a</code> : <code>UP</code> et une adresse en <code>inet</code>. Sinon : câble, Wi-Fi, DHCP.</p></li>
+      <li><strong>La passerelle répond-elle ?</strong><p><code>ping -c 3 10.0.2.2</code> (l'adresse donnée par <code>ip route</code>). Sinon : problème de réseau local.</p></li>
+      <li><strong>Internet répond-il ?</strong><p><code>ping -c 3 1.1.1.1</code> : une adresse IP, donc sans DNS. Sinon : la box ou le fournisseur d'accès.</p></li>
+      <li><strong>Le DNS répond-il ?</strong><p><code>ping -c 3 ubuntu.com</code>. Si l'étape 3 marche mais pas celle-ci : <strong>c'est le DNS</strong> (<code>resolvectl status</code>).</p></li>
+      <li><strong>Le service répond-il ?</strong><p>La machine répond mais pas le site : port fermé, pare-feu, service arrêté (<code>ss</code>, <code>ufw</code>, <code>systemctl</code>).</p></li>
+    </ol>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">ping</span> <span class="f">-c 3</span> <span class="s">ubuntu.com</span>                     <span class="c"># -c 3 : trois essais, puis s'arrête</span>
+<span class="o">PING ubuntu.com (185.125.190.20) 56(84) bytes of data.</span>
+<span class="o">64 bytes from website-content-cache-1.ps5.canonical.com (185.125.190.20): icmp_seq=1 ttl=53 time=26.9 ms</span>
+<span class="o">64 bytes from website-content-cache-1.ps5.canonical.com (185.125.190.20): icmp_seq=2 ttl=53 time=30.6 ms</span>
+<span class="o">64 bytes from website-content-cache-1.ps5.canonical.com (185.125.190.20): icmp_seq=3 ttl=53 time=27.2 ms</span>
+
+<span class="o">--- ubuntu.com ping statistics ---</span>
+<span class="o">3 packets transmitted, 3 received, 0% packet loss, time 2004ms</span>
+<span class="o">rtt min/avg/max/mdev = 26.852/28.196/30.566/1.680 ms</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">ping</span> <span class="f">-c 1</span> <span class="s">nexistepas.invalid</span>
+<span class="o">ping: nexistepas.invalid: Nom ou service inconnu</span>          <span class="c"># le nom n'existe pas</span></pre></div>
+    <p>Sans <code>-c</code>, <code>ping</code> continue jusqu'à <kbd>Ctrl</kbd>+<kbd>C</kbd>. Le <code>time</code> mesure l'aller-retour : quelques millisecondes en local,
+      20 à 100 ms vers Internet. Attention : certains serveurs ignorent volontairement le ping ; pas de réponse ne veut donc pas toujours dire « éteint ».
+      Et si le DNS lui-même est injoignable, le message devient <code>Échec temporaire dans la résolution du nom</code>.</p>
+
+    <h3>Qui écoute ? <code>ss</code></h3>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">ss</span> <span class="f">-tuln</span>                    <span class="c"># t TCP, u UDP, l en écoute (listen), n numéros bruts</span>
+<span class="o">Netid State  Recv-Q Send-Q Local Address:Port Peer Address:Port</span>
+<span class="o">udp   UNCONN 0      0         127.0.0.54:53        0.0.0.0:*</span>
+<span class="o">udp   UNCONN 0      0      127.0.0.53%lo:53        0.0.0.0:*</span>
+<span class="o">tcp   LISTEN 0      4096   127.0.0.53%lo:53        0.0.0.0:*</span>
+<span class="o">tcp   LISTEN 0      4096         0.0.0.0:22        0.0.0.0:*</span>
+<span class="o">tcp   LISTEN 0      4096       127.0.0.1:631       0.0.0.0:*</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> ss <span class="f">-tlnp</span>                          <span class="c"># p : quel programme (sudo pour tout voir)</span></pre></div>
+    <p>L'adresse d'écoute compte autant que le port : <code>127.0.0.1:631</code> (l'impression, CUPS) n'est joignable que depuis la machine elle-même, alors que
+      <code>0.0.0.0:22</code> accepte les connexions venues de <strong>toutes</strong> les interfaces. C'est ce second cas que le pare-feu doit surveiller.
+      Le port 22 n'apparaît que si le serveur SSH est installé (module 13).</p>
+
+    <h3>Le chemin complet : <code>traceroute</code></h3>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> apt install <span class="s">traceroute</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">traceroute</span> <span class="f">-n</span> <span class="s">1.1.1.1</span>                     <span class="c"># chaque ligne : un routeur traversé</span>
+<span class="o"> 1  10.0.2.2  0.320 ms  0.288 ms  0.270 ms</span>
+<span class="o"> 2  * * *</span>
+<span class="o"> 3  * * *</span></pre></div>
+    <p>Dans une VM en mode NAT, seule la première étape apparaît : VirtualBox ne relaie pas les réponses des routeurs suivants. Sur une vraie machine, tu verrais défiler
+      ta box, les routeurs de ton fournisseur, puis ceux d'Internet. Pour tester un site web : <code>curl -I https://ubuntu.com</code> affiche juste les en-têtes de la réponse
+      (<code>sudo apt install curl</code> si besoin).</p>
+
+    <!-- ================================================== -->
+    <h2 id="configurer" data-short="NetworkManager &amp; Netplan">Configurer : NetworkManager et Netplan</h2>
+    <div class="cards">
+      <div class="card" style="--c:var(--accent)"><div class="icon">🖥️</div><h4>Ubuntu Desktop</h4><p><strong>NetworkManager</strong> gère le réseau : l'icône en haut à droite, les <em>Paramètres › Réseau</em>, ou <code>nmcli</code> dans le terminal.</p></div>
+      <div class="card" style="--c:var(--cyan)"><div class="icon">🗄️</div><h4>Ubuntu Server</h4><p><strong>Netplan</strong> : un fichier YAML dans <code>/etc/netplan/</code>, appliqué par <code>systemd-networkd</code>. Pas d'interface graphique.</p></div>
+    </div>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">nmcli</span> <span class="s">device status</span>
+<span class="o">DEVICE  TYPE      STATE                   CONNECTION</span>
+<span class="o">enp0s3  ethernet  connecté                Connexion filaire 1</span>
+<span class="o">lo      loopback  connecté (en externe)   lo</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">nmcli</span> <span class="s">connection show</span>                    <span class="c"># les profils de connexion enregistrés</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">nmcli</span> <span class="s">device wifi list</span>                   <span class="c"># sur une vraie machine : les réseaux Wi-Fi visibles</span></pre></div>
+    <h3>Une adresse fixe avec Netplan (serveur)</h3>
+    <p>Un serveur doit garder la même adresse pour qu'on le retrouve. On remplace le DHCP par une adresse statique :</p>
+    <div class="terminal" data-title="/etc/netplan/50-cloud-init.yaml"><pre><span class="k">network</span>:
+  <span class="k">version</span>: 2
+  <span class="k">ethernets</span>:
+    <span class="v">enp0s3</span>:
+      <span class="k">dhcp4</span>: <span class="s">false</span>
+      <span class="k">addresses</span>: [<span class="s">192.168.1.50/24</span>]          <span class="c"># l'adresse fixe et son masque</span>
+      <span class="k">routes</span>:
+        - <span class="k">to</span>: <span class="s">default</span>
+          <span class="k">via</span>: <span class="s">192.168.1.1</span>                 <span class="c"># la passerelle (la box)</span>
+      <span class="k">nameservers</span>:
+        <span class="k">addresses</span>: [<span class="s">1.1.1.1, 9.9.9.9</span>]      <span class="c"># les serveurs DNS</span></pre></div>
+    <div class="terminal"><pre><span class="p">user@serveur</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> netplan <span class="s">try</span>          <span class="c"># applique, et annule tout seul après 120 s sans confirmation</span>
+<span class="p">user@serveur</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> netplan <span class="s">apply</span>        <span class="c"># applique définitivement</span></pre></div>
+    <div class="callout warn"><span class="callout-title">YAML : les espaces comptent</span>
+      <p>L'indentation se fait avec des <strong>espaces</strong>, jamais de tabulation, et chaque niveau doit être aligné. Une erreur et <code>netplan</code> refuse le fichier
+        en indiquant la ligne. Utilise toujours <code>netplan try</code> sur une machine distante : si tu perds la connexion, la configuration précédente revient seule.
+        Le fichier doit aussi rester lisible par root seulement (<code>sudo chmod 600</code>), sinon <code>netplan</code> le signale.</p></div>
+
+    <!-- ================================================== -->
+    <h2 id="virtualbox" data-short="Réseau de la VM">Le réseau de ta machine virtuelle</h2>
+    <p>Dans VirtualBox, <em>Configuration › Réseau</em> choisit comment la VM est reliée au monde. Le mode change son adresse… et qui peut la joindre.</p>
+    <div class="table-wrap"><table>
+      <tr><th>Mode</th><th>Adresse typique</th><th>La VM accède à Internet</th><th>On peut joindre la VM depuis…</th></tr>
+      <tr><td><strong>NAT</strong> (par défaut)</td><td><code>10.0.2.15</code></td><td>✅</td><td>Personne, sauf avec une <strong>redirection de port</strong> (module 13)</td></tr>
+      <tr><td><strong>Accès par pont</strong></td><td>une adresse de ta box, ex. <code>192.168.1.37</code></td><td>✅</td><td>Tout le réseau local, comme une vraie machine</td></tr>
+      <tr><td><strong>Réseau privé hôte</strong></td><td><code>192.168.56.x</code></td><td>❌</td><td>Ton ordinateur uniquement</td></tr>
+      <tr><td><strong>Réseau NAT</strong></td><td><code>10.0.2.x</code></td><td>✅</td><td>Les autres VM du même réseau NAT</td></tr>
+    </table></div>
+    <p>En NAT, VirtualBox joue lui-même le rôle de box : passerelle <code>10.0.2.2</code>, DNS <code>10.0.2.3</code>, et un DHCP qui donne toujours <code>10.0.2.15</code>.
+      C'est pour cela que toutes les VM en NAT ont la même adresse sans se gêner : chacune a son propre petit réseau privé.</p>
+
+    <!-- ================================================== -->
+    <h2 id="ufw" data-short="Pare-feu ufw">Le pare-feu : <code>ufw</code></h2>
+    <figure class="video-card">
+      <div class="video-head"><span class="video-badge">▶ Vidéo · 1 min 35</span><strong>Le pare-feu ufw</strong><span>tout fermer, puis ouvrir le nécessaire</span></div>
+      <video controls preload="none" playsinline poster="../assets/video/ufw.jpg"><source src="../assets/video/ufw.mp4" type="video/mp4">Ton navigateur ne lit pas la vidéo : <a href="../assets/video/ufw.mp4">télécharge-la ici</a>.</video>
+      <figcaption>Animation réalisée pour ce cours. Voix off et musique générées par IA (Google Gemini et Lyria).</figcaption>
+    </figure>
+
+    <p>Le pare-feu de Linux est intégré au noyau (<strong>netfilter</strong>, réglé par <code>nftables</code> ou l'ancien <code>iptables</code>). Ses règles sont puissantes
+      mais verbeuses ; Ubuntu fournit <strong>ufw</strong> (<em>Uncomplicated FireWall</em>) qui les écrit pour toi. Il est installé mais <strong>désactivé</strong> par défaut.</p>
+    <div class="terminal"><pre><span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> ufw <span class="s">status</span>
+<span class="o">État : inactif</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> ufw <span class="s">default deny incoming</span>             <span class="c"># 1. refuser tout ce qui entre</span>
+<span class="o">La stratégie par défaut pour le sens « incoming » a été remplacée par « deny »</span>
+<span class="o">(veillez à mettre à jour vos règles en conséquence)</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> ufw <span class="s">default allow outgoing</span>            <span class="c"># 2. autoriser tout ce qui sort</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> ufw <span class="s">allow ssh</span>                         <span class="c"># 3. ouvrir le nécessaire (22/tcp)</span>
+<span class="o">Les règles ont été mises à jour</span>
+<span class="o">Les règles ont été mises à jour (IPv6)</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> ufw <span class="s">allow 80/tcp</span>                      <span class="c">#    un serveur web, par exemple</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> ufw <span class="s">enable</span>                            <span class="c"># 4. activer (et à chaque démarrage)</span>
+<span class="o">Le pare-feu est actif et lancé au démarrage du système</span>
+<span class="p">user@ubuntu</span><span class="pc">:</span><span class="pd">~</span><span class="p">$</span> <span class="k">sudo</span> ufw <span class="s">status verbose</span>
+<span class="o">État : actif</span>
+<span class="o">Journalisation : on (low)</span>
+<span class="o">Par défaut : deny (incoming), allow (outgoing), disabled (routed)</span>
+<span class="o">Nouveaux profils : skip</span>
+
+<span class="o">Vers                       Action      De</span>
+<span class="o">----                       ------      --</span>
+<span class="o">22/tcp                     ALLOW IN    Anywhere</span>
+<span class="o">80/tcp                     ALLOW IN    Anywhere</span>
+<span class="o">22/tcp (v6)                ALLOW IN    Anywhere (v6)</span>
+<span class="o">80/tcp (v6)                ALLOW IN    Anywhere (v6)</span></pre></div>
+    <div class="callout danger"><span class="callout-title">Sur une machine distante : SSH d'abord</span>
+      <p>Si tu administres un serveur par SSH, <code>sudo ufw allow ssh</code> doit être fait <strong>avant</strong> <code>sudo ufw enable</code>. Dans l'autre ordre,
+        le pare-feu coupe ta propre connexion : il ne reste plus qu'à aller devant la machine… ou à passer par la console de l'hébergeur.</p></div>
+    <div class="table-wrap"><table>
+      <tr><th>Commande</th><th>Effet</th></tr>
+      <tr><td><code>sudo ufw allow 443/tcp</code></td><td>Ouvre un port pour tout le monde</td></tr>
+      <tr><td><code>sudo ufw allow from 192.168.1.0/24 to any port 22</code></td><td>Ouvre SSH au réseau local seulement</td></tr>
+      <tr><td><code>sudo ufw deny 3306</code></td><td>Refuse explicitement un port</td></tr>
+      <tr><td><code>sudo ufw limit ssh</code></td><td>Autorise SSH mais bloque une adresse qui tente plus de 6 connexions en 30 s</td></tr>
+      <tr><td><code>sudo ufw status numbered</code></td><td>Liste les règles avec un numéro</td></tr>
+      <tr><td><code>sudo ufw delete 2</code> ou <code>sudo ufw delete allow 80/tcp</code></td><td>Supprime une règle (par numéro ou en la répétant)</td></tr>
+      <tr><td><code>sudo ufw app list</code></td><td>Profils fournis par les logiciels installés (<code>OpenSSH</code>, <code>Apache</code>…)</td></tr>
+      <tr><td><code>sudo ufw disable</code> / <code>sudo ufw reset</code></td><td>Désactive / efface toutes les règles</td></tr>
+    </table></div>
+    <p>Pour vérifier depuis l'extérieur, <code>nmap</code> (<code>sudo apt install nmap</code>) liste les ports qui répondent : <code>nmap 192.168.1.20</code>.
+      À n'utiliser que sur tes propres machines : scanner celles des autres sans autorisation est interdit.</p>
+
+    <!-- ================================================== -->
+    <h2 id="glossaire" data-short="Glossaire">Glossaire du module</h2>
+    <dl class="glossary">
+      <dt>Adresse IP</dt><dd>Adresse d'une machine sur le réseau (<code>ip a</code>).</dd>
+      <dt>Masque / CIDR</dt><dd>Taille du réseau local : <code>/24</code> = 256 adresses.</dd>
+      <dt>Passerelle</dt><dd>Routeur de sortie du réseau local (<code>ip route</code>).</dd>
+      <dt>DNS</dt><dd>Traduit les noms en adresses (<code>dig</code>, <code>resolvectl</code>).</dd>
+      <dt>DHCP</dt><dd>Distribue automatiquement les réglages réseau.</dd>
+      <dt>Port</dt><dd>Numéro d'un service sur une machine (22, 80, 443…).</dd>
+      <dt>NAT</dt><dd>Partage d'une adresse publique entre plusieurs machines privées.</dd>
+      <dt>Netplan / NetworkManager</dt><dd>Outils de configuration du réseau sur Ubuntu Server / Desktop.</dd>
+      <dt>Pare-feu</dt><dd>Filtre les connexions entrantes et sortantes (<code>ufw</code>).</dd>
+    </dl>
+
+    <!-- ================================================== -->
+    <h2 id="quiz" data-short="Quiz">🧠 Quiz : as-tu tout retenu ?</h2>
+    <div class="quiz">
+      <div class="q" data-answer="1">
+        <div class="q-text">1. Quelle commande affiche l'adresse IP de ta machine ?</div>
+        <div class="q-opts"><button><code>ip route</code></button><button><code>ip a</code></button><button><code>dig</code></button></div>
+        <div class="q-explain"><code>ip a</code> (address) liste les interfaces et leurs adresses ; <code>ip route</code> montre la passerelle.</div>
+      </div>
+      <div class="q" data-answer="2">
+        <div class="q-text">2. <code>ping 1.1.1.1</code> fonctionne, mais <code>ping ubuntu.com</code> échoue. Le coupable ?</div>
+        <div class="q-opts"><button>Le câble réseau</button><button>La passerelle</button><button>Le DNS</button></div>
+        <div class="q-explain">Internet répond (l'adresse IP passe), seule la traduction du nom échoue.</div>
+      </div>
+      <div class="q" data-answer="0">
+        <div class="q-text">3. Laquelle de ces adresses est privée ?</div>
+        <div class="q-opts"><button><code>192.168.1.20</code></button><button><code>185.125.190.20</code></button><button><code>8.8.8.8</code></button></div>
+        <div class="q-explain">Les plages privées : <code>10.x</code>, <code>172.16-31.x</code>, <code>192.168.x</code>.</div>
+      </div>
+      <div class="q" data-answer="1">
+        <div class="q-text">4. Dans <code>ss -tuln</code>, un service sur <code>127.0.0.1:631</code> est joignable…</div>
+        <div class="q-opts"><button>depuis tout Internet</button><button>uniquement depuis la machine elle-même</button><button>depuis le réseau local</button></div>
+        <div class="q-explain"><code>127.0.0.1</code> = localhost. <code>0.0.0.0</code> signifierait « toutes les interfaces ».</div>
+      </div>
+      <div class="q" data-answer="2">
+        <div class="q-text">5. Quel port utilise SSH par défaut ?</div>
+        <div class="q-opts"><button>80</button><button>443</button><button>22</button></div>
+        <div class="q-explain">80 = HTTP, 443 = HTTPS, 22 = SSH.</div>
+      </div>
+      <div class="q" data-answer="0">
+        <div class="q-text">6. Sur un serveur administré à distance, que faire avant <code>sudo ufw enable</code> ?</div>
+        <div class="q-opts"><button><code>sudo ufw allow ssh</code></button><button><code>sudo ufw reset</code></button><button>Rien, SSH est toujours autorisé</button></div>
+        <div class="q-explain">Sinon le pare-feu coupe ta propre connexion.</div>
+      </div>
+      <div class="q" data-answer="1">
+        <div class="q-text">7. Pourquoi <code>/etc/resolv.conf</code> indique-t-il <code>127.0.0.53</code> ?</div>
+        <div class="q-opts"><button>C'est une erreur de configuration</button><button>Le DNS passe par systemd-resolved, un service local</button><button>C'est l'adresse de la box</button></div>
+        <div class="q-explain"><code>resolvectl status</code> montre les vrais serveurs DNS derrière.</div>
+      </div>
+      <div class="q" data-answer="2">
+        <div class="q-text">8. Ta VM est en mode NAT. Qui peut s'y connecter sans réglage supplémentaire ?</div>
+        <div class="q-opts"><button>Tout le réseau local</button><button>Ton ordinateur hôte</button><button>Personne</button></div>
+        <div class="q-explain">La VM peut sortir, mais rien ne peut entrer sans une redirection de port.</div>
+      </div>
+      <div class="quiz-score">Réponds aux questions pour voir ton score.</div>
+    </div>
+
+    <!-- ================================================== -->
+    <h2 id="mission" data-short="Mission pratique">🚀 Mission pratique</h2>
+    <div class="mission">
+      <h4>À faire dans la machine virtuelle</h4>
+      <p class="mission-astuce">Coche chaque étape une fois faite : sa correction s'affiche juste en dessous. Tes adresses peuvent différer si ta VM n'est pas en mode NAT.</p>
+      <ul class="checklist" data-key="m12">
+        <li><label><input type="checkbox"><span>Afficher ton adresse IP, le nom de ta carte réseau et ta passerelle.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> ip -br a
+<span class="o">lo               UNKNOWN        127.0.0.1/8 ::1/128</span>
+<span class="o">enp0s3           UP             10.0.2.15/24 fe80::a00:27ff:fe3a:5c9e/64</span>
+<span class="p">$</span> ip route
+<span class="o">default via 10.0.2.2 dev enp0s3 proto dhcp src 10.0.2.15 metric 100</span>
+<span class="o">10.0.2.0/24 dev enp0s3 proto kernel scope link src 10.0.2.15 metric 100</span></pre><p>Adresse <code>10.0.2.15</code>, carte <code>enp0s3</code>, passerelle <code>10.0.2.2</code>.</p></div></li>
+        <li><label><input type="checkbox"><span>Suivre la méthode de diagnostic : passerelle, puis une adresse sur Internet, puis un nom.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> ping -c 2 10.0.2.2
+<span class="p">$</span> ping -c 2 1.1.1.1
+<span class="p">$</span> ping -c 2 ubuntu.com
+<span class="o">2 packets transmitted, 2 received, 0% packet loss, time 1002ms</span></pre><p>Les trois doivent afficher <code>0% packet loss</code>.</p></div></li>
+        <li><label><input type="checkbox"><span>Provoquer une erreur de nom avec <code>ping</code>, et lire le message.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> ping -c 1 nexistepas.invalid
+<span class="o">ping: nexistepas.invalid: Nom ou service inconnu</span></pre><p>Le domaine <code>.invalid</code> est réservé : il n'existera jamais.</p></div></li>
+        <li><label><input type="checkbox"><span>Trouver les adresses IP de <code>ubuntu.com</code> et le serveur DNS réellement utilisé.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> sudo apt install bind9-dnsutils     <span class="c"># si dig est absent</span>
+<span class="p">$</span> dig +short ubuntu.com
+<span class="o">185.125.190.20</span>
+<span class="o">185.125.190.21</span>
+<span class="o">185.125.190.29</span>
+<span class="p">$</span> resolvectl status | grep 'DNS Server'
+<span class="o">Current DNS Server: 10.0.2.3</span>
+<span class="o">       DNS Servers: 10.0.2.3</span></pre></div></li>
+        <li><label><input type="checkbox"><span>Donner le nom <code>monsite.test</code> à ta propre machine dans <code>/etc/hosts</code>, et le tester.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> echo "127.0.0.1  monsite.test" | sudo tee -a /etc/hosts
+<span class="p">$</span> getent hosts monsite.test
+<span class="o">127.0.0.1       monsite.test</span>
+<span class="p">$</span> ping -c 1 monsite.test
+<span class="o">64 bytes from localhost (127.0.0.1): icmp_seq=1 ttl=64 time=0.032 ms</span></pre><p>Pense à retirer la ligne ensuite (<code>sudo nano /etc/hosts</code>).</p></div></li>
+        <li><label><input type="checkbox"><span>Lister les ports sur lesquels ta machine écoute, avec le programme responsable.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> sudo ss -tulnp
+<span class="o">tcp   LISTEN 0  4096  127.0.0.53%lo:53   0.0.0.0:*  users:(("systemd-resolve",pid=512,fd=15))</span>
+<span class="o">tcp   LISTEN 0  4096      127.0.0.1:631  0.0.0.0:*  users:(("cupsd",pid=880,fd=7))</span></pre><p>Sur un Ubuntu Desktop neuf, rien n'écoute sur l'extérieur : tout est sur <code>127.0.0.x</code>.</p></div></li>
+        <li><label><input type="checkbox"><span>Activer <code>ufw</code> : tout refuser en entrée, autoriser SSH, puis afficher les règles numérotées.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> sudo ufw default deny incoming
+<span class="p">$</span> sudo ufw default allow outgoing
+<span class="p">$</span> sudo ufw allow ssh
+<span class="p">$</span> sudo ufw enable
+<span class="o">Le pare-feu est actif et lancé au démarrage du système</span>
+<span class="p">$</span> sudo ufw status numbered
+<span class="o">État : actif</span>
+
+<span class="o">     Vers                       Action      De</span>
+<span class="o">     ----                       ------      --</span>
+<span class="o">[ 1] 22/tcp                     ALLOW IN    Anywhere</span>
+<span class="o">[ 2] 22/tcp (v6)                ALLOW IN    Anywhere (v6)</span></pre></div></li>
+        <li><label><input type="checkbox"><span>Ouvrir le port 8080 en TCP, vérifier, puis supprimer cette règle.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> sudo ufw allow 8080/tcp
+<span class="o">Les règles ont été mises à jour</span>
+<span class="o">Les règles ont été mises à jour (IPv6)</span>
+<span class="p">$</span> sudo ufw delete allow 8080/tcp
+<span class="o">La règle a été supprimée</span>
+<span class="o">La règle a été supprimée (v6)</span></pre></div></li>
+        <li><label><input type="checkbox"><span>Afficher l'état de la connexion avec NetworkManager.</span></label><div class="correction"><span class="corr-titre">✅ Correction</span><pre class="mini"><span class="p">$</span> nmcli device status
+<span class="o">DEVICE  TYPE      STATE                   CONNECTION</span>
+<span class="o">enp0s3  ethernet  connecté                Connexion filaire 1</span>
+<span class="o">lo      loopback  connecté (en externe)   lo</span></pre></div></li>
+      </ul>
+    </div>
+
+    <!-- ================================================== -->
+    <h2 id="questions" data-short="Questions fréquentes">💬 Questions fréquentes</h2>
+    <p>Les questions qui reviennent le plus souvent sur ce module, avec leurs réponses.</p>
+    <div class="qa" id="qa-list">
+      <details>
+        <summary>Pourquoi ma VM a-t-elle l'adresse <code>10.0.2.15</code>, et pas une adresse comme mon ordinateur ?</summary>
+        <p>En mode NAT (le mode par défaut), VirtualBox crée un petit réseau privé rien que pour la VM, avec sa propre passerelle (<code>10.0.2.2</code>)
+          et son propre DHCP. Pour que la VM reçoive une adresse de ta box, comme une vraie machine, passe-la en <strong>Accès par pont</strong>
+          dans <em>Configuration › Réseau</em>.</p>
+      </details>
+      <details>
+        <summary>Le navigateur fonctionne mais <code>ping</code> ne répond pas : c'est normal ?</summary>
+        <p>Oui, souvent. <code>ping</code> utilise un protocole à part (ICMP) que certains serveurs et pare-feu ignorent volontairement.
+          Pour tester un site web, <code>curl -I https://site</code> est plus fiable : il interroge le vrai service, sur le port 443.</p>
+      </details>
+      <details>
+        <summary>Faut-il activer <code>ufw</code> sur un Ubuntu Desktop ?</summary>
+        <p>Un Desktop neuf n'expose aucun service vers l'extérieur, donc le risque est faible. Mais l'activer ne coûte rien et protège le jour où tu installes
+          un service (SSH, serveur web…) : <code>sudo ufw enable</code> suffit, puis tu ouvres au cas par cas. Sur un serveur, c'est indispensable.</p>
+      </details>
+    </div>
+
+    <button class="done-btn" data-module="12" type="button">🏁 Marquer ce module comme terminé</button>
+
+    <nav class="page-nav">
+      <a href="11-disques.html"><small>← Précédent</small>Module 11 — Disques &amp; systèmes de fichiers</a>
+      <a class="next" href="13-ssh.html"><small>Suivant →</small>Module 13 — SSH &amp; accès à distance</a>
+    </nav>
+  </article>
+</div>
+
+<footer class="site-footer">
+  <div>Carnet Linux · Module 12 · 🐧</div>
+</footer>
+
+<script src="../assets/js/main.js"></script>
+</body>
+</html>

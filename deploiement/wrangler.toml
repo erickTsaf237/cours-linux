@@ -11,3 +11,6 @@ directory = "../publication"
 binding = "ASSETS"
 not_found_handling = "404-page"   # sert publication/404.html
 html_handling = "none"            # garde les adresses …/module.html telles quelles (référencement)
+# Sans cela, les navigations du navigateur (Sec-Fetch-Mode: navigate) vers « / » reçoivent
+# directement la page 404 sans passer par worker.js.
+run_worker_first = true

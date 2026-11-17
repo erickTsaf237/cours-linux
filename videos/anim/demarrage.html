@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>La course de relais du démarrage — vidéo</title>
+<link rel="stylesheet" href="commun.css">
+<style>
+#power { left: 760px; top: 250px; width: 400px; height: 400px; border-radius: 50%; display: grid; place-items: center;
+  background: radial-gradient(circle at 40% 35%, #2c3546, #10151f); border: 6px solid #4a5568; box-shadow: 0 30px 80px rgba(0,0,0,.6); }
+#power svg { width: 200px; height: 200px; }
+#power-lab { top: 720px; font-family: var(--display); font-weight: 800; font-size: 60px; }
+#relais-titre { top: 560px; font-size: 110px; }
+
+/* la piste : quatre stations reliées */
+#piste-ligne { left: 300px; top: 456px; width: 1350px; height: 8px; border-radius: 4px; background: rgba(255,255,255,.12); }
+#piste-jauge { left: 300px; top: 456px; width: 1350px; height: 8px; border-radius: 4px; transform-origin: 0 50%;
+  background: linear-gradient(90deg, var(--orange), var(--violet)); }
+.st4 { top: 190px; }
+#st1 { left: 150px; } #st2 { left: 600px; } #st3 { left: 1050px; } #st4 { left: 1500px; }
+.st4 .num { position: absolute; top: -26px; left: 50%; transform: translateX(-50%); font-family: var(--mono); font-size: 26px; color: var(--orange-2);
+  background: var(--nuit); padding: 2px 14px; border-radius: 999px; border: 2px solid rgba(233,84,32,.6); }
+#temoin { left: 0; top: 436px; width: 48px; height: 48px; border-radius: 50%; background: radial-gradient(circle, #fff 0%, var(--jaune) 45%, var(--orange) 100%);
+  box-shadow: 0 0 40px rgba(245,197,66,.9); z-index: 5; }
+.detail { top: 580px; font-family: var(--display); font-weight: 700; font-size: 54px; }
+.detail .petit { display: block; font-family: var(--texte); font-weight: 400; font-size: 34px; color: var(--gris); margin-top: 18px; }
+#grubmenu { left: 610px; top: 560px; width: 700px; font-family: var(--mono); font-size: 32px; background: #000; border: 2px solid #555; padding: 24px 30px; }
+#grubmenu div { padding: 4px 12px; } #grubmenu .sel { background: #d6deeb; color: #000; }
+#chips { top: 570px; }
+#chips span { display: inline-block; font-family: var(--display); font-weight: 700; font-size: 40px; padding: 14px 28px; margin: 10px; border-radius: 18px;
+  background: rgba(63,185,80,.12); border: 2px solid rgba(63,185,80,.55); }
+
+#login { left: 660px; top: 170px; width: 600px; height: 520px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 26px; }
+#login .ava { width: 150px; height: 150px; border-radius: 50%; background: linear-gradient(135deg, var(--orange), var(--violet)); display: grid; place-items: center;
+  font-family: var(--display); font-weight: 800; font-size: 80px; }
+#login .nom { font-family: var(--display); font-weight: 700; font-size: 44px; }
+#login .mdp { width: 420px; height: 76px; border-radius: 16px; background: rgba(0,0,0,.4); border: 2px solid rgba(255,255,255,.25);
+  font-family: var(--mono); font-size: 44px; letter-spacing: 10px; display: flex; align-items: center; padding-left: 26px; color: #fff; }
+#pret { top: 760px; font-family: var(--display); font-weight: 800; font-size: 64px; color: var(--vert); }
+
+#t-an { left: 210px; top: 120px; width: 1500px; }
+#t-an .corps { font-size: 34px; min-height: 600px; }
+.barre-b { display: inline-block; height: 26px; border-radius: 6px; vertical-align: middle; margin-right: 18px;
+  background: linear-gradient(90deg, var(--orange), var(--violet)); transform-origin: 0 50%; }
+
+#ecran-boot { left: 260px; top: 120px; width: 1400px; height: 600px; background: #000; border-radius: 12px; padding: 34px 40px;
+  font-family: var(--mono); font-size: 32px; line-height: 1.7; color: #d6deeb; box-shadow: 0 40px 100px rgba(0,0,0,.6); }
+.okb { color: var(--vert); } .ko { color: var(--rouge); }
+#fleche-boot { left: 1480px; top: 520px; font-size: 90px; color: var(--jaune); }
+#indice { top: 770px; font-family: var(--display); font-weight: 800; font-size: 52px; color: var(--jaune); }
+
+#chaine { top: 360px; }
+#chaine span.m4 { display: inline-block; font-family: var(--display); font-weight: 800; font-size: 96px; }
+#chaine span.fl { display: inline-block; font-size: 70px; color: var(--orange-2); margin: 0 30px; vertical-align: 10px; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="bg" class="layer"><div id="blob1" class="blob"></div><div id="blob2" class="blob"></div><div id="blob3" class="blob"></div></div>
+  <div id="grille" class="layer"></div>
+  <div id="cam-punch"><div id="cam-drift">
+
+    <div class="scene" id="s-power">
+      <div class="abs" id="power"><svg viewBox="0 0 100 100" fill="none" stroke="#ff8a3d" stroke-width="9" stroke-linecap="round">
+        <path d="M30 28 A30 30 0 1 0 70 28"/><line x1="50" y1="12" x2="50" y2="50"/></svg></div>
+      <div class="ligne" id="power-lab">🖥️ quelques secondes plus tard…</div>
+    </div>
+
+    <div class="scene" id="s-piste">
+      <div class="ligne display grad mots" id="relais-titre">Une course de relais</div>
+      <div class="abs" id="piste-ligne"></div>
+      <div class="abs" id="piste-jauge"></div>
+      <div class="abs verre station st4" id="st1"><span class="num">1</span><div class="ico">🔌</div><div class="nom">UEFI</div><div class="role">le firmware</div></div>
+      <div class="abs verre station st4" id="st2"><span class="num">2</span><div class="ico">🧭</div><div class="nom">GRUB</div><div class="role">le chargeur</div></div>
+      <div class="abs verre station st4" id="st3"><span class="num">3</span><div class="ico">🧠</div><div class="nom">noyau</div><div class="role">+ initramfs</div></div>
+      <div class="abs verre station st4" id="st4"><span class="num">4</span><div class="ico">🎼</div><div class="nom">systemd</div><div class="role">PID 1</div></div>
+      <div class="abs" id="temoin"></div>
+
+      <div class="ligne detail" id="d-uefi">🔍 vérifie le matériel<span class="petit">puis cherche un programme de démarrage sur le disque</span></div>
+      <div class="abs" id="grubmenu"><div class="sel">*Ubuntu</div><div>Advanced options for Ubuntu</div><div>UEFI Firmware Settings</div></div>
+      <div class="ligne detail" id="d-charge">📦 vmlinuz + initrd.img → mémoire<span class="petit">GRUB charge le noyau et passe le témoin</span></div>
+      <div class="ligne detail" id="d-ctrl">⚙️ processeur · 💾 mémoire · 🔌 périphériques</div>
+      <div class="ligne detail" id="d-initramfs">🧰 initramfs<span class="petit">un mini-système en mémoire, pour trouver le vrai disque</span></div>
+      <div class="ligne detail" id="d-racine">📂 / est monté<span class="petit">le noyau lance le programme n° 1</span></div>
+      <div class="ligne detail" id="d-pid1" style="font-family:var(--mono);font-size:80px;color:var(--orange-2)">PID 1 = systemd</div>
+      <div class="ligne" id="chips"><span>🌐 réseau</span><span>🔊 son</span><span>📜 journaux</span><span>⏰ cron</span><span>🖨️ impression</span><span>🔐 connexion</span></div>
+    </div>
+
+    <div class="scene" id="s-login">
+      <div class="abs verre" id="login"><div class="ava">U</div><div class="nom">user</div><div class="mdp"><span class="tape">••••••••</span></div></div>
+      <div class="ligne" id="pret">✅ système prêt en <span id="chrono">0,0</span> s</div>
+    </div>
+
+    <div class="scene" id="s-analyze">
+      <div class="abs terminal" id="t-an"><div class="barre-t"><i></i><i></i><i></i><span>user@ubuntu: ~</span></div>
+        <div class="corps">
+          <div class="l" id="a1"><span class="p">user@ubuntu:~$</span> <span class="tape">systemd-analyze</span></div>
+          <div class="l o" id="a1o">Startup finished in 2.4s (kernel) + 11.9s (userspace) = 14.3s</div>
+          <div class="l"> </div>
+          <div class="l" id="a2"><span class="p">user@ubuntu:~$</span> <span class="tape">systemd-analyze blame</span></div>
+          <div class="l o b" id="b1"><span class="barre-b" style="width:530px"></span>5.312s snapd.seeded.service</div>
+          <div class="l o b" id="b2"><span class="barre-b" style="width:290px"></span>2.906s NetworkManager-wait-online</div>
+          <div class="l o b" id="b3"><span class="barre-b" style="width:115px"></span>1.147s snapd.service</div>
+          <div class="l o b" id="b4"><span class="barre-b" style="width:98px"></span>0.981s plymouth-quit-wait</div>
+        </div></div>
+    </div>
+
+    <div class="scene" id="s-panne">
+      <div class="abs" id="ecran-boot">
+        <div class="bl">[  <span class="okb">OK</span>  ] Reached target local-fs-pre.target</div>
+        <div class="bl">[  <span class="okb">OK</span>  ] Started systemd-udevd.service</div>
+        <div class="bl">[  <span class="okb">OK</span>  ] Mounted boot-efi.mount - /boot/efi</div>
+        <div class="bl">[<span class="ko">FAILED</span>] Failed to mount mnt-data.mount</div>
+        <div class="bl">[<span class="ko">DEPEND</span>] Dependency failed for local-fs.target</div>
+        <div class="bl">You are in emergency mode.</div>
+      </div>
+      <div class="abs" id="fleche-boot">⬅</div>
+      <div class="ligne" id="indice">🔎 le dernier message dit où la course s'est arrêtée</div>
+    </div>
+
+    <div class="scene" id="s-recap">
+      <div class="ligne" id="chaine"><span class="m4">UEFI</span><span class="fl">→</span><span class="m4">GRUB</span><span class="fl">→</span><span class="m4">noyau</span><span class="fl">→</span><span class="m4 grad">systemd</span></div>
+    </div>
+
+  </div></div>
+  <div id="vignette" class="layer"></div>
+  <div class="abs" id="badge"><img src="img/tux.svg" alt=""><div><div class="nom"><b>$</b> carnet-linux</div><div class="sous">Module 10 · Le démarrage</div></div></div>
+  <canvas id="particules" width="1920" height="1080"></canvas>
+  <div class="abs" id="rideau"></div>
+  <div class="abs" id="st"></div>
+  <div class="abs" id="barre"></div>
+  <div id="flash" class="layer"></div>
+</div>
+<script src="lib/gsap.min.js"></script>
+<script src="commun.js"></script>
+<script>
+Film.demarrer({
+  film: 'demarrage',
+  fin: { titre: 'Du bouton Power au bureau', sous: 'Carnet Linux · Module 10 — Démarrage & systemd', prompt: 'systemd-analyze' },
+  construire(C) {
+    // 1. le bouton
+    gsap.set('#s-power', { autoAlpha: 1 });
+    gsap.set('#power-lab', { opacity: 0 });
+    pop('#power', 0.3, { depuis: 0.4 });
+    tl.to('#power', { boxShadow: '0 0 120px rgba(255,138,61,.9)', borderColor: '#ff8a3d', duration: 0.25 }, 1.4);
+    flash(1.5, 0.35, 0.4);
+    tl.fromTo('#power-lab', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.bureau);
+
+    // 2. la piste
+    plonge(C.relais, '#s-power', '#s-piste');
+    const pisteEls = ['#piste-ligne', '#piste-jauge', '.st4', '#temoin', '.detail', '#grubmenu', '#chips span'];
+    gsap.set(pisteEls, { opacity: 0 });
+    gsap.set('#piste-jauge', { scaleX: 0 });
+    motsEntrent('#relais-titre .mot', C.relais + 0.2);
+    tl.to('#relais-titre', { y: -90, scale: 0.6, opacity: 0, duration: 0.5 }, C.uefi - 0.6);
+    tl.to('#piste-ligne', { opacity: 1, duration: 0.4 }, C.relais + 1.2);
+    pop('.st4', C.relais + 1.4, { stagger: 0.25, depuis: 0.5 });
+    tl.to('.st4', { opacity: 0.35, duration: 0.3 }, C.uefi - 0.4);
+    tl.set('#piste-jauge', { opacity: 1 }, C.uefi - 0.4);
+
+    // le témoin passe d'une station à l'autre ; chaque station s'allume à son tour
+    const centre = [300, 750, 1200, 1650].map((x) => x - 24);
+    const etapes = [['#st1', C.uefi], ['#st2', C.grub], ['#st3', C.noyau], ['#st4', C.systemd]];
+    tl.set('#temoin', { opacity: 1, x: centre[0] }, C.uefi);
+    etapes.forEach(([sel, t], i) => {
+      tl.to(sel, { opacity: 1, duration: 0.3 }, t);
+      allumer(sel, t);
+      if (i > 0) {
+        tl.to('#temoin', { x: centre[i], duration: 0.8, ease: 'power2.inOut' }, t - 0.4);
+        tl.to('#piste-jauge', { scaleX: (centre[i] + 24 - 300) / 1350, duration: 0.8, ease: 'power2.inOut' }, t - 0.4);
+        eteindre(etapes[i - 1][0], t);
+        tl.to(etapes[i - 1][0], { opacity: 0.6, duration: 0.3 }, t);
+      }
+    });
+    const detail = (sel, t0, t1) => {
+      tl.fromTo(sel, { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, t0);
+      tl.to(sel, { opacity: 0, y: -20, duration: 0.3 }, t1 - 0.3);
+    };
+    detail('#d-uefi', C.verifie, C.grub);
+    detail('#grubmenu', C.menu, C.charge);
+    tl.to('#grubmenu .sel', { backgroundColor: '#ffa657', duration: 0.2, yoyo: true, repeat: 1 }, C.menu + 1.6);
+    detail('#d-charge', C.charge, C.noyau);
+    detail('#d-ctrl', C.controle, C.initramfs);
+    detail('#d-initramfs', C.initramfs, C.racine);
+    detail('#d-racine', C.racine, C.pid1);
+    detail('#d-pid1', C.pid1, C.systemd);
+    pop('#chips span', C.services + 0.4, { stagger: 0.12, depuis: 0.3 });
+    salve(C.services + 0.6, 1650, 330, 40, ['#3fb950', '#f5c542', '#ffffff'], 'etincelles', 0.7);
+
+    // 3. connexion
+    rideau(C.login + 0.4, '#s-piste', '#s-login');
+    gsap.set(['#login', '#pret'], { opacity: 0 });
+    pop('#login', C.login + 0.5, { depuis: 0.7 });
+    taper('#login .tape', C.mdp + 0.2, C.mdp + 1.4);
+    flash(C.mdp + 1.8, 0.3, 0.35);
+    tl.fromTo('#pret', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.mdp + 1.9);
+    compter('#chrono', C.mdp + 1.9, C.mdp + 3.4, 0, 14.3, (n) => n.toFixed(1).replace('.', ','));
+
+    // 4. systemd-analyze
+    plonge(C.analyze, '#s-login', '#s-analyze');
+    gsap.set(['#a1o', '#a2', '.b'], { opacity: 0 });
+    ligne('#a1', C.analyze + 0.3, 0.8);
+    sortie('#a1o', C.analyze + 1.6);
+    ligne('#a2', C.blame, 1.0);
+    sortie('.b', C.blame + 1.4, 0.35);
+    tl.fromTo('.barre-b', { scaleX: 0 }, { scaleX: 1, duration: 0.8, stagger: 0.35, immediateRender: false }, C.blame + 1.5);
+    tl.to('#b1', { color: '#f5c542', duration: 0.3 }, C.blame + 3.2);
+
+    // 5. en cas de panne
+    rideau(C.panne, '#s-analyze', '#s-panne');
+    gsap.set(['#ecran-boot .bl', '#fleche-boot', '#indice'], { opacity: 0 });
+    sortie('#ecran-boot .bl', C.panne + 0.4, 0.45);
+    tl.fromTo('#fleche-boot', { x: 60, opacity: 0 }, { x: 0, opacity: 1, immediateRender: false }, C.panne + 3.4);
+    tl.to('#fleche-boot', { x: -25, duration: 0.4, yoyo: true, repeat: 3, ease: 'sine.inOut' }, C.panne + 3.8);
+    tl.fromTo('#indice', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.panne + 4.0);
+
+    // 6. récap
+    plonge(C.recap, '#s-panne', '#s-recap');
+    gsap.set('#chaine span', { opacity: 0 });
+    pop('#chaine span', C.recap + 0.1, { stagger: 0.32, depuis: 0.3 });
+    salve(C.final + 0.3, 960, 420, 60, ['#e95420', '#b36bd6', '#f5c542'], 'confetti', 0.9);
+  },
+});
+</script>
+</body>
+</html>

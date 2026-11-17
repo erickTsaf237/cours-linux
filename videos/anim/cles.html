@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Les clés SSH — vidéo</title>
+<link rel="stylesheet" href="commun.css">
+<style>
+/* 1. le mot de passe */
+#champ { left: 460px; top: 230px; width: 1000px; padding: 30px 40px; }
+#champ small { display: block; font-family: var(--mono); font-size: 32px; color: var(--gris); margin-bottom: 14px; }
+#champ div { height: 90px; border-radius: 14px; background: #0d1117; border: 2px solid #2a3342; font-family: var(--mono); font-size: 60px; line-height: 90px; padding: 0 26px; color: #fff; }
+#soupir { left: 1500px; top: 240px; font-size: 120px; }
+#essais { left: 560px; top: 520px; width: 800px; font-family: var(--mono); font-size: 46px; line-height: 1.5; }
+#essais .e { display: flex; justify-content: space-between; }
+#robot { left: 380px; top: 560px; font-size: 120px; }
+#mieux { top: 360px; font-size: 130px; }
+
+/* 2. la paire */
+.cle { top: 200px; width: 620px; height: 470px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+#c-pub { left: 220px; } #c-priv { left: 1080px; }
+.cle .ic { font-family: var(--emoji); font-size: 170px; line-height: 1.15; }
+.cle b { font-family: var(--display); font-weight: 800; font-size: 60px; }
+.cle span { font-size: 34px; color: var(--gris); margin-top: 8px; }
+#lien { left: 880px; top: 380px; width: 160px; text-align: center; font-family: var(--display); font-weight: 800; font-size: 90px; color: var(--jaune); }
+
+/* 3. ssh-keygen */
+#t-kg { left: 160px; top: 120px; width: 1600px; }
+#t-kg .corps { font-size: 30px; padding: 22px 32px; min-height: 420px; }
+.fl { border-radius: 8px; padding: 0 6px; }
+#bulle-priv { left: 220px; top: 680px; white-space: nowrap; padding: 18px 30px; border-radius: 18px; background: rgba(248,113,113,.15); border: 3px solid var(--rouge); font-family: var(--display); font-weight: 800; font-size: 42px; color: var(--rouge); }
+#bulle-pub { left: 1000px; top: 680px; white-space: nowrap; padding: 18px 30px; border-radius: 18px; background: rgba(63,185,80,.15); border: 3px solid var(--vert); font-family: var(--display); font-weight: 800; font-size: 42px; color: var(--vert); }
+
+/* 4. ssh-copy-id */
+.st4 { top: 140px; }
+#k-pc { left: 200px; } #k-srv { left: 1420px; }
+#cad-vol { left: 300px; top: 210px; font-size: 90px; z-index: 5; }
+#t-ci { left: 200px; top: 440px; width: 820px; }
+#t-ci .corps { font-size: 30px; padding: 20px 28px; }
+#ak { left: 1080px; top: 440px; width: 700px; padding: 24px 30px; border-radius: 18px; background: #f4efe6; color: #2a2f3a; box-shadow: 0 30px 70px rgba(0,0,0,.5); }
+#ak h5 { font-family: var(--mono); font-size: 32px; margin-bottom: 14px; }
+#ak .k { font-family: var(--mono); font-size: 26px; color: #4b5563; white-space: nowrap; overflow: hidden; line-height: 1.7; }
+#ak .k.nv { color: #166534; font-weight: 600; }
+
+/* 5. le défi */
+.st5 { top: 200px; }
+#d-pc { left: 200px; } #d-srv { left: 1420px; }
+.jeton { position: absolute; top: 270px; padding: 12px 26px; border-radius: 16px; font-family: var(--display); font-weight: 800; font-size: 40px; z-index: 5; white-space: nowrap; }
+#j-defi { left: 1170px; background: var(--jaune); color: #2a1d00; }
+#j-sig { left: 530px; background: var(--vert); color: #032b0c; }
+#ok5 { top: 530px; font-family: var(--display); font-weight: 800; font-size: 80px; color: var(--vert); }
+#zero { top: 680px; font-family: var(--display); font-weight: 800; font-size: 50px; color: var(--gris); }
+
+/* 6. phrase de passe */
+#coffre { left: 560px; top: 180px; font-size: 220px; }
+#pp { left: 860px; top: 260px; width: 560px; padding: 24px 30px; }
+#pp small { display: block; font-family: var(--mono); font-size: 28px; color: var(--gris); margin-bottom: 10px; }
+#pp b { font-family: var(--mono); font-size: 40px; color: var(--jaune); }
+#voleur { left: 500px; top: 500px; font-size: 140px; }
+#inut { left: 720px; top: 560px; width: 800px; font-family: var(--display); font-weight: 800; font-size: 56px; color: var(--rouge); }
+
+/* 7. sshd_config */
+#ed { left: 160px; top: 120px; width: 1600px; }
+#ed .corps { font-size: 32px; padding: 22px 32px; }
+#ed .barre-t span { color: #d6deeb; }
+#pa { border-radius: 8px; }
+#t-rs { left: 160px; top: 480px; width: 1600px; }
+#t-rs .corps { font-size: 32px; padding: 20px 32px; }
+#test { top: 680px; font-family: var(--display); font-weight: 800; font-size: 52px; color: var(--jaune); }
+#porte7 { left: 1560px; top: 640px; font-size: 120px; }
+
+/* 8. récap */
+#rc-a { left: 360px; top: 200px; }
+#rc-b { left: 1060px; top: 200px; }
+.rc { width: 500px; height: 400px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+.rc i { font-style: normal; font-family: var(--emoji); font-size: 150px; line-height: 1.1; }
+.rc b { font-family: var(--display); font-weight: 800; font-size: 48px; margin-top: 10px; }
+#rc-t { top: 680px; font-size: 80px; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="bg" class="layer"><div id="blob1" class="blob"></div><div id="blob2" class="blob"></div><div id="blob3" class="blob"></div></div>
+  <div id="grille" class="layer"></div>
+  <div id="cam-punch"><div id="cam-drift">
+
+    <div class="scene" id="s-mdp">
+      <div class="abs verre" id="champ"><small>user@192.168.1.20's password:</small><div><span class="tape" id="pw1">••••••••••</span></div></div>
+      <div class="abs emoji" id="soupir">😩</div>
+      <div class="abs emoji" id="robot">🤖</div>
+      <div class="abs" id="essais">
+        <div class="e"><span>123456</span><span class="err" style="color:var(--rouge)">✗</span></div>
+        <div class="e"><span>azerty</span><span style="color:var(--rouge)">✗</span></div>
+        <div class="e"><span>soleil2024</span><span style="color:var(--rouge)">✗</span></div>
+        <div class="e" id="trouve"><span>motdepasse</span><span style="color:var(--vert)">✓ trouvé</span></div>
+      </div>
+    </div>
+
+    <div class="scene" id="s-mieux">
+      <div class="ligne display grad mots" id="mieux">🔑 les clés SSH</div>
+    </div>
+
+    <div class="scene" id="s-paire">
+      <div class="abs verre cle" id="c-pub"><div class="ic">🔓</div><b>clé publique</b><span>le cadenas</span></div>
+      <div class="abs" id="lien">⇄</div>
+      <div class="abs verre cle" id="c-priv"><div class="ic">🔑</div><b>clé privée</b><span>la seule qui l'ouvre</span></div>
+    </div>
+
+    <div class="scene" id="s-kg">
+      <div class="abs terminal" id="t-kg"><div class="barre-t"><i></i><i></i><i></i><span>user@ubuntu: ~</span></div>
+        <div class="corps">
+          <div class="l" id="kg0"><span class="p">user@ubuntu:~$</span> <span class="tape">ssh-keygen -t ed25519</span></div>
+          <div class="l o kgo">Generating public/private ed25519 key pair.</div>
+          <div class="l o kgo">Your identification has been saved in /home/user/.ssh/id_ed25519</div>
+          <div class="l o kgo">Your public key has been saved in /home/user/.ssh/id_ed25519.pub</div>
+          <div class="l" id="kg1"><span class="p">user@ubuntu:~$</span> <span class="tape">ls -l ~/.ssh</span></div>
+          <div class="l o kg1o">-rw------- 1 user user 411 nov. 17 10:02 <span class="fl" id="f-priv" style="color:#ffa657">id_ed25519</span></div>
+          <div class="l o kg1o">-rw-r--r-- 1 user user  96 nov. 17 10:02 <span class="fl" id="f-pub" style="color:#a5d6ff">id_ed25519.pub</span></div>
+        </div></div>
+      <div class="abs" id="bulle-priv">🔑 ne quitte jamais ta machine</div>
+      <div class="abs" id="bulle-pub">🔓 à donner à tout le monde</div>
+    </div>
+
+    <div class="scene" id="s-ci">
+      <div class="abs verre station st4" id="k-pc"><div class="ico">💻</div><div class="nom">toi</div><div class="role">🔑 clé privée</div></div>
+      <div class="abs verre station st4" id="k-srv"><div class="ico">🖥️</div><div class="nom">serveur</div><div class="role">192.168.1.20</div></div>
+      <div class="abs emoji" id="cad-vol">🔓</div>
+      <div class="abs terminal" id="t-ci"><div class="barre-t"><i></i><i></i><i></i><span>user@ubuntu: ~</span></div>
+        <div class="corps">
+          <div class="l" id="ci0"><span class="p">$</span> <span class="tape">ssh-copy-id user@192.168.1.20</span></div>
+          <div class="l o cio">user@192.168.1.20's password:</div>
+          <div class="l o cio"><span class="ok">Number of key(s) added: 1</span></div>
+        </div></div>
+      <div class="abs" id="ak"><h5>📄 ~/.ssh/authorized_keys</h5>
+        <div class="k">ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIK9… admin@bureau</div>
+        <div class="k nv" id="ak-nv">ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPK3… user@ubuntu</div></div>
+    </div>
+
+    <div class="scene" id="s-defi">
+      <div class="abs verre station st5" id="d-pc"><div class="ico">💻</div><div class="nom">toi</div><div class="role">🔑 clé privée</div></div>
+      <div class="abs verre station st5" id="d-srv"><div class="ico">🖥️</div><div class="nom">serveur</div><div class="role">🔓 ta clé publique</div></div>
+      <div class="jeton" id="j-defi">🎲 défi</div>
+      <div class="jeton" id="j-sig">✍️ réponse signée</div>
+      <div class="ligne" id="ok5">✅ tu entres</div>
+      <div class="ligne" id="zero">aucun mot de passe sur le réseau</div>
+    </div>
+
+    <div class="scene" id="s-pp">
+      <div class="abs emoji" id="coffre">🔐</div>
+      <div class="abs verre" id="pp"><small>Enter passphrase:</small><b>une phrase longue et facile à retenir</b></div>
+      <div class="abs emoji" id="voleur">🦹</div>
+      <div class="abs" id="inut">🔒 volée… mais inutilisable</div>
+    </div>
+
+    <div class="scene" id="s-cfg">
+      <div class="abs terminal" id="ed"><div class="barre-t"><i></i><i></i><i></i><span>/etc/ssh/sshd_config</span></div>
+        <div class="corps">
+          <div class="l o">PubkeyAuthentication yes</div>
+          <div class="l" id="pa-l"><span id="pa"><span id="pa-avant" class="o">#PasswordAuthentication yes</span><span id="pa-apres" style="color:#ffa657">PasswordAuthentication <span class="tape">no</span></span></span></div>
+          <div class="l o">KbdInteractiveAuthentication no</div>
+        </div></div>
+      <div class="abs terminal" id="t-rs"><div class="barre-t"><i></i><i></i><i></i><span>user@serveur: ~</span></div>
+        <div class="corps"><div class="l" id="rs0"><span class="p">user@serveur:~$</span> <span class="tape">sudo systemctl restart ssh</span></div></div></div>
+      <div class="ligne" id="test">⚠️ d'abord : vérifie que ta clé fonctionne !</div>
+      <div class="abs emoji" id="porte7">🚪</div>
+    </div>
+
+    <div class="scene" id="s-recap">
+      <div class="abs verre rc" id="rc-a"><i>🔓</i><b>un cadenas sur le serveur</b></div>
+      <div class="abs verre rc" id="rc-b"><i>🔑</i><b>une clé dans ta poche</b></div>
+      <div class="ligne display grad mots" id="rc-t">plus sûr, et plus pratique</div>
+    </div>
+
+  </div></div>
+  <div id="vignette" class="layer"></div>
+  <div class="abs" id="badge"><img src="img/tux.svg" alt=""><div><div class="nom"><b>$</b> carnet-linux</div><div class="sous">Module 13 · Les clés SSH</div></div></div>
+  <canvas id="particules" width="1920" height="1080"></canvas>
+  <div class="abs" id="rideau"></div>
+  <div class="abs" id="st"></div>
+  <div class="abs" id="barre"></div>
+  <div id="flash" class="layer"></div>
+</div>
+<script src="lib/gsap.min.js"></script>
+<script src="commun.js"></script>
+<script>
+Film.demarrer({
+  film: 'cles',
+  fin: { titre: 'Les clés SSH', sous: 'Carnet Linux · Module 13 — SSH & accès à distance', prompt: 'ssh-keygen -t ed25519' },
+  construire(C) {
+    const surligne = (sel, t, fin, coul = 'rgba(56,189,248,.35)') => {
+      tl.to(sel, { backgroundColor: coul, duration: 0.25 }, t);
+      if (fin) tl.to(sel, { backgroundColor: 'rgba(0,0,0,0)', duration: 0.3 }, fin);
+    };
+
+    // 1. le mot de passe
+    gsap.set('#s-mdp', { autoAlpha: 1 });
+    gsap.set(['#soupir', '#robot', '.e'], { opacity: 0 });
+    tl.fromTo('#champ', { y: 40, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, 0.3);
+    taper('#pw1', 0.9, 2.4);
+    pop('#soupir', 2.4, { depuis: 0.3, rot: -15 });
+    pop('#robot', C.deviner + 0.5, { depuis: 0.4 });
+    tl.fromTo('.e', { x: -30, opacity: 0 }, { x: 0, opacity: 1, duration: 0.3, stagger: 0.45, immediateRender: false }, C.deviner + 0.9);
+    tl.to('#trouve', { color: '#f87171', duration: 0.2 }, C.deviner + 2.4);
+    secousse(C.deviner + 2.5, 10);
+
+    // les clés SSH
+    plonge(C.mieux + 1.6, '#s-mdp', '#s-mieux');
+    motsEntrent('#mieux .mot', C.mieux + 1.7);
+
+    // 2. la paire
+    rideau(C.paire, '#s-mieux', '#s-paire');
+    gsap.set(['#c-pub', '#c-priv', '#lien'], { opacity: 0 });
+    pop('#lien', C.paire + 1.6, { depuis: 0.3 });
+    tl.to('#lien', { rotation: 180, duration: 1, ease: 'power2.inOut' }, C.paire + 2.2);
+    pop('#c-pub', C.publique, { depuis: 0.5 });
+    pop('#c-priv', C.privee, { depuis: 0.5 });
+
+    // 3. ssh-keygen
+    plonge(C.keygen, '#s-paire', '#s-kg');
+    gsap.set(['.kgo', '#kg1', '.kg1o', '#bulle-priv', '#bulle-pub'], { opacity: 0 });
+    ligne('#kg0', C.keygen + 0.4, 1.2);
+    sortie('.kgo', C.keygen + 2.4, 0.3);
+    ligne('#kg1', C.fichiers, 0.5);
+    sortie('.kg1o', C.fichiers + 0.9, 0.3);
+    surligne('#f-priv', C.prive, null, 'rgba(248,113,113,.25)');
+    pop('#bulle-priv', C.jamais, { depuis: 0.5 });
+    surligne('#f-pub', C.pub + 0.3, null, 'rgba(63,185,80,.25)');
+    pop('#bulle-pub', C.donner, { depuis: 0.5 });
+
+    // 4. ssh-copy-id
+    rideau(C.copyid, '#s-kg', '#s-ci');
+    gsap.set(['#cad-vol', '#t-ci', '.cio', '#ak', '#ak-nv'], { opacity: 0 });
+    pop(['#k-pc', '#k-srv'], C.copyid + 0.1, { stagger: 0.3, depuis: 0.5 });
+    tl.fromTo('#t-ci', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.copyid + 0.6);
+    ligne('#ci0', C.copyid + 1.0, 1.0);
+    pop('#cad-vol', C.copyid + 1.6, { depuis: 0.4 });
+    tl.to('#cad-vol', { x: 1220, y: -20, duration: 1.4, ease: 'power2.inOut' }, C.copyid + 2.2);
+    allumer('#k-srv', C.copyid + 3.6, 'rgba(63,185,80,.9)');
+    sortie('.cio', C.copyid + 2.4, 0.5);
+    tl.to('#cad-vol', { opacity: 0, duration: 0.2 }, C.authorized + 0.4);
+    tl.fromTo('#ak', { y: 40, opacity: 0, rotation: 4 }, { y: 0, opacity: 1, rotation: -1, immediateRender: false }, C.authorized + 0.3);
+    tl.fromTo('#ak-nv', { x: -20, opacity: 0 }, { x: 0, opacity: 1, immediateRender: false }, C.authorized + 1.2);
+
+    // 5. le défi
+    plonge(C.defi, '#s-ci', '#s-defi');
+    gsap.set(['#j-defi', '#j-sig', '#ok5', '#zero'], { opacity: 0 });
+    pop(['#d-pc', '#d-srv'], C.defi + 0.1, { stagger: 0.3, depuis: 0.5 });
+    tl.set('#j-defi', { opacity: 1 }, C.defi + 1.4);
+    tl.to('#j-defi', { x: -650, duration: 1.2, ease: 'power2.inOut' }, C.defi + 1.5);
+    tl.to('#j-defi', { opacity: 0, duration: 0.2 }, C.defi + 2.7);
+    allumer('#d-pc', C.defi + 2.7);
+    eteindre('#d-pc', C.defi + 3.6);
+    tl.set('#j-sig', { opacity: 1 }, C.defi + 3.4);
+    tl.to('#j-sig', { x: 560, duration: 1.2, ease: 'power2.inOut' }, C.defi + 3.5);
+    tl.to('#j-sig', { opacity: 0, duration: 0.2 }, C.reussi);
+    allumer('#d-srv', C.reussi, 'rgba(63,185,80,.9)');
+    pop('#ok5', C.reussi + 0.3, { depuis: 0.5 });
+    salve(C.reussi + 0.4, 960, 580, 40, ['#3fb950', '#ffffff', '#f5c542'], 'etincelles', 0.7);
+    tl.fromTo('#zero', { y: 20, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.aucun + 0.4);
+
+    // 6. phrase de passe
+    rideau(C.phrase, '#s-defi', '#s-pp');
+    gsap.set(['#pp', '#voleur', '#inut'], { opacity: 0 });
+    pop('#coffre', C.phrase + 0.1, { depuis: 0.4 });
+    tl.fromTo('#pp', { x: 30, opacity: 0 }, { x: 0, opacity: 1, immediateRender: false }, C.phrase + 0.8);
+    pop('#voleur', C.vol + 0.2, { depuis: 0.3 });
+    tl.to('#voleur', { x: -60, duration: 0.3, yoyo: true, repeat: 1 }, C.vol + 0.8);
+    tl.fromTo('#inut', { y: 20, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.vol + 1.4);
+
+    // 7. sshd_config
+    plonge(C.derniere, '#s-pp', '#s-cfg');
+    gsap.set(['#pa-apres', '#t-rs', '#test', '#porte7'], { opacity: 0 });
+    gsap.set('#pa-apres', { display: 'none' });
+    tl.fromTo('#ed', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.derniere + 0.2);
+    surligne('#pa', C.config + 0.6, null, 'rgba(245,197,66,.2)');
+    tl.set('#pa-avant', { display: 'none' }, C.config + 1.6);
+    tl.set('#pa-apres', { display: 'inline', opacity: 1 }, C.config + 1.6);
+    TYPERS.push({ chars: [...document.querySelectorAll('#pa-apres .tape .ch')], t0: C.config + 2.2, t1: C.config + 2.6 });
+    tl.fromTo('#t-rs', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.config + 3.4);
+    ligne('#rs0', C.config + 3.8, 1.0);
+    tl.fromTo('#test', { y: 20, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.verifie + 0.2);
+    coup(C.verifie + 0.4);
+    pop('#porte7', C.dehors + 0.3, { depuis: 0.3 });
+    secousse(C.dehors + 0.7, 12);
+
+    // 8. récap
+    rideau(C.recap, '#s-cfg', '#s-recap');
+    gsap.set(['#rc-a', '#rc-b', '#rc-t .mot'], { opacity: 0 });
+    pop('#rc-a', C.recap + 0.2, { depuis: 0.5 });
+    pop('#rc-b', C.recap + 1.4, { depuis: 0.5 });
+    motsEntrent('#rc-t .mot', C.final);
+    salve(C.final + 0.4, 960, 420, 60, ['#e95420', '#3fb950', '#f5c542'], 'confetti', 0.9);
+  },
+});
+</script>
+</body>
+</html>

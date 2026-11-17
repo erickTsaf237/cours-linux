@@ -12,7 +12,7 @@ un quiz et une mission pratique dont chaque étape affiche sa correction.
 |---|---|---|
 | 1 · Fondations | 00 Linux et son installation · 01 Le bureau et le terminal · 02 Le système de fichiers · 03 Lire et éditer des fichiers · 04 Utilisateurs, groupes et permissions | ✅ |
 | 2 · Maîtrise du shell | 05 Redirections, pipes et filtres · 06 Rechercher et expressions régulières · 07 Processus et tâches · 08 Gestion des logiciels · 09 Personnaliser son environnement | ✅ |
-| 3 · Administration système | 10 Démarrage et systemd · 11 Disques · 12 Réseau · 13 SSH · 14 Planification et journaux · 15 Sauvegardes | à venir |
+| 3 · Administration système | 10 Démarrage et systemd · 11 Disques · 12 Réseau · 13 SSH · 14 Planification et journaux · 15 Sauvegardes | 10 à 13 ✅, la suite à venir |
 | 4 · Scripting | 16–17 Scripts Bash · 18 Git | à venir |
 | 5 · Services et sécurité | 19 Sécurité · 20 Serveur web · 21 Conteneurs · 22 Performance et dépannage | à venir |
 | 6 · Aller plus loin | 23 Le noyau · 24 Ansible · 25 Projet final et certifications | à venir |

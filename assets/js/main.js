@@ -15,7 +15,7 @@ const store = {
 /* ---------- Thème clair / sombre ---------- */
 (function initTheme() {
   const saved = store.get("theme");
-  if (saved) document.documentElement.dataset.theme = saved;
+  document.documentElement.dataset.theme = saved || "light";   // clair par défaut
   const btn = document.querySelector(".theme-toggle");
   if (!btn) return;
   const current = () => document.documentElement.dataset.theme ||

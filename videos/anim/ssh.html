@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>SSH : un terminal à distance — vidéo</title>
+<link rel="stylesheet" href="commun.css">
+<style>
+/* 1. le centre de données */
+#baies { top: 190px; font-size: 170px; letter-spacing: 20px; }
+#sans-ecran { left: 1450px; top: 160px; font-size: 120px; }
+#sans-ecran i { position: absolute; left: -10px; top: 70px; width: 170px; height: 14px; border-radius: 7px; background: var(--rouge); transform: rotate(-35deg); }
+#loin { top: 470px; font-family: var(--display); font-weight: 800; font-size: 60px; color: var(--gris); }
+#comment { top: 600px; font-size: 80px; }
+#gros-ssh { top: 300px; font-family: var(--display); font-weight: 800; font-size: 300px; letter-spacing: -.02em; }
+#secure { top: 640px; font-family: var(--mono); font-size: 50px; color: var(--gris); }
+#secure b { color: var(--orange-2); font-weight: 500; }
+
+/* 2. le tunnel */
+.st2 { top: 230px; }
+#pc { left: 130px; } #srv { left: 1490px; }
+#tunnel { left: 430px; top: 300px; width: 1060px; height: 90px; border-radius: 45px; border: 4px solid rgba(255,255,255,.3); background: rgba(255,255,255,.04); transform-origin: 0 50%; }
+#cmd-bulle { left: 470px; top: 318px; padding: 4px 20px; border-radius: 12px; background: var(--orange); font-family: var(--mono); font-size: 36px; z-index: 5; }
+#out-bulle { left: 1250px; top: 318px; padding: 4px 20px; border-radius: 12px; background: var(--cyan); color: #04121d; font-family: var(--mono); font-size: 36px; z-index: 5; }
+#brouille { left: 560px; top: 314px; width: 800px; text-align: center; font-family: var(--mono); font-size: 40px; color: var(--vert); white-space: nowrap; }
+#cad-t { left: 900px; top: 180px; font-size: 100px; }
+#espion { left: 860px; top: 470px; font-size: 120px; }
+#espion-q { left: 1000px; top: 480px; font-family: var(--display); font-weight: 800; font-size: 90px; color: var(--rouge); }
+#chiffre-lab { top: 690px; font-family: var(--display); font-weight: 800; font-size: 56px; color: var(--vert); }
+
+/* 3. sshd */
+#porte22 { left: 260px; top: 170px; width: 420px; height: 560px; border-radius: 26px 26px 8px 8px; background: #1d2740; border: 4px solid rgba(255,255,255,.25);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; }
+#porte22 b { font-family: var(--display); font-weight: 800; font-size: 150px; }
+#porte22 span { font-family: var(--mono); font-size: 44px; color: var(--orange-2); }
+#porte22 i { font-style: normal; font-family: var(--emoji); font-size: 90px; }
+#ecoute { left: 760px; top: 220px; width: 900px; font-family: var(--display); font-weight: 800; font-size: 60px; }
+#ecoute small { display: block; font-family: var(--texte); font-weight: 400; font-size: 36px; color: var(--gris); margin-top: 10px; }
+#t-inst { left: 760px; top: 460px; width: 1000px; }
+#t-inst .corps { font-size: 32px; padding: 22px 30px; }
+
+/* 4. la commande */
+#cmd-g { top: 300px; font-family: var(--mono); font-size: 110px; }
+#cmd-g span { border-radius: 14px; padding: 0 8px; }
+.lab4 { position: absolute; top: 470px; font-family: var(--display); font-weight: 800; font-size: 46px; text-align: center; }
+#l-user { left: 420px; width: 500px; color: var(--cyan); } #l-at { left: 820px; width: 300px; color: var(--jaune); } #l-ad { left: 1060px; width: 700px; color: var(--orange-2); }
+#ps { left: 410px; top: 620px; width: 1100px; padding: 24px 34px; border-radius: 14px; background: #012456; border: 2px solid #2a62b0; font-family: var(--mono); font-size: 40px; color: #eee; }
+#ps small { display: block; font-family: var(--texte); font-size: 26px; color: #9ec2ff; margin-bottom: 8px; }
+
+/* 5-6. terminaux */
+.tg { left: 140px; width: 1640px; }
+.tg .corps { font-size: 30px; padding: 22px 32px; }
+#t-emp { top: 140px; }
+#t-emp .corps { min-height: 330px; }
+#alerte { left: 140px; top: 600px; width: 1640px; padding: 22px 32px; border-radius: 18px; background: #2a0f12; border: 3px solid var(--rouge); font-family: var(--mono); font-size: 30px; color: var(--rouge); white-space: pre; }
+#masque { left: 1600px; top: 760px; font-size: 110px; }
+#t-co { top: 170px; }
+#t-co .corps { font-size: 36px; min-height: 420px; }
+#chez { top: 720px; font-family: var(--display); font-weight: 800; font-size: 60px; }
+.surl { border-radius: 8px; }
+
+/* 7. la VM */
+#hote { left: 120px; top: 150px; width: 1680px; height: 520px; border-radius: 26px; border: 3px dashed rgba(255,255,255,.3); }
+#hote-lab { left: 160px; top: 170px; font-family: var(--display); font-weight: 800; font-size: 44px; color: var(--gris); }
+#vmbox { left: 1060px; top: 250px; width: 680px; height: 380px; border-radius: 22px; background: #141c2e; border: 3px solid var(--violet); }
+#vm-lab { left: 1100px; top: 270px; font-family: var(--display); font-weight: 800; font-size: 44px; color: var(--violet); }
+.port { position: absolute; padding: 14px 26px; border-radius: 16px; font-family: var(--mono); font-size: 46px; background: #0d1117; border: 3px solid rgba(255,255,255,.3); }
+#p-h { left: 300px; top: 380px; color: var(--cyan); } #p-v { left: 1300px; top: 380px; color: var(--orange-2); }
+#fl-nat { left: 560px; top: 410px; width: 720px; height: 10px; border-radius: 5px; background: linear-gradient(90deg, var(--cyan), var(--orange-2)); transform-origin: 0 50%; }
+#nat-lab { left: 520px; top: 460px; width: 520px; text-align: center; font-family: var(--display); font-weight: 800; font-size: 38px; color: var(--jaune); }
+#cmd-vm { top: 730px; font-family: var(--mono); font-size: 64px; }
+
+/* 8. fichiers */
+#tun8 { left: 330px; top: 380px; width: 1260px; height: 110px; border-radius: 55px; border: 4px solid var(--vert); background: rgba(63,185,80,.06); }
+.fic { position: absolute; top: 386px; left: 360px; font-size: 80px; z-index: 5; }
+#scp-l { left: 360px; top: 190px; font-family: var(--mono); font-size: 70px; color: var(--orange-2); }
+#rsync-l { left: 1180px; top: 190px; font-family: var(--mono); font-size: 70px; color: var(--cyan); }
+#cad8 { left: 910px; top: 560px; font-size: 90px; }
+
+/* 9. récap */
+#globe { top: 200px; font-size: 220px; }
+#rc { top: 560px; font-size: 90px; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="bg" class="layer"><div id="blob1" class="blob"></div><div id="blob2" class="blob"></div><div id="blob3" class="blob"></div></div>
+  <div id="grille" class="layer"></div>
+  <div id="cam-punch"><div id="cam-drift">
+
+    <div class="scene" id="s-dc">
+      <div class="ligne emoji" id="baies"><span class="bx">🗄️</span><span class="bx">🗄️</span><span class="bx">🗄️</span><span class="bx">🗄️</span></div>
+      <div class="abs emoji" id="sans-ecran">🖥️<i></i></div>
+      <div class="ligne" id="loin">🌍 à l'autre bout du monde</div>
+      <div class="ligne display grad mots" id="comment">comment l'administrer ?</div>
+    </div>
+
+    <div class="scene" id="s-ssh">
+      <div class="ligne grad" id="gros-ssh">SSH</div>
+      <div class="ligne" id="secure"><b>S</b>ecure <b>SH</b>ell · le shell sécurisé</div>
+    </div>
+
+    <div class="scene" id="s-tunnel">
+      <div class="abs verre station st2" id="pc"><div class="ico">💻</div><div class="nom">ton ordinateur</div><div class="role">le client</div></div>
+      <div class="abs verre station st2" id="srv"><div class="ico">🖥️</div><div class="nom">le serveur</div><div class="role">192.168.1.20</div></div>
+      <div class="abs" id="tunnel"></div>
+      <div class="abs" id="cmd-bulle">df -h</div>
+      <div class="abs" id="out-bulle">94 %</div>
+      <div class="abs" id="brouille">x9#Fq&amp;2!Lp@7zK$wQ0vB^r…</div>
+      <div class="abs emoji" id="cad-t">🔒</div>
+      <div class="abs emoji" id="espion">🕵️</div>
+      <div class="abs" id="espion-q">???</div>
+      <div class="ligne" id="chiffre-lab">tout le trajet est chiffré</div>
+    </div>
+
+    <div class="scene" id="s-sshd">
+      <div class="abs" id="porte22"><i>👂</i><b>22</b><span>sshd</span></div>
+      <div class="abs" id="ecoute">Côté serveur : <span style="color:var(--orange-2)">sshd</span><small>le service qui attend les connexions, sur le port 22</small></div>
+      <div class="abs terminal" id="t-inst"><div class="barre-t"><i></i><i></i><i></i><span>sur le serveur</span></div>
+        <div class="corps">
+          <div class="l" id="in0"><span class="p">$</span> <span class="tape">sudo apt install openssh-server</span></div>
+          <div class="l" id="in1"><span class="p">$</span> <span class="tape">systemctl status ssh</span></div>
+          <div class="l o" id="in1o">     Active: <span class="ok">active (running)</span></div>
+        </div></div>
+    </div>
+
+    <div class="scene" id="s-client">
+      <div class="ligne" id="cmd-g"><span class="k">ssh</span> <span id="c-user" style="color:#79c0ff">user</span><span id="c-at" style="color:var(--jaune)">@</span><span id="c-ad" style="color:var(--orange-2)">192.168.1.20</span></div>
+      <div class="lab4" id="l-user">l'utilisateur</div>
+      <div class="lab4" id="l-at">arobase</div>
+      <div class="lab4" id="l-ad">l'adresse du serveur</div>
+      <div class="abs" id="ps"><small>Windows · PowerShell</small>PS C:\&gt; ssh user@192.168.1.20</div>
+    </div>
+
+    <div class="scene" id="s-emp">
+      <div class="abs terminal tg" id="t-emp"><div class="barre-t"><i></i><i></i><i></i><span>première connexion</span></div>
+        <div class="corps">
+          <div class="l" id="em0"><span class="p">$</span> <span class="tape">ssh user@192.168.1.20</span></div>
+          <div class="l o emo">The authenticity of host '192.168.1.20 (192.168.1.20)' can't be established.</div>
+          <div class="l o emo">ED25519 key fingerprint is <span class="v surl" id="emp">SHA256:mn3pUboINHWcHbUWUCfcU0I8D+mkMArhs9LzEtj14VU</span>.</div>
+          <div class="l o emo">Are you sure you want to continue connecting (yes/no/[fingerprint])? <span class="tape" id="yes" style="color:#fff">yes</span></div>
+          <div class="l o" id="em-ok">Warning: Permanently added '192.168.1.20' (ED25519) to the list of known hosts.</div>
+        </div></div>
+      <div class="abs" id="alerte">@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@    WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!     @
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+IT IS POSSIBLE THAT SOMEONE IS DOING SOMETHING NASTY!</div>
+      <div class="abs emoji" id="masque">🎭</div>
+    </div>
+
+    <div class="scene" id="s-co">
+      <div class="abs terminal tg" id="t-co"><div class="barre-t"><i></i><i></i><i></i><span>user@ubuntu: ~</span></div>
+        <div class="corps">
+          <div class="l o" id="co0">user@192.168.1.20's password: <span style="color:#fff">••••••••</span></div>
+          <div class="l o" id="co0b">Welcome to Ubuntu 24.04 LTS (GNU/Linux 6.8.0-49-generic x86_64)</div>
+          <div class="l" id="co1"><span class="p surl" id="inv-srv">user@serveur:~$</span> <span class="tape">hostname</span></div>
+          <div class="l o" id="co1o">serveur</div>
+          <div class="l" id="co2"><span class="p">user@serveur:~$</span> <span class="tape">exit</span></div>
+          <div class="l o" id="co2o">déconnexion<br>Connection to 192.168.1.20 closed.</div>
+          <div class="l" id="co3"><span class="p surl" id="inv-moi">user@ubuntu:~$</span></div>
+        </div></div>
+      <div class="ligne" id="chez">🏠 retour chez toi</div>
+    </div>
+
+    <div class="scene" id="s-vm">
+      <div class="abs" id="hote"></div>
+      <div class="abs" id="hote-lab">💻 ton ordinateur (hôte)</div>
+      <div class="abs" id="vmbox"></div>
+      <div class="abs" id="vm-lab">🐧 la VM (NAT)</div>
+      <div class="port" id="p-h">:2222</div>
+      <div class="port" id="p-v">:22</div>
+      <div class="abs" id="fl-nat"></div>
+      <div class="abs" id="nat-lab">redirection de port</div>
+      <div class="ligne" id="cmd-vm"><span class="k">ssh</span> <span class="f">-p 2222</span> <span class="s">user@localhost</span></div>
+    </div>
+
+    <div class="scene" id="s-scp">
+      <div class="abs" id="scp-l">scp</div>
+      <div class="abs" id="rsync-l">rsync</div>
+      <div class="abs" id="tun8"></div>
+      <div class="fic emoji" id="f1">📄</div><div class="fic emoji" id="f2">📁</div><div class="fic emoji" id="f3">🖼️</div>
+      <div class="abs emoji" id="cad8">🔒</div>
+    </div>
+
+    <div class="scene" id="s-recap">
+      <div class="ligne emoji" id="globe">🌍</div>
+      <div class="ligne display grad mots" id="rc">un terminal, n'importe où</div>
+    </div>
+
+  </div></div>
+  <div id="vignette" class="layer"></div>
+  <div class="abs" id="badge"><img src="img/tux.svg" alt=""><div><div class="nom"><b>$</b> carnet-linux</div><div class="sous">Module 13 · SSH, un terminal à distance</div></div></div>
+  <canvas id="particules" width="1920" height="1080"></canvas>
+  <div class="abs" id="rideau"></div>
+  <div class="abs" id="st"></div>
+  <div class="abs" id="barre"></div>
+  <div id="flash" class="layer"></div>
+</div>
+<script src="lib/gsap.min.js"></script>
+<script src="commun.js"></script>
+<script>
+Film.demarrer({
+  film: 'ssh',
+  fin: { titre: 'SSH, un terminal à distance', sous: 'Carnet Linux · Module 13 — SSH & accès à distance', prompt: 'ssh user@serveur' },
+  construire(C) {
+    const surligne = (sel, t, fin, coul = 'rgba(56,189,248,.35)') => {
+      tl.to(sel, { backgroundColor: coul, duration: 0.25 }, t);
+      if (fin) tl.to(sel, { backgroundColor: 'rgba(0,0,0,0)', duration: 0.3 }, fin);
+    };
+
+    // 1. le centre de données
+    gsap.set('#s-dc', { autoAlpha: 1 });
+    gsap.set(['.bx', '#sans-ecran', '#loin', '#comment .mot'], { opacity: 0 });
+    pop('.bx', 0.4, { stagger: 0.15, depuis: 0.5 });
+    pop('#sans-ecran', 2.2, { depuis: 0.4 });
+    tl.fromTo('#loin', { y: 20, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, 3.6);
+    motsEntrent('#comment .mot', C.comment + 0.3);
+
+    // SSH
+    plonge(C.comment + 2.8, '#s-dc', '#s-ssh');
+    gsap.set('#secure', { opacity: 0 });
+    tl.fromTo('#gros-ssh', { scale: 2.2, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: 'power4.in', immediateRender: false }, C.comment + 2.9);
+    coup(C.comment + 3.3, 1.08);
+    tl.fromTo('#secure', { y: 20, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.comment + 3.6);
+
+    // 2. le tunnel
+    rideau(C.ssh + 0.6, '#s-ssh', '#s-tunnel');
+    gsap.set(['#cmd-bulle', '#out-bulle', '#brouille', '#cad-t', '#espion', '#espion-q', '#chiffre-lab'], { opacity: 0 });
+    pop(['#pc', '#srv'], C.ssh + 0.7, { stagger: 0.3, depuis: 0.5 });
+    tl.fromTo('#tunnel', { scaleX: 0 }, { scaleX: 1, duration: 0.7, immediateRender: false }, C.ssh + 1.2);
+    tl.set('#cmd-bulle', { opacity: 1 }, C.tapes + 0.6);
+    tl.to('#cmd-bulle', { x: 860, duration: 1.2, ease: 'power2.inOut' }, C.tapes + 0.8);
+    tl.to('#cmd-bulle', { opacity: 0, duration: 0.2 }, C.tapes + 2.0);
+    allumer('#srv', C.tapes + 2.0);
+    eteindre('#srv', C.tapes + 2.6);
+    tl.set('#out-bulle', { opacity: 1 }, C.tapes + 2.4);
+    tl.to('#out-bulle', { x: -800, duration: 1.2, ease: 'power2.inOut' }, C.tapes + 2.6);
+    tl.to('#out-bulle', { opacity: 0, duration: 0.2 }, C.tapes + 3.8);
+    tl.to('#tunnel', { borderColor: '#3fb950', boxShadow: '0 0 50px rgba(63,185,80,.45)', duration: 0.4 }, C.chiffre);
+    pop('#cad-t', C.chiffre + 0.2, { depuis: 2, ease: 'power4.in', duree: 0.3 });
+    tl.fromTo('#brouille', { opacity: 0 }, { opacity: 1, immediateRender: false }, C.chiffre + 0.6);
+    tl.fromTo('#brouille', { x: -60 }, { x: 60, duration: 4, ease: 'none', immediateRender: false }, C.chiffre + 0.6);
+    pop('#espion', C.chiffre + 1.8, { depuis: 0.4 });
+    pop('#espion-q', C.chiffre + 2.6, { depuis: 0.3 });
+    tl.fromTo('#chiffre-lab', { y: 20, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.chiffre + 0.9);
+
+    // 3. sshd
+    plonge(C.serveur, '#s-tunnel', '#s-sshd');
+    gsap.set(['#ecoute', '#t-inst', '#in0', '#in1', '#in1o'], { opacity: 0 });
+    tl.fromTo('#porte22', { y: 40, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.serveur + 0.2);
+    tl.fromTo('#ecoute', { x: 30, opacity: 0 }, { x: 0, opacity: 1, immediateRender: false }, C.serveur + 1.2);
+    tl.fromTo('#porte22 i', { rotation: -8 }, { rotation: 8, duration: 0.5, yoyo: true, repeat: 5, ease: 'sine.inOut', immediateRender: false }, C.serveur + 1.0);
+    tl.fromTo('#t-inst', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.install);
+    ligne('#in0', C.install + 0.6, 1.4);
+    ligne('#in1', C.install + 3.0, 0.8);
+    sortie('#in1o', C.install + 4.2);
+
+    // 4. la commande
+    rideau(C.client, '#s-sshd', '#s-client');
+    gsap.set(['.lab4', '#ps'], { opacity: 0 });
+    tl.fromTo('#cmd-g', { scale: 1.4, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, immediateRender: false }, C.client + 0.3);
+    surligne('#c-user', C.client + 2.2, C.arobase + 2.0, 'rgba(121,192,255,.2)');
+    tl.fromTo('#l-user', { y: 20, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.client + 2.2);
+    surligne('#c-at', C.arobase, C.arobase + 2.0, 'rgba(245,197,66,.25)');
+    tl.fromTo('#l-at', { y: 20, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.arobase);
+    surligne('#c-ad', C.arobase + 0.9, C.arobase + 2.6, 'rgba(255,138,61,.2)');
+    tl.fromTo('#l-ad', { y: 20, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.arobase + 0.9);
+    tl.fromTo('#ps', { y: 40, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.windows + 0.3);
+
+    // 5. empreinte
+    plonge(C.empreinte, '#s-client', '#s-emp');
+    gsap.set(['.emo', '#em-ok', '#alerte', '#masque'], { opacity: 0 });
+    ligne('#em0', C.empreinte + 0.3, 0.8);
+    sortie('.emo', C.empreinte + 1.4, 0.3);
+    surligne('#emp', C.empreinte + 2.4, C.yes, 'rgba(245,197,66,.3)');
+    TYPERS.length; // « yes » est tapé au moment où la voix le dit
+    taper('#yes', C.yes + 0.6, C.yes + 1.0);
+    sortie('#em-ok', C.yes + 1.4);
+    tl.fromTo('#alerte', { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, immediateRender: false }, C.change + 1.2);
+    flash(C.change + 1.2, 0.4, 0.3);
+    secousse(C.change + 1.3, 12);
+    pop('#masque', C.usurpe + 0.5, { depuis: 0.3, rot: -20 });
+
+    // 6. mot de passe, invite, exit
+    rideau(C.mdp, '#s-emp', '#s-co');
+    gsap.set(['#co0', '#co0b', '#co1o', '#co2o', '#chez'], { opacity: 0 });
+    sortie('#co0', C.mdp + 0.2);
+    sortie('#co0b', C.invite);
+    ligne('#co1', C.invite + 0.4, 0.6);
+    surligne('#inv-srv', C.invite + 0.8, C.exit, 'rgba(63,185,80,.25)');
+    sortie('#co1o', C.invite + 1.3);
+    ligne('#co2', C.exit + 0.9, 0.4);
+    sortie('#co2o', C.exit + 1.5, 0.1);
+    ligne('#co3', C.exit + 1.9, 0.1);
+    surligne('#inv-moi', C.exit + 2.0, null, 'rgba(63,185,80,.25)');
+    tl.fromTo('#chez', { y: 20, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.exit + 2.0);
+
+    // 7. la VM
+    plonge(C.vm, '#s-co', '#s-vm');
+    gsap.set(['#vmbox', '#vm-lab', '.port', '#nat-lab', '#cmd-vm'], { opacity: 0 });
+    gsap.set('#fl-nat', { scaleX: 0 });
+    tl.fromTo('#hote', { opacity: 0 }, { opacity: 1, immediateRender: false }, C.vm + 0.1);
+    tl.fromTo('#hote-lab', { opacity: 0 }, { opacity: 1, immediateRender: false }, C.vm + 0.3);
+    pop(['#vmbox', '#vm-lab'], C.nat, { depuis: 0.8 });
+    pop('#p-h', C.redir + 0.3, { depuis: 0.4 });
+    pop('#p-v', C.redir + 2.2, { depuis: 0.4 });
+    tl.to('#fl-nat', { scaleX: 1, duration: 0.9, ease: 'power2.inOut' }, C.redir + 1.0);
+    tl.fromTo('#nat-lab', { y: 20, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.redir + 1.4);
+    tl.fromTo('#cmd-vm', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.p2222);
+
+    // 8. scp et rsync
+    rideau(C.scp, '#s-vm', '#s-scp');
+    gsap.set(['.fic', '#scp-l', '#rsync-l', '#cad8'], { opacity: 0 });
+    tl.fromTo('#tun8', { scaleX: 0 }, { scaleX: 1, duration: 0.6, immediateRender: false }, C.scp + 0.1);
+    pop('#scp-l', C.scp + 1.6, { depuis: 0.4 });
+    pop('#rsync-l', C.scp + 2.2, { depuis: 0.4 });
+    ['#f1', '#f2', '#f3'].forEach((f, i) => {
+      const t = C.scp + 1.2 + i * 0.6;
+      tl.fromTo(f, { x: 0, opacity: 1 }, { x: 1100, duration: 1.4, ease: 'power1.inOut', immediateRender: false }, t);
+      tl.to(f, { opacity: 0, duration: 0.2 }, t + 1.4);
+    });
+    pop('#cad8', C.scp + 2.8, { depuis: 0.3 });
+
+    // 9. récap
+    plonge(C.recap, '#s-scp', '#s-recap');
+    gsap.set(['#globe', '#rc .mot'], { opacity: 0 });
+    pop('#globe', C.recap + 0.1, { depuis: 0.4 });
+    tl.to('#globe', { rotation: 360, duration: 4, ease: 'none' }, C.recap + 0.4);
+    motsEntrent('#rc .mot', C.recap + 0.6);
+    salve(C.final + 0.4, 960, 330, 60, ['#e95420', '#3fb950', '#38bdf8'], 'confetti', 0.9);
+  },
+});
+</script>
+</body>
+</html>

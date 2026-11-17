@@ -39,7 +39,22 @@ STYLE = (
     "'dpkg' is read 'dé-pé-ka-gé', 'deb' is read 'dèb', 'snap', 'snaps', 'flatpak', 'Flathub', 'update', 'upgrade', 'install', 'remove', 'purge', "
     "'search', 'show', 'export', 'source', 'HOME', 'USER', 'PATH' are read as English words. 'env' is read 'env', 'echo' is read 'écho', "
     "'bashrc' is read 'bash-ré-cé', 'll' is read 'èl-èl', 'PS1' is read 'pé-èss-un', 'Zsh' is read 'zède-shell', 'Oh My Zsh' is read 'oh my zède-shell', "
-    "'maj' is read 'maj'."
+    "'maj' is read 'maj'. "
+    "'UEFI' is read letter by letter 'u-e-èf-i', 'GRUB' is read 'grub', 'initramfs' is read 'init-ram-èf-èss', 'Power' as English, "
+    "'systemd-analyze' is read 'system-dé analyze', 'blame' as English, 'systemctl' is read 'system-cé-té-èl', 'journalctl' is read 'journal-cé-té-èl', "
+    "'status', 'start', 'stop', 'restart', 'enable', 'disable' are read as English words. "
+    "'lsblk' is read 'èl-èss-bé-èl-ka', 'sda' is read 'èss-dé-a', 'sdb' is read 'èss-dé-bé', 'vda' is read 'vé-dé-a', 'sda1' is read 'èss-dé-a un', "
+    "'sda2' is read 'èss-dé-a deux', 'fdisk' is read 'èf-disk', 'parted' is read 'part-ed', 'mkfs' is read 'èm-ka-èf-èss', 'ext4' is read 'ext quatre', "
+    "'mount' as English, 'mnt' is read 'èm-èn-té', 'fstab' is read 'èf-èss-tab', 'UUID' is read 'u-u-i-dé', "
+    "'df' is read 'dé-èf', 'du' is read 'dé-u', 'ncdu' is read 'èn-cé-dé-u', 'free', 'swap', 'autoremove', 'clean', 'log' as English, 'RAM' is read 'ram'. "
+    "'IP' is read 'i-pé', 'ip a' is read 'i-pé a', 'ip route' is read 'i-pé route', 'DHCP' is read 'dé-ache-cé-pé', 'DNS' is read 'dé-èn-èss', "
+    "'dig', 'ping', 'route', 'allow', 'deny', 'delete', 'verbose', 'yes', 'exit', 'localhost' are read as English words, "
+    "'ss' is read 'èss-èss', 'ufw' is read 'u-èf-doublevé', 'tcp' is read 'té-cé-pé', 'netfilter' as English, 'nmap' is read 'èn-map', "
+    "'SSH' is read 'èss-èss-ache', 'sshd' is read 'èss-èss-ache-dé', 'openssh-server' is read 'open-èss-èss-ache server', "
+    "'scp' is read 'èss-cé-pé', 'rsync' is read 'èr-sync', 'NAT' is read 'nat', 'PowerShell' as English, "
+    "'ssh-keygen' is read 'èss-èss-ache key-gen', 'ed25519' is read 'é-dé deux-cinq-cinq-un-neuf', 'id' in 'id ed25519' is read 'i-dé', "
+    "'ssh-copy-id' is read 'èss-èss-ache copy i-dé', 'pub' is read 'pub', 'authorized keys' as English, 'sshd config' is read 'èss-èss-ache-dé config', "
+    "'PasswordAuthentication' is read 'password authentication' in English, 'no' is read as English."
 )
 
 TEXTES = {
@@ -224,6 +239,81 @@ Troisième réflexe : l'invite. La variable PS1 décide de ce qu'affiche ton pro
 Après avoir modifié le fichier, une seule commande pour appliquer les changements sans fermer le terminal : source point bashrc.
 Et si tu veux aller plus loin, il existe d'autres shells. Zsh, avec le célèbre Oh My Zsh, ajoute des thèmes, des suggestions, et des centaines d'extensions.
 Un conseil : fais toujours une copie de ton bashrc avant de le modifier. Et ajoute un commentaire au-dessus de chaque réglage : dans six mois, tu seras content de savoir pourquoi il est là.""",
+
+    "demarrage": """Tu appuies sur le bouton Power. Quelques secondes plus tard, ton bureau Ubuntu est là. Mais entre les deux, c'est une véritable course de relais.
+Premier coureur : le firmware de la carte mère, l'UEFI. Il vérifie le matériel, puis cherche sur le disque un programme de démarrage.
+Deuxième coureur : GRUB, le chargeur d'amorçage. C'est lui qui affiche le menu, si tu as plusieurs systèmes. Son travail : charger en mémoire le noyau Linux.
+Troisième coureur : le noyau. Il prend le contrôle du processeur, de la mémoire et des périphériques. Pour trouver le vrai disque, il s'aide d'un petit système de secours, chargé en mémoire : l'initramfs.
+Une fois la partition racine montée, le noyau lance le tout premier programme. Celui qui porte le numéro un : systemd.
+Quatrième coureur, et chef d'orchestre : systemd démarre tous les services, en parallèle. Le réseau, le son, les journaux… et enfin, l'écran de connexion.
+Tu entres ton mot de passe : la course est terminée. Le tout, en quelques secondes.
+Pour savoir combien de temps a pris chaque étape, une commande : systemd-analyze. Et avec systemd-analyze blame, tu vois quels services ralentissent ton démarrage.
+Si un jour ta machine refuse de démarrer, souviens-toi de ce relais : le dernier message affiché te dit où la course s'est arrêtée.
+UEFI, GRUB, noyau, systemd : quatre relais, et ton système est prêt.""",
+
+    "systemd": """Sur ton système, des dizaines de programmes tournent en permanence, sans fenêtre : le réseau, l'horloge, les journaux… Ce sont des services. Et c'est systemd qui les gouverne.
+Pour leur parler, une seule commande : systemctl.
+systemctl status, suivi du nom d'un service, te dit tout : est-il actif ? Depuis quand ? Et il affiche ses dernières lignes de journal. Le petit point vert signifie que tout va bien.
+Pour démarrer un service : sudo systemctl start. Pour l'arrêter : stop. Et après avoir changé sa configuration : restart.
+Attention, piège classique ! start démarre le service maintenant, mais pas au prochain allumage. Pour qu'il démarre à chaque fois, il faut enable. Et disable, pour l'en empêcher. start, c'est pour maintenant. enable, c'est pour toujours.
+Chaque service est décrit par un petit fichier texte : une unité. Elle dit quel programme lancer, après quoi, et quoi faire s'il plante. Tu peux même écrire les tiennes.
+Et quand un service refuse de démarrer ? Direction les journaux. journalctl affiche les messages de tout le système. Avec tiret u et le nom du service, tu ne vois que les siens. Et avec tiret f, tu les suis en direct.
+Un service en panne ? Le réflexe : status, puis journalctl. La réponse est presque toujours écrite dedans.""",
+
+    "disques": """Un disque neuf, tout juste branché. Comment Linux le rend-il utilisable ? En trois étapes : partitionner, formater, monter.
+D'abord, l'inventaire. La commande lsblk dessine tes disques et leurs partitions, en arbre. Sous Linux, les disques ont des noms : sda pour le premier, sdb pour le deuxième… Et dans une machine virtuelle, souvent vda. Les partitions ajoutent un numéro : sda1, sda2.
+Étape un : partitionner. On découpe le disque en zones, avec fdisk ou parted. Comme on divise un terrain en parcelles.
+Étape deux : formater. Avec mkfs, on installe un système de fichiers sur la partition : la structure qui range les fichiers. Sous Linux, le grand classique, c'est ext4.
+Étape trois : monter. Sous Linux, pas de lettre D ou E. La partition se greffe dans l'arbre, sur un dossier vide : le point de montage. Avec la commande mount, ton disque apparaît, par exemple, dans slash mnt slash data.
+Mais au redémarrage, le montage disparaît. Pour le rendre permanent, on ajoute une ligne dans le fichier slash etc slash fstab. Avec l'UUID de la partition, son identifiant unique, plutôt que son nom.
+Attention : une erreur dans fstab peut empêcher ta machine de démarrer. Après chaque modification, vérifie avec sudo mount tiret a.
+Partitionner, formater, monter : trois gestes, et n'importe quel disque rejoint ton arbre.""",
+
+    "espace": """Message d'erreur : plus d'espace disque. Pas de panique : trois commandes pour mener l'enquête.
+Premier indice : df. Avec tiret h, pour des tailles lisibles, en gigaoctets. df affiche chaque système de fichiers monté : sa taille, l'espace utilisé, l'espace libre, et le pourcentage. Au-dessus de quatre-vingt-dix pour cent, il est temps d'agir.
+Deuxième indice : du. df te dit quel disque est plein ; du te dit qui le remplit. du tiret s h, suivi d'un dossier, donne son poids total. Combiné avec sort, il classe les dossiers du plus lourd au plus léger. Les coupables habituels : les journaux dans slash var slash log, le cache d'apt, et les vieux téléchargements.
+Pour une enquête plus confortable, installe ncdu : une interface interactive où tu navigues dans les dossiers, triés par taille.
+Et il existe un espace un peu particulier : le swap. Quand la mémoire vive est pleine, Linux y déplace les données les moins utilisées. C'est un débordement, sur le disque. Pratique, mais beaucoup plus lent que la RAM. La commande free tiret h affiche la mémoire et le swap.
+Pour faire le ménage : sudo apt autoremove, puis sudo apt clean. Ils suppriment ce dont apt n'a plus besoin.
+df pour voir, du pour trouver… et ensuite, tu fais le ménage.""",
+    "reseau": """Tu tapes une adresse dans ton navigateur. Une fraction de seconde plus tard, la page s'affiche. Mais que s'est-il passé, en coulisses ?
+D'abord, ta machine a besoin d'une adresse : une adresse IP. Comme une adresse postale, mais pour les ordinateurs. La commande ip a affiche la tienne : par exemple, dix point zéro point deux point quinze. Elle t'a été attribuée automatiquement par le routeur, grâce au DHCP.
+Deuxième problème : tu as tapé un nom, pas une adresse. Or les ordinateurs ne parlent qu'en chiffres. C'est le rôle du DNS : l'annuaire d'Internet. Il traduit un nom, comme ubuntu point com, en adresse IP. La commande dig te montre cette traduction.
+Ta demande part alors vers la passerelle : ton routeur, la porte de sortie vers Internet. La commande ip route te dit qui elle est.
+Enfin, sur le serveur, une seule adresse héberge plusieurs services. Pour savoir à qui parler, on ajoute un numéro de port : quatre cent quarante-trois pour le web sécurisé, vingt-deux pour SSH. La commande ss tiret t u l n liste les ports sur lesquels ta machine écoute.
+Quand quelque chose ne marche pas, remonte le chemin. ping vérifie qu'une machine répond. ping vers une adresse IP fonctionne, mais pas vers un nom ? Le coupable, c'est le DNS.
+Adresse, nom, passerelle, port : quatre questions, et le réseau n'a plus de secret.""",
+
+    "ufw": """Ta machine est branchée au réseau. Mais qui a le droit d'entrer ? C'est le travail du pare-feu.
+Imagine un vigile, à l'entrée d'un immeuble. Chaque connexion qui arrive frappe à une porte : un port. Le vigile consulte sa liste. Autorisé ? Il ouvre. Pas sur la liste ? Refusé.
+Sous Linux, le vrai vigile s'appelle netfilter, au cœur du noyau. Mais ses règles sont complexes. Alors Ubuntu fournit un outil bien plus simple : ufw, le pare-feu simplifié.
+Au départ, il est désactivé. La commande sudo ufw status te le confirme : inactif.
+La bonne stratégie : tout refuser à l'entrée, tout autoriser à la sortie. Puis n'ouvrir que ce dont tu as besoin. Pour autoriser SSH : sudo ufw allow ssh. Pour un site web : sudo ufw allow quatre-vingts, slash tcp.
+Attention, piège classique ! Si tu administres une machine à distance, autorise SSH avant d'activer le pare-feu. Sinon, tu fermes la porte… et tu restes dehors.
+Ensuite seulement : sudo ufw enable. Le vigile prend son poste, et il le reprendra à chaque démarrage.
+sudo ufw status verbose affiche toutes les règles. Pour en retirer une : ufw delete, suivi de la règle.
+Et pour vérifier depuis l'extérieur, la commande nmap liste les ports ouverts d'une machine. Uniquement sur les tiennes !
+Tout fermer, puis n'ouvrir que le strict nécessaire : c'est la règle d'or de la sécurité.""",
+
+    "ssh": """Un serveur, c'est souvent une machine sans écran, dans un centre de données à l'autre bout du monde. Alors, comment l'administrer ? Avec SSH.
+SSH, c'est un terminal à distance. Tu tapes des commandes sur ton ordinateur, et elles s'exécutent sur le serveur. Tout le trajet est chiffré : personne ne peut lire ce qui passe, pas même ton mot de passe.
+Côté serveur, un service écoute sur le port vingt-deux : sshd. Sur Ubuntu, il s'installe avec sudo apt install openssh-server.
+Côté client, une seule commande : ssh, suivi d'un nom d'utilisateur, d'une arobase, et de l'adresse du serveur. Elle existe aussi sous Windows, dans PowerShell.
+À la première connexion, SSH te montre l'empreinte du serveur, et te demande si tu lui fais confiance. Tu réponds yes : il s'en souviendra. Si un jour cette empreinte change, SSH t'alerte. Ça peut être une réinstallation… ou quelqu'un qui se fait passer pour ton serveur.
+Ensuite, ton mot de passe. Et l'invite change : tu es sur le serveur ! Pour revenir chez toi : exit.
+Et pour une machine virtuelle ? Dans VirtualBox, en mode NAT, ajoute une redirection de port : le port deux mille deux de ton ordinateur vers le port vingt-deux de la VM. Puis ssh tiret p deux mille deux, vers localhost.
+Pour copier des fichiers, scp et rsync passent par le même tunnel chiffré.
+Un terminal, n'importe où dans le monde : c'est ça, SSH.""",
+
+    "cles": """Taper ton mot de passe à chaque connexion SSH ? Pénible. Et surtout, risqué : un mot de passe, ça se devine. Heureusement, il existe bien mieux : les clés SSH.
+Le principe est simple : une paire de clés, liées par les mathématiques. Une clé publique, qui fonctionne comme un cadenas. Et une clé privée : la seule capable de l'ouvrir.
+Pour créer ta paire : ssh-keygen tiret t ed25519. Deux fichiers apparaissent dans ton dossier point ssh. La clé privée, id ed25519 : elle ne quitte jamais ta machine. Et la clé publique, qui finit par point pub : celle-là, tu peux la donner à tout le monde.
+Tu poses ensuite ton cadenas sur le serveur, avec ssh-copy-id. Ta clé publique rejoint le fichier authorized keys : la liste des cadenas acceptés.
+À la connexion suivante, le serveur te lance un défi, que seule ta clé privée peut relever. Défi réussi : tu entres. Et aucun mot de passe n'a circulé sur le réseau.
+Protège ta clé privée par une phrase de passe : si on te la vole, elle restera inutilisable.
+Dernière étape, la plus sûre : interdire les mots de passe sur le serveur. Dans le fichier sshd config, passe PasswordAuthentication à no, puis redémarre le service. Mais avant, vérifie que ta clé fonctionne ! Sinon, tu restes dehors.
+Un cadenas sur le serveur, une clé dans ta poche : plus sûr, et plus pratique.""",
+
 }
 
 

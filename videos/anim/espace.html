@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Disque plein : l'enquête — vidéo</title>
+<link rel="stylesheet" href="commun.css">
+<style>
+#alerte { left: 410px; top: 220px; width: 1100px; padding: 40px 50px; border-radius: 26px; background: rgba(248,113,113,.12); border: 4px solid var(--rouge);
+  font-family: var(--mono); font-size: 44px; color: #ffd6d6; text-align: center; box-shadow: 0 0 80px rgba(248,113,113,.35); }
+#alerte b { display: block; font-family: var(--display); font-size: 70px; color: var(--rouge); margin-bottom: 16px; }
+#detective { left: 860px; top: 560px; font-size: 150px; }
+#enq-lab { top: 760px; font-size: 76px; }
+
+#gros { top: 120px; font-family: var(--mono); font-size: 130px; color: var(--orange-2); }
+#t-df { left: 200px; top: 330px; width: 1520px; }
+#t-df .corps { font-size: 38px; min-height: 260px; }
+.col-h { border-radius: 8px; }
+#jauge { left: 360px; top: 720px; width: 1200px; height: 70px; border-radius: 35px; background: rgba(255,255,255,.08); border: 3px solid rgba(255,255,255,.2); overflow: hidden; }
+#jauge-r { position: absolute; left: 0; top: 0; bottom: 0; width: 100%; transform-origin: 0 50%; background: linear-gradient(90deg, var(--vert), var(--jaune) 70%, var(--rouge)); }
+#jauge-n { left: 1590px; top: 718px; font-family: var(--display); font-weight: 800; font-size: 60px; color: var(--rouge); }
+#agir { top: 815px; font-family: var(--display); font-weight: 800; font-size: 46px; color: var(--jaune); }
+
+.qq { top: 140px; width: 760px; height: 200px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+#q-df { left: 160px; } #q-du { left: 1000px; }
+.qq .c1 { font-family: var(--mono); font-size: 70px; color: var(--orange-2); }
+.qq .c2 { font-family: var(--display); font-weight: 800; font-size: 46px; }
+#t-du { left: 260px; top: 400px; width: 1400px; }
+#t-du .corps { font-size: 36px; min-height: 380px; }
+.bb { display: inline-block; height: 24px; border-radius: 6px; margin-left: 20px; vertical-align: middle; transform-origin: 0 50%;
+  background: linear-gradient(90deg, var(--orange), var(--violet)); }
+#suspects { top: 400px; }
+#suspects .sp { display: inline-block; width: 460px; margin: 0 20px; padding: 34px 0; border-radius: 26px; text-align: center; background: #141c2e; border: 3px solid rgba(248,113,113,.5); }
+#suspects .sp b { display: block; font-family: var(--emoji); font-size: 90px; line-height: 1.1; }
+#suspects .sp span { font-family: var(--mono); font-size: 40px; }
+#suspects-titre { top: 170px; font-size: 90px; }
+
+#ncdu { left: 310px; top: 150px; width: 1300px; background: #0b1020; border: 3px solid #3b4a6b; border-radius: 14px; overflow: hidden;
+  font-family: var(--mono); font-size: 38px; color: #d6deeb; box-shadow: 0 40px 100px rgba(0,0,0,.6); }
+#ncdu .tete { background: #3b4a6b; color: #fff; padding: 10px 26px; font-size: 30px; }
+#ncdu .corps-n { padding: 20px 26px; position: relative; }
+#ncdu .ln { white-space: pre; height: 62px; line-height: 62px; position: relative; z-index: 1; }
+#ncdu .ln .h { color: var(--jaune); }
+#curseur-n { position: absolute; left: 14px; right: 14px; top: 20px; height: 62px; background: rgba(56,189,248,.25); border-radius: 6px; }
+#ncdu-lab { top: 720px; font-family: var(--display); font-weight: 800; font-size: 52px; }
+
+.cuve { position: absolute; top: 150px; width: 640px; height: 420px; border-radius: 28px; border: 4px solid rgba(255,255,255,.25); background: #141c2e; overflow: hidden; }
+#ram { left: 200px; } #dsk { left: 1080px; }
+.cuve .tit { position: absolute; left: 0; right: 0; top: 18px; text-align: center; font-family: var(--display); font-weight: 800; font-size: 46px; z-index: 2; }
+#ram-plein { position: absolute; left: 0; right: 0; bottom: 0; height: 100%; transform-origin: 50% 100%; background: linear-gradient(0deg, rgba(248,113,113,.55), rgba(245,197,66,.35)); }
+#swapz { position: absolute; left: 30px; right: 30px; bottom: 30px; height: 150px; border-radius: 18px; border: 3px dashed var(--violet); background: rgba(179,107,214,.12);
+  display: flex; align-items: flex-start; justify-content: center; padding-top: 8px; font-family: var(--mono); font-size: 40px; color: var(--violet); }
+.bloc { position: absolute; width: 90px; height: 60px; border-radius: 12px; background: var(--jaune); left: 470px; top: 380px; z-index: 5; }
+#tortue { left: 1300px; top: 225px; font-size: 100px; }
+#lent { top: 630px; font-family: var(--display); font-weight: 800; font-size: 52px; }
+#t-free { left: 360px; top: 630px; width: 1200px; }
+#t-free .corps { font-size: 30px; padding: 16px 28px; }
+
+#balai { left: 860px; top: 130px; font-size: 160px; }
+#t-men { left: 360px; top: 380px; width: 1200px; }
+#t-men .corps { font-size: 40px; min-height: 180px; }
+#jauge2 { left: 360px; top: 700px; width: 1200px; height: 70px; border-radius: 35px; background: rgba(255,255,255,.08); border: 3px solid rgba(255,255,255,.2); overflow: hidden; }
+#jauge2-r { position: absolute; left: 0; top: 0; bottom: 0; width: 100%; transform-origin: 0 50%; background: linear-gradient(90deg, var(--vert), var(--jaune) 70%, var(--rouge)); }
+#jauge2-n { left: 1590px; top: 698px; font-family: var(--display); font-weight: 800; font-size: 60px; color: var(--vert); }
+
+#recap { top: 340px; }
+.rr { display: inline-block; width: 470px; margin: 0 10px; text-align: center; }
+.rr b { display: block; font-family: var(--mono); font-size: 110px; color: var(--orange-2); line-height: 1.15; }
+.rr span { font-family: var(--display); font-weight: 800; font-size: 46px; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="bg" class="layer"><div id="blob1" class="blob"></div><div id="blob2" class="blob"></div><div id="blob3" class="blob"></div></div>
+  <div id="grille" class="layer"></div>
+  <div id="cam-punch"><div id="cam-drift">
+
+    <div class="scene" id="s-alerte">
+      <div class="abs" id="alerte"><b>⛔ Disque plein</b>No space left on device</div>
+      <div class="abs emoji" id="detective">🕵️</div>
+      <div class="ligne display grad mots" id="enq-lab">l'enquête commence</div>
+    </div>
+
+    <div class="scene" id="s-df">
+      <div class="ligne" id="gros">df</div>
+      <div class="abs terminal" id="t-df"><div class="barre-t"><i></i><i></i><i></i><span>user@ubuntu: ~</span></div>
+        <div class="corps">
+          <div class="l" id="df0"><span class="p">user@ubuntu:~$</span> <span class="tape">df -h</span></div>
+          <div class="l o dfo">Sys. de fichiers <span class="col-h" id="ch1">Taille</span> <span class="col-h" id="ch2">Utilisé</span> <span class="col-h" id="ch3">Dispo</span> <span class="col-h" id="ch4">Uti%</span> Monté sur</div>
+          <div class="l o dfo" id="ligne-sda2">/dev/sda2           39G     36G  2,4G  <span class="err">94%</span> /</div>
+          <div class="l o dfo">/dev/sda1          1,1G    6,1M  1,1G    1% /boot/efi</div>
+        </div></div>
+      <div class="abs" id="jauge"><div id="jauge-r"></div></div>
+      <div class="abs" id="jauge-n"><span id="pct">0</span> %</div>
+      <div class="ligne" id="agir">⚠️ au-dessus de 90 % : il est temps d'agir</div>
+    </div>
+
+    <div class="scene" id="s-du">
+      <div class="abs verre qq" id="q-df"><div class="c1">df</div><div class="c2">quel disque est plein ?</div></div>
+      <div class="abs verre qq" id="q-du"><div class="c1">du</div><div class="c2">qui le remplit ?</div></div>
+      <div class="abs terminal" id="t-du"><div class="barre-t"><i></i><i></i><i></i><span>user@ubuntu: ~</span></div>
+        <div class="corps">
+          <div class="l" id="du0"><span class="p">user@ubuntu:~$</span> <span class="tape">sudo du -sh /var</span></div>
+          <div class="l o" id="du0o">27G	/var</div>
+          <div class="l" id="du1"><span class="p">user@ubuntu:~$</span> <span class="tape">sudo du -h --max-depth=1 /var | sort -h</span></div>
+          <div class="l o duo">1,2G	/var/cache<span class="bb" style="width:60px"></span></div>
+          <div class="l o duo">4,8G	/var/lib<span class="bb" style="width:240px"></span></div>
+          <div class="l o duo" id="du-log">21G	/var/log<span class="bb" style="width:620px"></span></div>
+        </div></div>
+    </div>
+
+    <div class="scene" id="s-suspects">
+      <div class="ligne display mots" id="suspects-titre">Les suspects habituels</div>
+      <div class="ligne" id="suspects"><span class="sp"><b>📜</b><span>/var/log</span></span><span class="sp"><b>📦</b><span>cache d'apt</span></span><span class="sp"><b>📥</b><span>Téléchargements</span></span></div>
+    </div>
+
+    <div class="scene" id="s-ncdu">
+      <div class="abs" id="ncdu"><div class="tete">ncdu 2.3 ~ Utilisez les flèches pour naviguer, q pour quitter</div>
+        <div class="corps-n"><div id="curseur-n"></div>
+          <div class="ln">--- /var ---------------------------------------</div>
+          <div class="ln"><span class="h">   21,0 GiB</span> [##########] /log</div>
+          <div class="ln"><span class="h">    4,8 GiB</span> [##        ] /lib</div>
+          <div class="ln"><span class="h">    1,2 GiB</span> [          ] /cache</div>
+          <div class="ln"><span class="h">  120,0 MiB</span> [          ] /snap</div>
+          <div class="ln"><span class="h">   16,0 KiB</span> [          ] /tmp</div>
+        </div></div>
+      <div class="ligne" id="ncdu-lab">🧭 sudo apt install ncdu</div>
+    </div>
+
+    <div class="scene" id="s-swap">
+      <div class="cuve" id="ram"><div id="ram-plein"></div><div class="tit">🧠 mémoire vive</div></div>
+      <div class="cuve" id="dsk"><div class="tit">💽 disque</div><div id="swapz">swap</div></div>
+      <div class="bloc" id="bk1"></div><div class="bloc" id="bk2"></div><div class="bloc" id="bk3"></div>
+      <div class="abs emoji" id="tortue">🐢</div>
+      <div class="ligne" id="lent">pratique… mais bien plus lent que la RAM</div>
+      <div class="abs terminal" id="t-free"><div class="barre-t"><i></i><i></i><i></i><span>user@ubuntu: ~</span></div>
+        <div class="corps"><div class="l" id="fr0"><span class="p">$</span> <span class="tape">free -h</span></div>
+          <div class="l o fro">Mem:     3,8Gi   3,6Gi   120Mi   …   disponible 190Mi</div>
+          <div class="l o fro">Échange: 3,8Gi   1,4Gi   2,4Gi</div></div></div>
+    </div>
+
+    <div class="scene" id="s-menage">
+      <div class="abs emoji" id="balai">🧹</div>
+      <div class="abs terminal" id="t-men"><div class="barre-t"><i></i><i></i><i></i><span>user@ubuntu: ~</span></div>
+        <div class="corps">
+          <div class="l" id="mn0"><span class="p">user@ubuntu:~$</span> <span class="tape">sudo apt autoremove</span></div>
+          <div class="l" id="mn1"><span class="p">user@ubuntu:~$</span> <span class="tape">sudo apt clean</span></div>
+        </div></div>
+      <div class="abs" id="jauge2"><div id="jauge2-r"></div></div>
+      <div class="abs" id="jauge2-n"><span id="pct2">94</span> %</div>
+    </div>
+
+    <div class="scene" id="s-recap">
+      <div class="ligne" id="recap"><span class="rr" id="r1"><b>df</b><span>👀 pour voir</span></span><span class="rr" id="r2"><b>du</b><span>🔦 pour trouver</span></span><span class="rr" id="r3"><b class="emoji">🧹</b><span>et le ménage</span></span></div>
+    </div>
+
+  </div></div>
+  <div id="vignette" class="layer"></div>
+  <div class="abs" id="badge"><img src="img/tux.svg" alt=""><div><div class="nom"><b>$</b> carnet-linux</div><div class="sous">Module 11 · Disque plein : l'enquête</div></div></div>
+  <canvas id="particules" width="1920" height="1080"></canvas>
+  <div class="abs" id="rideau"></div>
+  <div class="abs" id="st"></div>
+  <div class="abs" id="barre"></div>
+  <div id="flash" class="layer"></div>
+</div>
+<script src="lib/gsap.min.js"></script>
+<script src="commun.js"></script>
+<script>
+Film.demarrer({
+  film: 'espace',
+  fin: { titre: 'Disque plein : l\'enquête', sous: 'Carnet Linux · Module 11 — Disques & systèmes de fichiers', prompt: 'df -h' },
+  construire(C) {
+    // 1. l'alerte
+    gsap.set('#s-alerte', { autoAlpha: 1 });
+    gsap.set(['#detective', '#enq-lab .mot'], { opacity: 0 });
+    pop('#alerte', 0.3, { depuis: 0.6 });
+    secousse(0.6, 16);
+    flash(0.6, 0.3, 0.3);
+    tl.to('#alerte', { scale: 0.8, y: -60, duration: 0.5 }, C.enquete);
+    pop('#detective', C.enquete + 0.3, { depuis: 0.3, rot: -20 });
+    motsEntrent('#enq-lab .mot', C.enquete + 0.8);
+
+    // 2. df -h
+    plonge(C.df, '#s-alerte', '#s-df');
+    gsap.set(['.dfo', '#jauge', '#jauge-n', '#agir'], { opacity: 0 });
+    gsap.set('#jauge-r', { scaleX: 0 });
+    tl.fromTo('#gros', { scale: 2, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.35, ease: 'power4.in', immediateRender: false }, C.df + 0.3);
+    coup(C.df + 0.65);
+    ligne('#df0', C.h, 0.5);
+    sortie('.dfo', C.h + 1.4, 0.15);
+    const col = (sel, t) => { tl.to(sel, { backgroundColor: 'rgba(245,197,66,.4)', duration: 0.2 }, t); tl.to(sel, { backgroundColor: 'rgba(245,197,66,0)', duration: 0.2 }, t + 1.3); };
+    col('#ch1', C.colonnes + 2.6); col('#ch2', C.colonnes + 3.6); col('#ch3', C.colonnes + 4.7); col('#ch4', C.colonnes + 5.9);
+    tl.to(['#jauge', '#jauge-n'], { opacity: 1, duration: 0.3 }, C.pourcent);
+    tl.to('#jauge-r', { scaleX: 0.94, duration: 1.4, ease: 'power2.out' }, C.pourcent + 0.1);
+    compter('#pct', C.pourcent + 0.1, C.pourcent + 1.5, 0, 94);
+    tl.fromTo('#agir', { y: 20, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.pourcent + 1.4);
+    tl.to('#ligne-sda2', { backgroundColor: 'rgba(248,113,113,.15)', duration: 0.3 }, C.pourcent + 0.5);
+
+    // 3. du : qui remplit ?
+    rideau(C.du, '#s-df', '#s-du');
+    gsap.set(['#q-du', '#t-du', '#du0o', '#du1', '.duo'], { opacity: 0 });
+    pop('#q-df', C.du + 0.3, { depuis: 0.5 });
+    pop('#q-du', C.qui + 1.4, { depuis: 0.5 });
+    tl.fromTo('#t-du', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.dush);
+    ligne('#du0', C.dush + 0.3, 0.8);
+    sortie('#du0o', C.dush + 1.6);
+    ligne('#du1', C.sort, 1.4);
+    sortie('.duo', C.sort + 1.8, 0.4);
+    tl.fromTo('.bb', { scaleX: 0 }, { scaleX: 1, duration: 0.7, stagger: 0.4, immediateRender: false }, C.sort + 1.9);
+    tl.to('#du-log', { color: '#f87171', duration: 0.3 }, C.sort + 3.4);
+
+    // 4. les suspects
+    plonge(C.coupables, '#s-du', '#s-suspects');
+    gsap.set('.sp', { opacity: 0 });
+    motsEntrent('#suspects-titre .mot', C.coupables);
+    pop('.sp', C.coupables + 2.0, { stagger: 1.1, depuis: 0.4 });
+
+    // 5. ncdu
+    rideau(C.ncdu, '#s-suspects', '#s-ncdu');
+    gsap.set(['#ncdu-lab'], { opacity: 0 });
+    tl.fromTo('#ncdu', { y: 40, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.ncdu + 0.3);
+    tl.fromTo('#ncdu-lab', { y: 20, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.ncdu + 1.0);
+    tl.set('#curseur-n', { y: 62 }, C.ncdu);
+    tl.to('#curseur-n', { y: 124, duration: 0.25 }, C.ncdu + 3.2);
+    tl.to('#curseur-n', { y: 186, duration: 0.25 }, C.ncdu + 4.2);
+    tl.to('#curseur-n', { y: 62, duration: 0.25 }, C.ncdu + 5.4);
+
+    // 6. le swap
+    plonge(C.swap, '#s-ncdu', '#s-swap');
+    gsap.set(['.bloc', '#tortue', '#lent', '#t-free', '.fro'], { opacity: 0 });
+    gsap.set('#ram-plein', { scaleY: 0.3 });
+    pop(['#ram', '#dsk'], C.swap + 0.3, { stagger: 0.3, depuis: 0.7 });
+    tl.to('#ram-plein', { scaleY: 1, duration: 1.6, ease: 'power1.in' }, C.pleine);
+    tl.to('#ram', { borderColor: '#f87171', duration: 0.3 }, C.pleine + 1.5);
+    secousse(C.pleine + 1.6, 8);
+    ['#bk1', '#bk2', '#bk3'].forEach((b, i) => {
+      const t = C.pleine + 2.4 + i * 0.5;
+      tl.fromTo(b, { x: 0, y: 0, opacity: 1 }, { x: 730 + i * 110, y: 90, duration: 0.8, ease: 'power2.inOut', immediateRender: false }, t);
+    });
+    tl.to('#ram-plein', { scaleY: 0.75, duration: 1.2 }, C.pleine + 2.6);
+    tl.to('#ram', { borderColor: 'rgba(255,255,255,.25)', duration: 0.3 }, C.pleine + 3.6);
+    pop('#tortue', C.lent + 0.6, { depuis: 0.4 });
+    tl.to('#tortue', { x: 60, duration: 3, ease: 'none' }, C.lent + 1.0);
+    tl.fromTo('#lent', { y: 20, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.lent + 0.6);
+    tl.to('#lent', { opacity: 0, duration: 0.3 }, C.free - 0.2);
+    tl.fromTo('#t-free', { y: 30, opacity: 0 }, { y: 0, opacity: 1, immediateRender: false }, C.free);
+    ligne('#fr0', C.free + 0.3, 0.5);
+    sortie('.fro', C.free + 1.2, 0.2);
+
+    // 7. le ménage
+    rideau(C.menage, '#s-swap', '#s-menage');
+    gsap.set(['#mn0', '#mn1', '#jauge2', '#jauge2-n'], { opacity: 0 });
+    gsap.set('#jauge2-r', { scaleX: 0.94 });
+    pop('#balai', C.menage + 0.2, { depuis: 0.3, rot: -30 });
+    tl.to('#balai', { rotation: 18, duration: 0.25, yoyo: true, repeat: 7, ease: 'sine.inOut' }, C.menage + 0.8);
+    tl.to(['#jauge2', '#jauge2-n'], { opacity: 1, duration: 0.3 }, C.menage + 0.4);
+    ligne('#mn0', C.menage + 1.2, 0.8);
+    ligne('#mn1', C.clean, 0.6);
+    tl.to('#jauge2-r', { scaleX: 0.61, duration: 1.6, ease: 'power2.out' }, C.clean + 0.9);
+    compter('#pct2', C.clean + 0.9, C.clean + 2.5, 94, 61);
+    salve(C.clean + 2.4, 1660, 730, 40, ['#3fb950', '#f5c542', '#ffffff'], 'etincelles', 0.6);
+
+    // 8. récap
+    plonge(C.recap, '#s-menage', '#s-recap');
+    gsap.set('.rr', { opacity: 0 });
+    pop('#r1', C.recap + 0.1, { depuis: 0.3 }); pop('#r2', C.recap + 1.0, { depuis: 0.3 }); pop('#r3', C.recap + 2.0, { depuis: 0.3 });
+    salve(C.final + 0.6, 960, 420, 60, ['#e95420', '#b36bd6', '#f5c542'], 'confetti', 0.9);
+  },
+});
+</script>
+</body>
+</html>
